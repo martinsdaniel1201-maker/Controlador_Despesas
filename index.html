@@ -213,7 +213,7 @@
   }
   .progress-fill.danger { background: linear-gradient(90deg, var(--orange), var(--red)); }
 
-  /* ── FILTER ROW ── */
+  /* ── FILTER ROW & SUB-TOTAL ── */
   .filter-row {
     display: flex;
     gap: 8px;
@@ -240,6 +240,19 @@
     border-color: var(--green-dark);
     color: #fff;
     box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+  }
+  .subtotal-row {
+    padding: 2px 18px 8px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .subtotal-value {
+    color: var(--text);
+    font-weight: 900;
   }
 
   /* ── SEARCH ── */
@@ -825,11 +838,10 @@
   </div>
 </div>
 
-<!-- ESTRUTURA REORGANIZADA COM SPANS PARA OS EMOJIS -->
 <div class="tabs">
   <button class="tab active" onclick="switchTab('despesas', this)"><span>📋</span>Despesas</button>
   <button class="tab" onclick="switchTab('stats', this)"><span>📊</span>Relatório</button>
-  <button class="tab" onclick="switchTab('simulacao', this)"><span>🔮</span>Simulação</button>
+  <button class="tab" onclick="switchTab('simulacao', this)"><span>🧮</span>Calculadora</button>
   <button class="tab" onclick="switchTab('historico', this)"><span>🗓</span>Histórico</button>
 </div>
 
@@ -872,6 +884,11 @@
     <span class="filter-chip" data-filter="parcelado" onclick="setFilter('parcelado', this)">Parceladas</span>
   </div>
 
+  <div class="subtotal-row" id="subtotalContainer" style="display:none;">
+    <span id="subtotalLabel">Subtotal do filtro:</span>
+    <span class="subtotal-value" id="subtotalValue">R$ 0,00</span>
+  </div>
+
   <div class="list-container fade-in-up" id="expenseList"></div>
 </div>
 
@@ -882,7 +899,7 @@
 <div id="tabSimulacao" style="display:none">
   <div class="stats-container">
     <div class="stats-card">
-      <h3>Simulador de Salário</h3>
+      <h3>Calculadora de Salário</h3>
       
       <div class="form-group" style="margin-top:10px;">
         <label class="form-label">Suas Despesas Atuais (Mês)</label>
@@ -897,7 +914,7 @@
       <button class="btn-sim-update" onclick="calcularSimulacao()">🔄 Atualizar Valores</button>
 
       <div class="form-group">
-        <label class="form-label">Meta de Economia (% do Salário)</label>
+        <label class="form-label">Meta de Economia (% do Salário) - Opcional</label>
         <input type="number" class="form-input" id="simMetaPct" placeholder="Ex: 10" min="0" max="100" oninput="calcularSimulacao()">
       </div>
 
@@ -1159,7 +1176,18 @@ function renderList() {
   fill.style.width = pct + '%';
   fill.className = 'progress-fill' + (pct < 50 ? '' : pct < 80 ? '' : ' danger');
 
-  document.getElementById('simDespesas').value = formatBRL(total);
+  document.getElementById('simDespesas').value = formatBRL(pending);
+
+  const subtotalContainer = document.getElementById('subtotalContainer');
+  if (activeFilter !== 'all') {
+    const subtotalValue = filtered.reduce((s, e) => s + e.valor, 0);
+    const filterLabels = { pendente: 'A Pagar', pago: 'Pagas', fixo: 'Fixas', parcelado: 'Parceladas' };
+    document.getElementById('subtotalLabel').textContent = `Total (${filterLabels[activeFilter]}):`;
+    document.getElementById('subtotalValue').textContent = formatBRL(subtotalValue);
+    subtotalContainer.style.display = 'flex';
+  } else {
+    subtotalContainer.style.display = 'none';
+  }
 
   if (filtered.length === 0) {
     list.innerHTML = `<div class="empty-state"><div class="emoji">📭</div><h3>Nenhuma despesa</h3><p>Toque no <strong>+</strong> para adicionar sua primeira despesa do mês!</p></div>`;
@@ -1296,19 +1324,26 @@ function renderHistorico() {
 function calcularSimulacao() {
   const raw = getMonthExpenses(currentYear, currentMonth);
   const totalDespesas = raw.reduce((s, e) => s + e.valor, 0);
+  const paidDespesas = raw.filter(e => {
+    const key = getMonthKey(currentYear, currentMonth);
+    return (e.pagamentos || {})[key] || false;
+  }).reduce((s, e) => s + e.valor, 0);
+  const saldoAPagar = totalDespesas - paidDespesas;
+
   const salario = parseBRL(document.getElementById('simSalario').value);
-  const metaPct = parseFloat(document.getElementById('simMetaPct').value) || 0;
+  const metaPctInput = document.getElementById('simMetaPct').value;
+  const metaPct = metaPctInput !== "" ? parseFloat(metaPctInput) : 0;
 
   let valorMeta = 0;
   let comprometimento = 0;
   let sobra = 0;
 
   if (salario > 0) {
-    comprometimento = Math.round((totalDespesas / salario) * 100);
+    comprometimento = Math.round((saldoAPagar / salario) * 100);
     valorMeta = (salario * metaPct) / 100;
-    sobra = salario - totalDespesas - valorMeta;
+    sobra = salario - saldoAPagar - valorMeta;
   } else {
-    sobra = -totalDespesas;
+    sobra = -saldoAPagar;
   }
 
   document.getElementById('simValorMeta').textContent = formatBRL(valorMeta);
@@ -1332,8 +1367,8 @@ function calcularSimulacao() {
   }
 
   if (sobra < 0) {
-    if (salario - totalDespesas < 0) {
-      alertContainer.innerHTML = `<div class="sim-alert-box danger">🚨 <strong>Orçamento Estourado!</strong> Suas contas superam sua renda em ${formatBRL(Math.abs(salario - totalDespesas))}.</div>`;
+    if (salario - saldoAPagar < 0) {
+      alertContainer.innerHTML = `<div class="sim-alert-box danger">🚨 <strong>Orçamento Estourado!</strong> Suas contas superam sua renda em ${formatBRL(Math.abs(salario - saldoAPagar))}.</div>`;
     } else {
       alertContainer.innerHTML = `<div class="sim-alert-box warning">⚠️ <strong>Atenção!</strong> O salário paga as contas, mas não cumpre a meta de guardar ${metaPct}%.</div>`;
     }
@@ -1413,6 +1448,9 @@ function openModal(reset = false) {
   setTimeout(() => document.getElementById('fDesc').focus(), 400);
 }
 
+// ═══════════════════════════════════════════════════
+// CONTROLS & DYNAMICS
+// ═══════════════════════════════════════════════════
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
   editingId = null;
@@ -1429,9 +1467,6 @@ function toggleRepetir() {
   document.getElementById('repeatOptions').style.display = repeatOn ? 'block' : 'none';
 }
 
-// ═══════════════════════════════════════════════════
-// CONTROLS & DYNAMICS
-// ═══════════════════════════════════════════════════
 function selectType(type) {
   repeatType = type;
   updateRadios();
