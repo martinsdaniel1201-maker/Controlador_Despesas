@@ -113,27 +113,41 @@
   }
   .btn-nav:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
 
-  /* ── TABS ── */
+  /* ── TABS CORRIGIDAS E CENTRALIZADAS ── */
   .tabs {
     display: flex;
     background: #fff;
     margin: 14px;
-    padding: 4px;
-    border-radius: 12px;
+    padding: 6px;
+    border-radius: 16px;
     box-shadow: var(--shadow);
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
   }
   .tab {
     flex: 1;
-    padding: 10px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
     color: var(--text-muted);
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 800;
     text-align: center;
     cursor: pointer;
     border: none;
     background: none;
     transition: all 0.25s ease;
-    border-radius: 10px;
+    border-radius: 12px;
+    gap: 4px;
+    line-height: 1.2;
+  }
+  .tab span {
+    font-size: 18px;
+    display: block;
+    line-height: 1;
   }
   .tab.active {
     color: var(--green-dark);
@@ -330,7 +344,7 @@
     color: var(--text);
   }
   
-  /* SOBREPOSIÇÃO MASSIVA DA TAG DE PAGO */
+  /* TAG DE PAGO */
   .paid-tag {
     position: absolute;
     right: 0;
@@ -811,11 +825,12 @@
   </div>
 </div>
 
+<!-- ESTRUTURA REORGANIZADA COM SPANS PARA OS EMOJIS -->
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('despesas', this)">📋 Despesas</button>
-  <button class="tab" onclick="switchTab('stats', this)">📊 Relatório</button>
-  <button class="tab" onclick="switchTab('simulacao', this)">🔮 Simulação</button>
-  <button class="tab" onclick="switchTab('historico', this)">🗓 Histórico</button>
+  <button class="tab active" onclick="switchTab('despesas', this)"><span>📋</span>Despesas</button>
+  <button class="tab" onclick="switchTab('stats', this)"><span>📊</span>Relatório</button>
+  <button class="tab" onclick="switchTab('simulacao', this)"><span>🔮</span>Simulação</button>
+  <button class="tab" onclick="switchTab('historico', this)"><span>🗓</span>Histórico</button>
 </div>
 
 <div id="tabDespesas">
@@ -1251,9 +1266,8 @@ function renderHistorico() {
     const raw = getMonthExpenses(y, m);
     const displayed = raw.map(e => getDisplayExpense(e, y, m));
     const total = displayed.reduce((s, e) => s + e.valor, 0);
-    const paid = displayed.filter(e => e.paid).reduce((s, e) => s + e.valor, 0);
     const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-    hist.push({ label: months[m] + '/' + y, total, paid, count: displayed.length });
+    hist.push({ label: months[m] + '/' + y, total, count: displayed.length });
   }
 
   const maxT = Math.max(...hist.map(h => h.total), 1);
@@ -1319,15 +1333,15 @@ function calcularSimulacao() {
 
   if (sobra < 0) {
     if (salario - totalDespesas < 0) {
-      alertContainer.innerHTML = `<div class="sim-alert-box danger">🚨 <strong>Orçamento Estourado!</strong> Suas contas superam sua renda em ${formatBRL(Math.abs(salario - totalDespesas))}. É necessário reduzir despesas.</div>`;
+      alertContainer.innerHTML = `<div class="sim-alert-box danger">🚨 <strong>Orçamento Estourado!</strong> Suas contas superam sua renda em ${formatBRL(Math.abs(salario - totalDespesas))}.</div>`;
     } else {
-      alertContainer.innerHTML = `<div class="sim-alert-box warning">⚠️ <strong>Atenção!</strong> O salário paga as contas, mas você não consegue cumprir sua meta de guardar ${metaPct}%. Reduza a porcentagem ou corte despesas.</div>`;
+      alertContainer.innerHTML = `<div class="sim-alert-box warning">⚠️ <strong>Atenção!</strong> O salário paga as contas, mas não cumpre a meta de guardar ${metaPct}%.</div>`;
     }
   } else {
     if (comprometimento > 70) {
-      alertContainer.innerHTML = `<div class="sim-alert-box warning">💡 <strong>Aviso:</strong> Você está conseguindo pagar tudo, mas comprometeu ${comprometimento}% do seu orçamento. Tente reduzir para ter mais segurança.</div>`;
+      alertContainer.innerHTML = `<div class="sim-alert-box warning">💡 <strong>Aviso:</strong> Você paga tudo, mas comprometeu ${comprometimento}% do orçamento.</div>`;
     } else {
-      alertContainer.innerHTML = `<div class="sim-alert-box success">🎉 <strong>Parabéns!</strong> Suas finanças estão equilibradas. Você paga todas as contas, cumpre sua meta e ainda sobram ${formatBRL(sobra)}.</div>`;
+      alertContainer.innerHTML = `<div class="sim-alert-box success">🎉 <strong>Parabéns!</strong> Finanças equilibradas. Sobram ${formatBRL(sobra)}.</div>`;
     }
   }
 }
@@ -1460,7 +1474,7 @@ function saveExpense() {
     if (idx !== -1) {
       expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey };
     }
-    showToast('✏️ Despesa updated!');
+    showToast('✏️ Despesa atualizada!');
   } else {
     expenses.push({
       id: Date.now().toString(),
