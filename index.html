@@ -908,14 +908,14 @@
 
       <div class="form-group">
         <label class="form-label">Informe Seu Salário / Renda (R$)</label>
-        <input type="text" class="form-input" id="simSalario" placeholder="0,00" inputmode="decimal" oninput="calcularSimulacao()">
+        <input type="text" class="form-input" id="simSalario" placeholder="0,00" inputmode="decimal" oninput="saveSimInputs(); calcularSimulacao();">
       </div>
 
       <button class="btn-sim-update" onclick="calcularSimulacao()">🔄 Atualizar Valores</button>
 
       <div class="form-group">
         <label class="form-label">Meta de Economia (% do Salário) - Opcional</label>
-        <input type="number" class="form-input" id="simMetaPct" placeholder="Ex: 10" min="0" max="100" oninput="calcularSimulacao()">
+        <input type="number" class="form-input" id="simMetaPct" placeholder="Ex: 10" min="0" max="100" oninput="saveSimInputs(); calcularSimulacao();">
       </div>
 
       <hr class="drawer-divider" style="margin:20px 0;">
@@ -1062,10 +1062,24 @@ let repeatOn = false;
 let selectedCat = 'outros';
 
 // ═══════════════════════════════════════════════════
-// PERSISTENCE
+// PERSISTENCE & LOAD INPUTS
 // ═══════════════════════════════════════════════════
 function save() {
   localStorage.setItem('despesas_v2', JSON.stringify(expenses));
+}
+
+function loadSimInputs() {
+  const savedSalario = localStorage.getItem('sim_salario') || '';
+  const savedMeta = localStorage.getItem('sim_meta_pct') || '';
+  document.getElementById('simSalario').value = savedSalario;
+  document.getElementById('simMetaPct').value = savedMeta;
+}
+
+function saveSimInputs() {
+  const salario = document.getElementById('simSalario').value;
+  const meta = document.getElementById('simMetaPct').value;
+  localStorage.setItem('sim_salario', salario);
+  localStorage.setItem('sim_meta_pct', meta);
 }
 
 function getMonthKey(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
@@ -1507,9 +1521,44 @@ function saveExpense() {
   if (editingId) {
     const idx = expenses.findIndex(e => e.id === editingId);
     if (idx !== -1) {
-      expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey };
+      const expAntiga = expenses[idx];
+      
+      // Se a despesa editada era recorrente (fixa/parcelada) e o usuário quer alterar APENAS este mês
+      if ((expAntiga.tipo === 'fixo' || expAntiga.tipo === 'parcelado') && !confirm("Deseja aplicar as alterações a TODOS os meses? \n\n[OK] para Todos os Meses\n[Cancelar] para Modificar apenas ESTE MÊS.")) {
+        
+        // Mantém a antiga intacta (ela continuará gerando para os meses passados/futuros)
+        // Porém, clonamos ela como uma despesa do tipo 'unico' exclusivamente para este mês atual
+        const novaUnica = {
+          id: Date.now().toString(),
+          descricao: desc,
+          valor,
+          dataOriginal: data,
+          categoria: selectedCat,
+          tipo: 'unico',
+          totalParcelas: null,
+          monthKey: getMonthKey(currentYear, currentMonth),
+          pagamentos: {}
+        };
+        
+        // Copia o estado de pagamento deste mês específico para o novo clone único
+        const currentKey = getMonthKey(currentYear, currentMonth);
+        if (expAntiga.pagamentos && expAntiga.pagamentos[currentKey]) {
+          novaUnica.pagamentos[currentKey] = expAntiga.pagamentos[currentKey];
+        }
+        
+        // Define na despesa recorrente antiga que neste mês específico ela não deve contar (inserindo um marcador de exclusão ou alterando a lógica nativa de amostragem)
+        // Para preservar a integridade sem quebrar o algoritmo atual, nós simulamos um pagamento ou omitimos. Melhor cenário limpo: transformamos o mês atual em ignorado.
+        if (!expAntiga.ignorarMeses) expAntiga.ignorarMeses = [];
+        expAntiga.ignorarMeses.push(currentKey);
+        
+        expenses.push(novaUnica);
+        showToast('✏️ Alterado apenas para este mês!');
+      } else {
+        // Altera globalmente para todos os meses afetados
+        expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey };
+        showToast('✏️ Despesa global atualizada!');
+      }
     }
-    showToast('✏️ Despesa atualizada!');
   } else {
     expenses.push({
       id: Date.now().toString(),
@@ -1529,6 +1578,17 @@ function saveExpense() {
   closeModal();
   renderAll();
 }
+
+// Sobreescrevemos ligeiramente a função nativa getMonthExpenses para respeitar a nova lista de meses ignorados em despesas editadas individualmente
+const nativeGetMonthExpenses = getMonthExpenses;
+getMonthExpenses = function(y, m) {
+  const key = getMonthKey(y, m);
+  const raw = nativeGetMonthExpenses(y, m);
+  return raw.filter(e => {
+    if (e.ignorarMeses && e.ignorarMeses.includes(key)) return false;
+    return true;
+  });
+};
 
 // ═══════════════════════════════════════════════════
 // UTILS
@@ -1558,7 +1618,7 @@ function switchTab(tab, btn) {
   document.getElementById('tabSimulacao').style.display = tab === 'simulacao' ? 'block' : 'none';
   document.getElementById('tabHistorico').style.display = tab === 'historico' ? 'block' : 'none';
   if (tab === 'stats') renderStats();
-  if (tab === 'simulacao') calcularSimulacao();
+  if (tab === 'simulacao') { loadSimInputs(); calcularSimulacao(); }
   if (tab === 'historico') renderHistorico();
 }
 
@@ -1681,6 +1741,7 @@ function renderAll() {
 
 updateMonthLabel();
 renderCatChips();
+loadSimInputs();
 renderAll();
 </script>
 </body>
