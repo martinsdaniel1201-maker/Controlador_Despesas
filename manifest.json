@@ -1,0 +1,21 @@
+{
+  "short_name": "Despesas",
+  "name": "Minhas Despesas - Controle Financeiro",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2454/2454261.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2454/2454261.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index_v1.0.html",
+  "background_color": "#f8f9fa",
+  "theme-color": "#2ecc71",
+  "display": "standalone",
+  "orientation": "portrait"
+}
