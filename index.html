@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Despesas">
 <meta name="description" content="Controle suas despesas mensais">
 <link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-start-url" content="./index.html">
 <title>Minhas Despesas</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -1451,9 +1452,9 @@ document.getElementById('btnInstallClose').addEventListener('click', () => {
 });
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
-
+ 
 function renderAll() {
   renderList();
 }
