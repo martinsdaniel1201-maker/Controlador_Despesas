@@ -9,15 +9,14 @@
 <meta name="apple-mobile-web-app-title" content="Despesas">
 <meta name="description" content="Controle suas despesas mensais">
 <link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-start-url" content="./">
 <title>Minhas Despesas</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --green: #2ecc71;
-    --green-dark: #27ae60;
-    --green-light: #90ee90; /* verde do card "pago" */
-    --green-mid: #2fa360;
+    --green: #27ae60;        /* Verde principal mais vivo */
+    --green-dark: #1e8449;   /* Verde escuro mais profundo para o Header/Botões */
+    --green-light: #9cdab6;  /* Verde fundo ligeiramente mais intenso para o card pago */
+    --green-mid: #229954;
     --orange: #f39c12;
     --orange-dark: #d35400;
     --red: #e74c3c;
@@ -27,8 +26,8 @@
     --bg: #f8f9fa;
     --card: #ffffff;
     --border: #e2e8f0;
-    --paid-bg: #edf7ed;
-    --paid-text: #1e7e34;
+    --paid-bg: var(--green-light); /* Vincula diretamente ao novo verde fundo */
+    --paid-text: var(--green-dark);  /* Texto do pago com o novo verde escuro */
     --radius: 16px;
     --shadow: 0 4px 20px rgba(0,0,0,0.05);
   }
@@ -286,6 +285,7 @@
     background: var(--card);
     box-shadow: var(--shadow);
     border: 1px solid rgba(0,0,0,0.02);
+    overflow: hidden;
   }
 
   .expense-item {
@@ -295,6 +295,7 @@
     justify-content: space-between;
     cursor: pointer;
     transition: background 0.2s;
+    position: relative;
   }
   .expense-item.paid { background: var(--paid-bg); border-radius: var(--radius) var(--radius) 0 0; }
   .expense-item .left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
@@ -328,13 +329,28 @@
     font-weight: 900;
     color: var(--text);
   }
+  
+  /* SOBREPOSIÇÃO MASSIVA DA TAG DE PAGO */
   .paid-tag {
-    font-size: 10px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, rgba(39, 174, 96, 0.9), var(--green-dark));
+    color: #fff;
+    font-size: 16px;
     font-weight: 900;
-    color: var(--paid-text);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+    letter-spacing: 1px;
+    box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+    animation: slideInTag 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  }
+  @keyframes slideInTag {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
   }
 
   /* ── PAINEL DE AÇÕES FIXO ── */
@@ -385,10 +401,8 @@
     justify-content: space-between;
     align-items: center;
   }
-  .footer-label { color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 700; }
-  .footer-value { color: #fff; font-size: 15px; font-weight: 800; }
-  .footer-main-label { color: #fff; font-size: 16px; font-weight: 800; }
-  .footer-main-value { color: #fff; font-size: 20px; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .footer-label, .footer-main-label { color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 700; }
+  .footer-value, .footer-main-value { color: #fff; font-size: 15px; font-weight: 800; }
   .footer-divider { border: none; border-top: 1px solid rgba(255,255,255,0.2); margin: 8px 0; }
 
   /* ── FAB ── */
@@ -602,6 +616,29 @@
   }
   .btn-cancel:hover { background: var(--bg); color: var(--text); }
 
+  /* BOTÃO ATUALIZAR SIMULAÇÃO */
+  .btn-sim-update {
+    width: 100%;
+    padding: 12px;
+    background: var(--green-dark);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(30, 132, 73, 0.2);
+    transition: background 0.2s;
+  }
+  .btn-sim-update:hover { background: var(--green); }
+
   /* ── EMPTY STATE ── */
   .empty-state {
     text-align: center;
@@ -699,6 +736,21 @@
   .cat-stat-fill { height: 100%; border-radius: 3px; background: var(--green); }
   .cat-stat-amount { font-size: 14px; font-weight: 800; color: var(--text); flex-shrink: 0; }
 
+  /* ── SIMULAÇÃO TAB ── */
+  .sim-alert-box {
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sim-alert-box.success { background: #e8f8f5; color: var(--green-dark); }
+  .sim-alert-box.danger { background: #fdedec; color: var(--red); }
+  .sim-alert-box.warning { background: #fef5e7; color: var(--orange-dark); }
+
   @media (min-width: 480px) {
     body { box-shadow: 0 0 40px rgba(0,0,0,0.08); min-height: 100vh; }
     .fab { transform: translateX(calc(-50% + 160px)); }
@@ -762,6 +814,7 @@
 <div class="tabs">
   <button class="tab active" onclick="switchTab('despesas', this)">📋 Despesas</button>
   <button class="tab" onclick="switchTab('stats', this)">📊 Relatório</button>
+  <button class="tab" onclick="switchTab('simulacao', this)">🔮 Simulação</button>
   <button class="tab" onclick="switchTab('historico', this)">🗓 Histórico</button>
 </div>
 
@@ -809,6 +862,51 @@
 
 <div id="tabStats" style="display:none">
   <div class="stats-container" id="statsContainer"></div>
+</div>
+
+<div id="tabSimulacao" style="display:none">
+  <div class="stats-container">
+    <div class="stats-card">
+      <h3>Simulador de Salário</h3>
+      
+      <div class="form-group" style="margin-top:10px;">
+        <label class="form-label">Suas Despesas Atuais (Mês)</label>
+        <input type="text" class="form-input" id="simDespesas" disabled style="background:#e2e8f0;font-weight:800;">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Informe Seu Salário / Renda (R$)</label>
+        <input type="text" class="form-input" id="simSalario" placeholder="0,00" inputmode="decimal" oninput="calcularSimulacao()">
+      </div>
+
+      <button class="btn-sim-update" onclick="calcularSimulacao()">🔄 Atualizar Valores</button>
+
+      <div class="form-group">
+        <label class="form-label">Meta de Economia (% do Salário)</label>
+        <input type="number" class="form-input" id="simMetaPct" placeholder="Ex: 10" min="0" max="100" oninput="calcularSimulacao()">
+      </div>
+
+      <hr class="drawer-divider" style="margin:20px 0;">
+
+      <div class="cat-stat-row" style="margin-bottom:6px;">
+        <span class="cat-stat-name" style="font-weight:800;">Comprometimento do Salário</span>
+        <span class="cat-stat-amount" id="simPctBarLabel" style="font-weight:900;">0%</span>
+      </div>
+      <div class="cat-stat-bar" style="height:10px;margin-bottom:20px;"><div class="cat-stat-fill" id="simProgressBar" style="width:0%; transition:width 0.3s;"></div></div>
+
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+        <span style="font-size:14px; font-weight:800; color:var(--text-muted);">Valor da Meta Guardada:</span>
+        <span style="font-size:14px; font-weight:900;" id="simValorMeta">R$ 0,00</span>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px; padding-top:10px; border-top:1px dashed var(--border);">
+        <span style="font-size:15px; font-weight:800; color:var(--text);">Sobra Líquida Final:</span>
+        <span style="font-size:16px; font-weight:900;" id="simSobra">R$ 0,00</span>
+      </div>
+
+      <div id="simAlertContainer"></div>
+    </div>
+  </div>
 </div>
 
 <div id="tabHistorico" style="display:none">
@@ -995,6 +1093,11 @@ function formatBRL(v) {
   return 'R$ ' + v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
+function parseBRL(valStr) {
+  const clean = valStr.replace(',','.').replace(/[^0-9.]/g,'');
+  return parseFloat(clean) || 0;
+}
+
 function updateMonthLabel() {
   const months = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   document.getElementById('monthLabel').textContent = `${months[currentMonth]} / ${currentYear}`;
@@ -1002,9 +1105,11 @@ function updateMonthLabel() {
 
 function triggerListAnimation() {
   const container = document.getElementById('expenseList');
-  container.classList.remove('fade-in-up');
-  void container.offsetWidth;
-  container.classList.add('fade-in-up');
+  if(container) {
+    container.classList.remove('fade-in-up');
+    void container.offsetWidth;
+    container.classList.add('fade-in-up');
+  }
 }
 
 function renderList() {
@@ -1038,6 +1143,8 @@ function renderList() {
   const fill = document.getElementById('progressFill');
   fill.style.width = pct + '%';
   fill.className = 'progress-fill' + (pct < 50 ? '' : pct < 80 ? '' : ' danger');
+
+  document.getElementById('simDespesas').value = formatBRL(total);
 
   if (filtered.length === 0) {
     list.innerHTML = `<div class="empty-state"><div class="emoji">📭</div><h3>Nenhuma despesa</h3><p>Toque no <strong>+</strong> para adicionar sua primeira despesa do mês!</p></div>`;
@@ -1080,7 +1187,7 @@ function renderItem(e) {
         </div>
         <div class="expense-right">
           <div class="expense-amount">${formatBRL(e.valor)}</div>
-          ${e.paid ? '<div class="paid-tag">✓ pago</div>' : ''}
+          ${e.paid ? '<div class="paid-tag">✓ PAGO</div>' : ''}
         </div>
       </div>
       <div class="item-actions-bar">
@@ -1170,6 +1277,62 @@ function renderHistorico() {
 }
 
 // ═══════════════════════════════════════════════════
+// SIMULAÇÃO LOGIC
+// ═══════════════════════════════════════════════════
+function calcularSimulacao() {
+  const raw = getMonthExpenses(currentYear, currentMonth);
+  const totalDespesas = raw.reduce((s, e) => s + e.valor, 0);
+  const salario = parseBRL(document.getElementById('simSalario').value);
+  const metaPct = parseFloat(document.getElementById('simMetaPct').value) || 0;
+
+  let valorMeta = 0;
+  let comprometimento = 0;
+  let sobra = 0;
+
+  if (salario > 0) {
+    comprometimento = Math.round((totalDespesas / salario) * 100);
+    valorMeta = (salario * metaPct) / 100;
+    sobra = salario - totalDespesas - valorMeta;
+  } else {
+    sobra = -totalDespesas;
+  }
+
+  document.getElementById('simValorMeta').textContent = formatBRL(valorMeta);
+  const sobraEl = document.getElementById('simSobra');
+  sobraEl.textContent = formatBRL(sobra);
+  sobraEl.style.color = sobra >= 0 ? 'var(--green-dark)' : 'var(--red)';
+
+  const pctLabel = document.getElementById('simPctBarLabel');
+  pctLabel.textContent = comprometimento + '%';
+  
+  const bar = document.getElementById('simProgressBar');
+  bar.style.width = Math.min(comprometimento, 100) + '%';
+  if (comprometimento <= 50) bar.style.background = 'var(--green)';
+  else if (comprometimento <= 80) bar.style.background = 'var(--orange)';
+  else bar.style.background = 'var(--red)';
+
+  const alertContainer = document.getElementById('simAlertContainer');
+  if (salario === 0) {
+    alertContainer.innerHTML = '';
+    return;
+  }
+
+  if (sobra < 0) {
+    if (salario - totalDespesas < 0) {
+      alertContainer.innerHTML = `<div class="sim-alert-box danger">🚨 <strong>Orçamento Estourado!</strong> Suas contas superam sua renda em ${formatBRL(Math.abs(salario - totalDespesas))}. É necessário reduzir despesas.</div>`;
+    } else {
+      alertContainer.innerHTML = `<div class="sim-alert-box warning">⚠️ <strong>Atenção!</strong> O salário paga as contas, mas você não consegue cumprir sua meta de guardar ${metaPct}%. Reduza a porcentagem ou corte despesas.</div>`;
+    }
+  } else {
+    if (comprometimento > 70) {
+      alertContainer.innerHTML = `<div class="sim-alert-box warning">💡 <strong>Aviso:</strong> Você está conseguindo pagar tudo, mas comprometeu ${comprometimento}% do seu orçamento. Tente reduzir para ter mais segurança.</div>`;
+    } else {
+      alertContainer.innerHTML = `<div class="sim-alert-box success">🎉 <strong>Parabéns!</strong> Suas finanças estão equilibradas. Você paga todas as contas, cumpre sua meta e ainda sobram ${formatBRL(sobra)}.</div>`;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════
 // ACTIONS
 // ═══════════════════════════════════════════════════
 function togglePay(id, monthKey) {
@@ -1252,15 +1415,15 @@ function toggleRepetir() {
   document.getElementById('repeatOptions').style.display = repeatOn ? 'block' : 'none';
 }
 
+// ═══════════════════════════════════════════════════
+// CONTROLS & DYNAMICS
+// ═══════════════════════════════════════════════════
 function selectType(type) {
   repeatType = type;
   updateRadios();
   document.getElementById('parcelasRow').style.display = type === 'parcelado' ? 'flex' : 'none';
 }
 
-// ═══════════════════════════════════════════════════
-// CONTROLS & DYNAMICS
-// ═══════════════════════════════════════════════════
 function updateRadios() {
   document.getElementById('radioFixo').className = 'radio-circle' + (repeatType === 'fixo' ? ' selected' : '');
   document.getElementById('radioParcela').className = 'radio-circle' + (repeatType === 'parcelado' ? ' selected' : '');
@@ -1297,7 +1460,7 @@ function saveExpense() {
     if (idx !== -1) {
       expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey };
     }
-    showToast('✏️ Despesa atualizada!');
+    showToast('✏️ Despesa updated!');
   } else {
     expenses.push({
       id: Date.now().toString(),
@@ -1310,7 +1473,7 @@ function saveExpense() {
       monthKey,
       pagamentos: {}
     });
-    showToast('✅ Despesa adicionada!');
+    showToast(' Despesa adicionada!');
   }
 
   save();
@@ -1343,8 +1506,10 @@ function switchTab(tab, btn) {
   btn.classList.add('active');
   document.getElementById('tabDespesas').style.display = tab === 'despesas' ? 'block' : 'none';
   document.getElementById('tabStats').style.display = tab === 'stats' ? 'block' : 'none';
+  document.getElementById('tabSimulacao').style.display = tab === 'simulacao' ? 'block' : 'none';
   document.getElementById('tabHistorico').style.display = tab === 'historico' ? 'block' : 'none';
   if (tab === 'stats') renderStats();
+  if (tab === 'simulacao') calcularSimulacao();
   if (tab === 'historico') renderHistorico();
 }
 
@@ -1422,12 +1587,17 @@ function importJSON() {
   input.click();
 }
 
-document.getElementById('fValor').addEventListener('input', function(e) {
-  let v = this.value.replace(/[^0-9]/g, '');
-  if (!v) { this.value = ''; return; }
-  v = (parseInt(v) / 100).toFixed(2);
-  this.value = v.replace('.', ',');
-});
+function aplicarMascaraDinheiro(elemento) {
+  elemento.addEventListener('input', function(e) {
+    let v = this.value.replace(/[^0-9]/g, '');
+    if (!v) { this.value = ''; return; }
+    v = (parseInt(v) / 100).toFixed(2);
+    this.value = v.replace('.', ',');
+  });
+}
+
+aplicarMascaraDinheiro(document.getElementById('fValor'));
+aplicarMascaraDinheiro(document.getElementById('simSalario'));
 
 // ═══════════════════════════════════════════════════
 // PWA
@@ -1452,11 +1622,12 @@ document.getElementById('btnInstallClose').addEventListener('click', () => {
 });
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js').catch(() => {});
 }
- 
+
 function renderAll() {
   renderList();
+  calcularSimulacao();
 }
 
 updateMonthLabel();
