@@ -1,4 +1,6 @@
-const CACHE_NAME = 'controlador-despesas-v1';
+// 1. TODA VEZ que você mudar algo no HTML/CSS, mude essa versão (ex: v2, v3, v4...)
+const CACHE_NAME = 'controlador-despesas-v2'; 
+
 const ASSETS = [
   './',
   './index.html',
@@ -11,6 +13,10 @@ self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
+    }).then(() => {
+      // FORÇA o novo service worker a se tornar o ativo imediatamente,
+      // sem esperar o usuário fechar todas as abas do app.
+      return self.skipWaiting();
     })
   );
 });
@@ -22,10 +28,14 @@ self.addEventListener('activate', (e) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('Removendo cache antigo:', key);
             return caches.delete(key);
           }
         })
       );
+    }).then(() => {
+      // Faz o novo Service Worker assumir o controle da página imediatamente
+      return self.clients.claim();
     })
   );
 });
@@ -34,6 +44,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
+      // Retorna o cache se existir, senão busca na rede
       return cachedResponse || fetch(e.request);
     })
   );
