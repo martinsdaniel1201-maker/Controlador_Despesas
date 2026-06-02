@@ -355,7 +355,7 @@
     transition: background 0.2s;
     position: relative;
   }
-  .expense-item.paid { background: var(--paid-bg); border-radius: var(--radius) var(--radius) 0 0; }
+  .expense-item.paid { background: var(--paid-bg); }
   .expense-item .left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
   
   .expense-icon {
@@ -381,63 +381,44 @@
     margin-top: 3px;
     font-weight: 700;
   }
-  .expense-right { text-align: right; flex-shrink: 0; }
+  .expense-right { text-align: right; flex-shrink: 0; display: flex; align-items: center; gap: 10px; }
   .expense-amount {
     font-size: 16px;
     font-weight: 900;
     color: var(--text);
   }
   
-  .paid-tag {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, rgba(39, 174, 96, 0.9), var(--green-dark));
-    color: #fff;
-    font-size: 16px;
-    font-weight: 900;
+  /* Botões Rápidos Laterais de Ação */
+  .quick-actions {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 24px;
-    letter-spacing: 1px;
-    box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+    gap: 4px;
+  }
+  .btn-quick {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .btn-quick:hover { background: rgba(0,0,0,0.05); }
+
+  .paid-tag {
+    background: var(--green-dark);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     animation: slideInTag 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1);
   }
   @keyframes slideInTag {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
   }
-
-  .item-actions-bar {
-    display: flex;
-    border-top: 1px solid var(--border);
-    background: var(--bg);
-    border-radius: 0 0 var(--radius) var(--radius);
-    overflow: hidden;
-  }
-  .action-bar-btn {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    background: transparent;
-    font-family: 'Nunito', sans-serif;
-    font-size: 12px;
-    font-weight: 800;
-    color: var(--text-muted);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: all 0.2s;
-  }
-  .action-bar-btn:not(:last-child) { border-right: 1px solid var(--border); }
-  .action-bar-btn.pay-btn { color: var(--green); }
-  .action-bar-btn.edit-btn { color: var(--orange-dark); }
-  .action-bar-btn.del-btn { color: var(--red); }
-  .action-bar-btn:hover { background: rgba(0,0,0,0.05); }
 
   /* ── FOOTER TOTALS ── */
   .footer {
@@ -983,7 +964,6 @@ function initTheme() {
     root.classList.remove('dark-theme');
     if (themeBtn) themeBtn.textContent = '🌙';
   } else {
-    // Se não houver preferência salva, segue o sistema nativo
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       if (themeBtn) themeBtn.textContent = '☀️';
     } else {
@@ -997,14 +977,12 @@ function toggleManualTheme() {
   const themeBtn = document.getElementById('themeToggleBtn');
   
   if (root.classList.contains('dark-theme') || (!root.classList.contains('light-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    // Mudar para o tema claro
     root.classList.add('light-theme');
     root.classList.remove('dark-theme');
     localStorage.setItem('app_theme', 'light');
     themeBtn.textContent = '🌙';
     showToast('☀️ Modo claro ativado');
   } else {
-    // Mudar para o tema escuro
     root.classList.add('dark-theme');
     root.classList.remove('light-theme');
     localStorage.setItem('app_theme', 'dark');
@@ -1188,7 +1166,7 @@ function renderList() {
       const monthKey = getMonthKey(currentYear, currentMonth);
       return `
         <div class="swipe-wrapper">
-          <div class="expense-item ${e.paid ? 'paid' : ''}" onclick="this.parentElement.classList.toggle('show-actions')">
+          <div class="expense-item ${e.paid ? 'paid' : ''}" onclick="togglePay('${e.id}', '${monthKey}')">
             <div class="left">
               <div class="expense-icon" style="background:${CAT_COLORS[e.categoria] || '#888'}22;color:${CAT_COLORS[e.categoria] || '#888'}">
                 ${cat.emoji}
@@ -1200,19 +1178,13 @@ function renderList() {
             </div>
             <div class="expense-right">
               <div class="expense-amount">${formatBRL(e.valor)}</div>
+              ${e.paid ? `<div class="paid-tag">PAGO</div>` : ''}
+              
+              <div class="quick-actions" onclick="event.stopPropagation();">
+                <button class="btn-quick" onclick="editExpense('${e.id}')" title="Editar">✏️</button>
+                <button class="btn-quick" onclick="deleteExpense('${e.id}')" title="Excluir">🗑️</button>
+              </div>
             </div>
-            ${e.paid ? `<div class="paid-tag">PAGO</div>` : ''}
-          </div>
-          <div class="item-actions-bar">
-            <button class="action-bar-btn pay-btn" onclick="togglePay('${e.id}', '${monthKey}')">
-              <span>${e.paid ? '↩️' : '✅'}</span>${e.paid ? 'Pendente' : 'Pagar'}
-            </button>
-            <button class="action-bar-btn edit-btn" onclick="editExpense('${e.id}')">
-              <span>✏️</span>Editar
-            </button>
-            <button class="action-bar-btn del-btn" onclick="deleteExpense('${e.id}')">
-              <span>🗑️</span>Excluir
-            </button>
           </div>
         </div>
       `;
@@ -1482,6 +1454,7 @@ function editExpense(id) {
 // ═══════════════════════════════════════════════════
 // MODAL
 // ═══════════════════════════════════════════════════
+// ... rest of modal functions remain unmodified ...
 function openModal(reset = false) {
   if (!editingId || reset) {
     editingId = null;
@@ -1601,11 +1574,11 @@ async function saveExpense() {
           showToast('✏️ Alterado apenas para este mês!');
         } else {
           expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey };
-          showToast('✏️ Despesa global atualizada!');
+          showToast('✏️ Despesa global updated!');
         }
       } else {
         expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey };
-        showToast('✏️ Despesa updated!');
+        showToast('✏️ Despesa atualizada!');
       }
     }
   } else {
@@ -1621,9 +1594,6 @@ async function saveExpense() {
   renderAll();
 }
 
-// ═══════════════════════════════════════════════════
-// CONTROLE DO CALENDÁRIO & FILTROS
-// ═══════════════════════════════════════════════════
 function changeMonth(dir) {
   currentMonth += dir;
   if (currentMonth > 11) { currentMonth = 0; currentYear++; }
@@ -1691,9 +1661,6 @@ async function clearAll() {
   save(); renderAll(); showToast('🗑️ Tudo excluído!');
 }
 
-// ═══════════════════════════════════════════════════
-// EXPORTAÇÃO, BACKUPS E MÁSCARAS
-// ═══════════════════════════════════════════════════
 function exportCSV() {
   const raw = getMonthExpenses(currentYear, currentMonth);
   const rows = [['Descrição','Valor','Data','Tipo','Categoria','Pago']];
