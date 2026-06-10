@@ -1,6 +1,8 @@
 {
   "short_name": "Despesas",
   "name": "Minhas Despesas - Controle Financeiro",
+  "description": "Controle suas despesas mensais de forma simples e rápida.",
+  "id": "com.martinsdaniel.despesas",
   "icons": [
     {
       "src": "./icone-192.png",
