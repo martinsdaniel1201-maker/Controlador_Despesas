@@ -14,6 +14,227 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<!-- SUPABASE SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* ══════════════════════════════════════════════════
+     TELA DE LOGIN / CADASTRO (SUPABASE AUTH)
+  ══════════════════════════════════════════════════ */
+  #auth-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Nunito', sans-serif;
+  }
+  #auth-screen.visible { display: flex; }
+
+  .auth-card {
+    background: var(--card);
+    border-radius: 28px;
+    padding: 32px 28px 36px;
+    width: 100%;
+    max-width: 400px;
+    margin: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    border: 1px solid var(--border);
+  }
+  .auth-logo {
+    text-align: center;
+    font-size: 48px;
+    margin-bottom: 8px;
+  }
+  .auth-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .auth-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 28px;
+  }
+  .auth-tabs {
+    display: flex;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 24px;
+    gap: 4px;
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 9px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.2s;
+  }
+  .auth-tab.active {
+    background: var(--card);
+    color: var(--green-dark);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .auth-field {
+    margin-bottom: 16px;
+  }
+  .auth-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+  .auth-field input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background: var(--input-bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .auth-field input:focus {
+    border-color: var(--green);
+    background: var(--input-focus-bg);
+  }
+  .auth-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .auth-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .auth-btn:active { transform: translateY(0); }
+  .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .auth-error {
+    background: var(--red-light);
+    color: var(--red);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .auth-error.visible { display: block; }
+
+  /* BANNER DE MIGRAÇÃO */
+  #migration-banner {
+    display: none;
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: #fff;
+    padding: 12px 16px;
+    margin: 10px 14px 0;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 800;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(243,156,18,0.3);
+  }
+  #migration-banner.visible { display: flex; }
+  #migration-banner span { flex: 1; }
+  #migration-banner button {
+    background: rgba(255,255,255,0.25);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    font-weight: 900;
+    padding: 6px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+  #migration-banner button:hover { background: rgba(255,255,255,0.35); }
+  #migration-banner .dismiss-btn {
+    background: transparent;
+    padding: 4px 8px;
+    opacity: 0.7;
+    font-size: 16px;
+  }
+
+  /* INFO DO USUÁRIO NO DRAWER */
+  .drawer-user-info {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .drawer-user-email {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 800;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+  .drawer-logout-btn {
+    background: var(--red-light);
+    border: none;
+    border-radius: 8px;
+    color: var(--red);
+    font-family: 'Nunito', sans-serif;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 5px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .drawer-logout-btn:hover { opacity: 0.8; }
+
+  /* INDICADOR DE SINCRONIZAÇÃO */
+  .sync-indicator {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-align: center;
+    padding: 4px;
+    min-height: 18px;
+  }
+  .sync-indicator.syncing { color: var(--orange); }
+  .sync-indicator.synced  { color: var(--green-dark); }
+  .sync-indicator.error   { color: var(--red); }
+</style>
 <style>
   /* ══════════════════════════════════════════════════
      TEMA: VARIÁVEIS DE COR (MODO CLARO — PADRÃO)
@@ -1189,6 +1410,37 @@
   </div>
 </div>
 
+<!-- TELA DE LOGIN/CADASTRO -->
+<div id="auth-screen" role="dialog" aria-label="Login ou Cadastro">
+  <div class="auth-card">
+    <div class="auth-logo">💰</div>
+    <div class="auth-title">Minhas Despesas</div>
+    <div class="auth-subtitle">Controle financeiro pessoal</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Entrar</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Criar conta</button>
+    </div>
+    <div id="auth-error" class="auth-error"></div>
+    <div class="auth-field">
+      <label for="auth-email">E-mail</label>
+      <input type="email" id="auth-email" placeholder="seu@email.com" autocomplete="email" inputmode="email">
+    </div>
+    <div class="auth-field">
+      <label for="auth-password">Senha</label>
+      <input type="password" id="auth-password" placeholder="mínimo 6 caracteres" autocomplete="current-password">
+    </div>
+    <button class="auth-btn" id="auth-submit-btn" onclick="handleAuthSubmit()">Entrar</button>
+    <div class="sync-indicator" id="auth-loading-msg"></div>
+  </div>
+</div>
+
+<!-- BANNER DE MIGRAÇÃO -->
+<div id="migration-banner">
+  <span>📦 Você tem dados locais — migrar para a nuvem?</span>
+  <button onclick="runMigration()">Migrar agora</button>
+  <button class="dismiss-btn" onclick="dismissMigration()" title="Fechar">✕</button>
+</div>
+
 <!-- DRAWER: MENU LATERAL -->
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer" role="navigation" aria-label="Menu lateral">
@@ -1196,6 +1448,14 @@
     <h2>💰 Despesas</h2>
     <p>Controle financeiro pessoal</p>
   </div>
+
+  <!-- INFO DO USUÁRIO LOGADO -->
+  <div class="drawer-user-info" id="drawer-user-info" style="display:none">
+    <span>👤</span>
+    <span class="drawer-user-email" id="drawer-user-email"></span>
+    <button class="drawer-logout-btn" onclick="handleLogout()">Sair</button>
+  </div>
+  <div class="sync-indicator" id="sync-indicator"></div>
 
   <button class="drawer-item" onclick="exportCSV();closeDrawer()">
     <span class="di">📥</span> Exportar CSV
@@ -1244,6 +1504,328 @@
 ══════════════════════════════════════════════════ -->
 <script>
 // ═══════════════════════════════════════════════
+// SUPABASE — CONFIGURAÇÃO
+// ═══════════════════════════════════════════════
+const SUPABASE_URL  = 'https://pmgemcvsobonypojltpw.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZ2VtY3Zzb2Jvbnlwb2psdHB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNjE1MTcsImV4cCI6MjA5NjYzNzUxN30.3SBG5Lm3A039MprUG4Ea_WVs29iAMtODBE6s3KpoRLg';
+
+// Se estiver rodando local (file://) o Supabase não funciona — usa modo offline
+const IS_LOCAL = location.protocol === 'file:';
+const supabase = IS_LOCAL ? null : (window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON) ?? null);
+
+let currentUser = null;
+let authMode    = 'login'; // 'login' | 'signup'
+
+// ── INICIALIZAÇÃO AUTH ──────────────────────────
+// Chamado uma vez no carregamento da página.
+// Verifica se já tem sessão ativa; se não, mostra a tela de login.
+async function initAuth() {
+  // Modo offline (file://) ou SDK não carregou: pula login, usa localStorage
+  if (IS_LOCAL || !supabase) {
+    loadLocalFallback();
+    renderAll();
+    return;
+  }
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      await onLoginSuccess(session.user);
+    } else {
+      showAuthScreen();
+    }
+  } catch(e) {
+    // Falha de rede na inicialização: vai para modo local
+    loadLocalFallback();
+    renderAll();
+    return;
+  }
+
+  // Ouve mudanças de sessão (ex: expirou, fez logout em outra aba)
+  supabase.auth.onAuthStateChange(async (_event, session) => {
+    if (session?.user) {
+      await onLoginSuccess(session.user);
+    } else {
+      currentUser = null;
+      showAuthScreen();
+    }
+  });
+}
+
+function loadLocalFallback() {
+  try {
+    const stored = localStorage.getItem('despesas_v2');
+    const parsed = JSON.parse(stored || '[]');
+    expenses = Array.isArray(parsed) ? parsed : [];
+  } catch(e) { expenses = []; }
+}
+
+// ── TELA DE LOGIN ──────────────────────────────
+function showAuthScreen() {
+  document.getElementById('auth-screen').classList.add('visible');
+}
+function hideAuthScreen() {
+  document.getElementById('auth-screen').classList.remove('visible');
+}
+
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+  document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
+  document.getElementById('auth-submit-btn').textContent = mode === 'login' ? 'Entrar' : 'Criar conta';
+  setAuthError('');
+}
+
+function setAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.classList.toggle('visible', !!msg);
+}
+
+function setAuthLoading(loading) {
+  const btn = document.getElementById('auth-submit-btn');
+  const msg = document.getElementById('auth-loading-msg');
+  btn.disabled = loading;
+  msg.textContent = loading ? (authMode === 'login' ? '⏳ Entrando...' : '⏳ Criando conta...') : '';
+}
+
+async function handleAuthSubmit() {
+  if (!supabase) { setAuthError('Sem conexão com o servidor.'); return; }
+
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+
+  setAuthError('');
+
+  if (!email || !password) {
+    setAuthError('Preencha e-mail e senha.');
+    return;
+  }
+  if (password.length < 6) {
+    setAuthError('A senha deve ter pelo menos 6 caracteres.');
+    return;
+  }
+
+  setAuthLoading(true);
+
+  try {
+    let result;
+    if (authMode === 'login') {
+      result = await supabase.auth.signInWithPassword({ email, password });
+    } else {
+      result = await supabase.auth.signUp({ email, password });
+    }
+
+    if (result.error) {
+      const msgs = {
+        'Invalid login credentials':   'E-mail ou senha incorretos.',
+        'Email already registered':    'E-mail já cadastrado. Tente entrar.',
+        'User already registered':     'E-mail já cadastrado. Tente entrar.',
+        'Password should be at least 6 characters': 'A senha deve ter pelo menos 6 caracteres.',
+      };
+      setAuthError(msgs[result.error.message] || result.error.message);
+      setAuthLoading(false);
+      return;
+    }
+
+    // Cadastro bem-sucedido sem confirmação de e-mail
+    if (authMode === 'signup' && result.data?.user && !result.data.session) {
+      setAuthError('');
+      document.getElementById('auth-loading-msg').textContent = '✅ Conta criada! Entrando...';
+      // Faz login automático após cadastro
+      const login = await supabase.auth.signInWithPassword({ email, password });
+      if (login.error) {
+        setAuthError('Conta criada! Faça login agora.');
+        setAuthLoading(false);
+        switchAuthTab('login');
+        return;
+      }
+    }
+    // onAuthStateChange cuida do resto
+  } catch (e) {
+    setAuthError('Erro de conexão. Verifique sua internet.');
+    setAuthLoading(false);
+  }
+}
+
+// Permite enviar com Enter nos campos
+document.addEventListener('DOMContentLoaded', () => {
+  ['auth-email','auth-password'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') handleAuthSubmit(); });
+  });
+});
+
+// ── PÓS-LOGIN ─────────────────────────────────
+async function onLoginSuccess(user) {
+  currentUser = user;
+  hideAuthScreen();
+  updateDrawerUser(user.email);
+
+  // Carregar dados do Supabase
+  await loadFromSupabase();
+
+  // Verificar se precisa mostrar banner de migração
+  checkMigrationBanner();
+
+  setSyncStatus('synced', '☁️ Sincronizado');
+}
+
+// ── LOGOUT ────────────────────────────────────
+async function handleLogout() {
+  if (!supabase) return;
+  const confirmar = await mostrarPopup({
+    emoji:  '👋',
+    titulo: 'Sair da conta?',
+    texto:  'Seus dados ficam salvos na nuvem. Pode entrar novamente a qualquer momento.',
+    botoes: [
+      { texto: 'Sair',      classe: 'confirm-btn-danger',    valor: true  },
+      { texto: 'Cancelar',  classe: 'confirm-btn-secondary', valor: false }
+    ]
+  });
+  if (!confirmar) return;
+  closeDrawer();
+  await supabase.auth.signOut();
+  expenses = [];
+  renderAll();
+}
+
+// ── DRAWER: INFO DO USUÁRIO ───────────────────
+function updateDrawerUser(email) {
+  const info  = document.getElementById('drawer-user-info');
+  const emailEl = document.getElementById('drawer-user-email');
+  if (info && emailEl) {
+    info.style.display = 'flex';
+    emailEl.textContent = email || '';
+  }
+}
+
+// ── INDICADOR DE SINCRONIZAÇÃO ────────────────
+function setSyncStatus(state, msg) {
+  const el = document.getElementById('sync-indicator');
+  if (!el) return;
+  el.className = 'sync-indicator ' + state;
+  el.textContent = msg;
+  if (state === 'synced') {
+    setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 3000);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SUPABASE — PERSISTÊNCIA
+// ═══════════════════════════════════════════════
+
+// Carrega o array de despesas do Supabase para a variável global expenses
+async function loadFromSupabase() {
+  if (!supabase || !currentUser) return;
+  try {
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('data')
+      .eq('user_id', currentUser.id)
+      .maybeSingle();
+
+    if (error) throw error;
+    expenses = Array.isArray(data?.data) ? data.data : [];
+  } catch (e) {
+    console.error('Erro ao carregar do Supabase:', e);
+    // Fallback: mantém o que está no localStorage
+    try {
+      const stored = localStorage.getItem('despesas_v2');
+      expenses = JSON.parse(stored || '[]');
+    } catch { expenses = []; }
+  }
+  renderAll();
+}
+
+// Salva o array expenses no Supabase via upsert (uma linha por usuário)
+async function saveToSupabase() {
+  if (!supabase || !currentUser) return;
+  setSyncStatus('syncing', '⏳ Salvando...');
+  try {
+    const { error } = await supabase
+      .from('expenses')
+      .upsert(
+        { user_id: currentUser.id, data: expenses, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      );
+    if (error) throw error;
+    setSyncStatus('synced', '☁️ Salvo na nuvem');
+  } catch (e) {
+    console.error('Erro ao salvar no Supabase:', e);
+    setSyncStatus('error', '⚠️ Erro ao salvar');
+    // Fallback: salva local
+    try { localStorage.setItem('despesas_v2', JSON.stringify(expenses)); } catch {}
+  }
+}
+
+// ═══════════════════════════════════════════════
+// FASE 3 — MIGRAÇÃO DE DADOS LOCAIS
+// ═══════════════════════════════════════════════
+
+// Verifica se há dados locais não migrados e mostra o banner
+function checkMigrationBanner() {
+  const jaFezMigracao = localStorage.getItem('supabase_migrated') === 'true';
+  if (jaFezMigracao) return;
+
+  let localExpenses = [];
+  try {
+    const stored = localStorage.getItem('despesas_v2');
+    localExpenses = JSON.parse(stored || '[]');
+  } catch { return; }
+
+  // Só mostra o banner se tiver dados locais E o Supabase estiver vazio
+  if (localExpenses.length > 0 && expenses.length === 0) {
+    document.getElementById('migration-banner').classList.add('visible');
+  }
+}
+
+// Executa a migração: lê localStorage, envia ao Supabase, grava flag
+async function runMigration() {
+  let localExpenses = [];
+  try {
+    const stored = localStorage.getItem('despesas_v2');
+    localExpenses = JSON.parse(stored || '[]');
+  } catch {
+    showToast('❌ Erro ao ler dados locais');
+    return;
+  }
+
+  if (!localExpenses.length) {
+    dismissMigration();
+    return;
+  }
+
+  dismissMigration();
+  setSyncStatus('syncing', '⏳ Migrando dados...');
+  showToast('⏳ Migrando ' + localExpenses.length + ' despesa(s)...');
+
+  try {
+    const { error } = await supabase
+      .from('expenses')
+      .upsert(
+        { user_id: currentUser.id, data: localExpenses, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      );
+    if (error) throw error;
+
+    expenses = localExpenses;
+    localStorage.setItem('supabase_migrated', 'true');
+    setSyncStatus('synced', '☁️ Migração concluída!');
+    showToast('✅ ' + localExpenses.length + ' despesa(s) migrada(s) com sucesso!');
+    renderAll();
+  } catch (e) {
+    console.error('Erro na migração:', e);
+    setSyncStatus('error', '⚠️ Falha na migração');
+    showToast('❌ Erro na migração. Tente novamente.');
+  }
+}
+
+function dismissMigration() {
+  document.getElementById('migration-banner').classList.remove('visible');
+}
+
+// ═══════════════════════════════════════════════
 // CONSTANTES
 // ═══════════════════════════════════════════════
 const CATEGORIES = [
@@ -1269,15 +1851,8 @@ const CAT_COLORS = {
 // ═══════════════════════════════════════════════
 // ESTADO
 // ═══════════════════════════════════════════════
-// FIX: localStorage com try/catch para evitar crash em modo privado
+// expenses é carregado do Supabase após login (veja loadFromSupabase)
 let expenses = [];
-try {
-  const stored = localStorage.getItem('despesas_v2');
-  const parsed = JSON.parse(stored || '[]');
-  expenses = Array.isArray(parsed) ? parsed : [];
-} catch (e) {
-  expenses = [];
-}
 
 let currentMonth  = new Date().getMonth();
 let currentYear   = new Date().getFullYear();
@@ -1407,10 +1982,16 @@ let _saveTimer;
 function save() {
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(() => {
-    try {
-      localStorage.setItem('despesas_v2', JSON.stringify(expenses));
-    } catch (e) {
-      showToast('⚠️ Erro ao salvar! Armazenamento cheio?');
+    if (!IS_LOCAL && supabase && currentUser) {
+      // Online e logado: salva no Supabase
+      saveToSupabase();
+    } else {
+      // Modo local (file://) ou sem login: salva no localStorage
+      try {
+        localStorage.setItem('despesas_v2', JSON.stringify(expenses));
+      } catch (e) {
+        showToast('⚠️ Erro ao salvar! Armazenamento cheio?');
+      }
     }
   }, 60);
 }
@@ -2478,7 +3059,10 @@ if (compactBtn && compactMode) {
 // Máscara inline edit
 aplicarMascaraDinheiro(document.getElementById('inlineEditInput'));
 
-renderAll();
+// ═ SUPABASE: verificar sessão e carregar dados (substitui renderAll() direto)
+// Se já logado, initAuth chama renderAll internamente via loadFromSupabase.
+// Se não logado, mostra a tela de login antes de qualquer render.
+initAuth();
 </script>
 </body>
 </html>
