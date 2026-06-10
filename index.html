@@ -700,6 +700,234 @@
   .install-banner.visible { display: flex; }
   .btn-install { background: #fff; color: var(--green-dark); border: none; border-radius: 10px; padding: 8px 16px; font-size: 12px; font-weight: 900; font-family: 'Nunito', sans-serif; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
   .btn-install-close { background: none; border: none; color: rgba(255,255,255,0.8); font-size: 18px; cursor: pointer; flex-shrink: 0; }
+  /* ── HISTÓRICO EXPANDÍVEL ── */
+  .hist-month-row {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding: 14px 18px;
+    border-radius: var(--radius); background: var(--card);
+    box-shadow: var(--shadow); margin-bottom: 4px;
+    transition: background 0.2s; user-select: none;
+  }
+  .hist-month-row:hover { background: var(--drawer-hover); }
+  .hist-month-row.current { border: 2px solid var(--green); }
+  .hist-month-left { display: flex; flex-direction: column; gap: 3px; }
+  .hist-month-label { font-size: 15px; font-weight: 900; color: var(--text); text-transform: capitalize; }
+  .hist-month-sub { font-size: 11px; font-weight: 700; color: var(--text-muted); }
+  .hist-month-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .hist-month-total { font-size: 15px; font-weight: 900; color: var(--text); }
+  .hist-chevron { font-size: 16px; color: var(--text-muted); transition: transform 0.25s; line-height: 1; }
+  .hist-chevron.open { transform: rotate(90deg); }
+  .hist-badge {
+    font-size: 10px; font-weight: 900; padding: 2px 8px;
+    border-radius: 20px; background: var(--green-light); color: var(--green-dark);
+  }
+  .hist-badge.future { background: #fef5e7; color: var(--orange-dark); }
+  .hist-detail-panel {
+    display: none; background: var(--input-bg);
+    border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .hist-detail-panel.open { display: block; }
+  .hist-detail-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px; border-bottom: 1px solid var(--border); gap: 10px;
+  }
+  .hist-detail-item:last-child { border-bottom: none; }
+  .hist-detail-left { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .hist-detail-name { font-size: 13px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hist-detail-meta { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 2px; }
+  .hist-detail-amount { font-size: 13px; font-weight: 900; color: var(--text); flex-shrink: 0; }
+  .hist-status-paid { font-size: 10px; font-weight: 900; color: var(--green-dark); background: var(--green-light); padding: 2px 7px; border-radius: 10px; flex-shrink: 0; }
+  .hist-status-pend { font-size: 10px; font-weight: 900; color: var(--red); background: var(--red-light); padding: 2px 7px; border-radius: 10px; flex-shrink: 0; }
+  .hist-detail-footer {
+    padding: 10px 18px; background: var(--actions-bg);
+    display: flex; justify-content: space-between;
+    font-size: 12px; font-weight: 900; color: var(--text-muted);
+  }
+  .hist-empty { padding: 20px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-muted); }
+
+  /* ── BADGE ALERTA NA ABA DESPESAS (#9) ── */
+  .tab-wrapper { position: relative; flex: 1; }
+  .tab-alert-dot {
+    position: absolute; top: 4px; right: 8px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--red); border: 2px solid var(--card);
+    animation: pulseDot 1.4s ease-in-out infinite;
+    display: none;
+  }
+  .tab-alert-dot.visible { display: block; }
+  @keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.4); opacity: 0.7; }
+  }
+
+  /* ── ANIMAÇÃO CHECK AO PAGAR (#11) ── */
+  @keyframes checkPop {
+    0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+    60%  { transform: scale(1.25) rotate(5deg);  opacity: 1; }
+    100% { transform: scale(1)   rotate(0);     opacity: 1; }
+  }
+  .paid-tag { animation: checkPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important; }
+
+  /* ── BADGE VENCIMENTO PRÓXIMO / VENCIDO (#3) ── */
+  .due-badge {
+    font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 8px;
+    margin-left: 6px; vertical-align: middle; flex-shrink: 0;
+  }
+  .due-badge.today   { background: #fff3cd; color: #856404; }
+  .due-badge.soon    { background: #fde8e8; color: var(--red); }
+  .due-badge.overdue { background: var(--red); color: #fff; }
+
+  /* ── NOTAS POR DESPESA (#7) ── */
+  .expense-note {
+    font-size: 11px; color: var(--text-muted); font-weight: 600;
+    margin-top: 3px; font-style: italic;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ── BOTÃO DUPLICAR NA ACTION BAR (#6) ── */
+  .action-bar-btn.dup-btn { color: #8e44ad; }
+
+  /* ── MODO COMPACTO (#12) ── */
+  body.compact .expense-item { padding: 9px 14px; }
+  body.compact .expense-icon { width: 36px; height: 36px; font-size: 16px; border-radius: 10px; }
+  body.compact .expense-name { font-size: 14px; }
+  body.compact .expense-amount { font-size: 14px; }
+  body.compact .swipe-wrapper { margin-bottom: 7px; }
+  body.compact .action-bar-btn { padding: 7px; font-size: 11px; }
+  .compact-toggle-btn {
+    background: none; border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 5px 10px; font-size: 11px; font-weight: 800; color: var(--text-muted);
+    cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.2s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .compact-toggle-btn.on { border-color: var(--green-dark); color: var(--green-dark); background: var(--green-light); }
+
+  /* ── CARD RESUMO COMPACTO (#10) ── */
+  .rich-summary-card {
+    margin: 8px 14px 2px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .rsc-row1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .rsc-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .rsc-bar-bg {
+    flex: 1;
+    height: 7px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .rsc-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--green), var(--green-mid));
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1), background 0.4s;
+  }
+  .rsc-bar-fill.warn { background: linear-gradient(90deg, var(--orange), var(--orange-dark)); }
+  .rsc-bar-fill.danger { background: linear-gradient(90deg, var(--orange-dark), var(--red)); }
+  .rsc-pct {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--green-dark);
+    min-width: 36px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .rsc-row2 {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .rsc-stat {
+    flex: 1;
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 7px 8px;
+    text-align: center;
+  }
+  .rsc-stat-val { font-size: 12px; font-weight: 900; color: var(--text); }
+  .rsc-stat-lbl { font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 1px; }
+  .rsc-stat.highlight { background: var(--green-light); }
+  .rsc-stat.highlight .rsc-stat-val { color: var(--green-dark); }
+  .rsc-motivation {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-muted);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .rsc-pending-chip {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--red);
+    background: var(--red-light);
+    padding: 3px 10px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .rsc-pending-chip.clear {
+    color: var(--green-dark);
+    background: var(--green-light);
+  }
+
+  /* ── BARRA META ECONOMIA NO RELATÓRIO (#8) ── */
+  .budget-overview-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 18px 20px; margin-bottom: 14px; box-shadow: var(--shadow);
+  }
+  .budget-overview-card h3 { font-size: 14px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+  .budget-bar-row { margin-bottom: 10px; }
+  .budget-bar-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px; }
+  .budget-bar-bg { height: 12px; background: var(--border); border-radius: 6px; overflow: hidden; }
+  .budget-bar-fill { height: 100%; border-radius: 6px; transition: width 0.5s; }
+
+  /* ── INLINE EDIT VALOR (#4) ── */
+  .inline-edit-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(44,62,80,0.5); backdrop-filter: blur(3px);
+    display: none; align-items: center; justify-content: center;
+  }
+  .inline-edit-overlay.open { display: flex; animation: fadeIn 0.2s; }
+  .inline-edit-box {
+    background: var(--card); border-radius: 20px;
+    padding: 24px; width: 88%; max-width: 360px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: scaleUpPopup 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  .inline-edit-box h4 { font-size: 16px; font-weight: 900; color: var(--text); margin-bottom: 14px; }
+  .inline-edit-box input {
+    width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 12px;
+    font-size: 22px; font-weight: 900; text-align: center;
+    font-family: 'Nunito', sans-serif; color: var(--text); background: var(--input-bg);
+    outline: none; margin-bottom: 14px;
+  }
+  .inline-edit-box input:focus { border-color: var(--green); }
+  .inline-edit-actions { display: flex; gap: 10px; }
+  .inline-edit-actions button {
+    flex: 1; padding: 12px; border-radius: 12px; border: none;
+    font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -729,7 +957,10 @@
 
 <!-- ABAS -->
 <div class="tabs" role="tablist" aria-label="Seções do app">
-  <button class="tab active" onclick="switchTab('despesas', this)" role="tab" aria-selected="true" aria-controls="tabDespesas"><span>📋</span>Despesas</button>
+  <div class="tab-wrapper">
+    <button class="tab active" onclick="switchTab('despesas', this)" role="tab" aria-selected="true" aria-controls="tabDespesas"><span>📋</span>Despesas</button>
+    <span class="tab-alert-dot" id="tabAlertDot"></span>
+  </div>
   <button class="tab" onclick="switchTab('stats', this)" role="tab" aria-selected="false" aria-controls="tabStats"><span>📊</span>Relatório</button>
   <button class="tab" onclick="switchTab('simulacao', this)" role="tab" aria-selected="false" aria-controls="tabSimulacao"><span>🧮</span>Calculadora</button>
   <button class="tab" onclick="switchTab('historico', this)" role="tab" aria-selected="false" aria-controls="tabHistorico"><span>🗓</span>Histórico</button>
@@ -737,43 +968,55 @@
 
 <!-- ABA: DESPESAS -->
 <div id="tabDespesas" role="tabpanel">
-  <div class="summary" aria-label="Resumo financeiro do mês">
-    <div class="summary-card total">
-      <div class="label">Total</div>
-      <div class="value" id="sumTotal" aria-live="polite">R$ 0,00</div>
+
+  <!-- CARD RESUMO COMPACTO (#10) -->
+  <div class="rich-summary-card" id="richSummaryCard">
+    <div class="rsc-row1">
+      <span class="rsc-motivation" id="rscMotivation">Carregando...</span>
+      <span class="rsc-pending-chip" id="rscPendingChip">R$ 0,00</span>
     </div>
-    <div class="summary-card paid">
-      <div class="label">Pago</div>
-      <div class="value" id="sumPaid" aria-live="polite">R$ 0,00</div>
+    <div class="rsc-bar-wrap">
+      <div class="rsc-bar-bg"><div class="rsc-bar-fill" id="rscFill" style="width:0%"></div></div>
+      <span class="rsc-pct" id="rscPct">0%</span>
     </div>
-    <div class="summary-card pending">
-      <div class="label">A Pagar</div>
-      <div class="value" id="sumPending" aria-live="polite">R$ 0,00</div>
+    <div class="rsc-row2">
+      <div class="rsc-stat">
+        <div class="rsc-stat-val" id="rscTotal">R$ 0,00</div>
+        <div class="rsc-stat-lbl">Total</div>
+      </div>
+      <div class="rsc-stat highlight">
+        <div class="rsc-stat-val" id="rscPaid">R$ 0,00</div>
+        <div class="rsc-stat-lbl">Pago</div>
+      </div>
+      <div class="rsc-stat">
+        <div class="rsc-stat-val" id="rscCount">0 pend.</div>
+        <div class="rsc-stat-lbl">Pendentes</div>
+      </div>
     </div>
   </div>
 
-  <div class="progress-section">
-    <div class="progress-label">
-      <span>Progresso de pagamentos</span>
-      <span id="progressPct" aria-live="polite">0%</span>
-    </div>
-    <div class="progress-bar" role="progressbar" id="progressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-labelledby="progressPct">
-      <div class="progress-fill" id="progressFill" style="width:0%"></div>
-    </div>
+  <!-- Cards ocultos mantidos para compatibilidade com renderList -->
+  <div style="display:none">
+    <span id="sumTotal"></span><span id="sumPaid"></span><span id="sumPending"></span>
+    <div id="progressBar"><div id="progressFill"></div></div>
+    <span id="progressPct"></span>
   </div>
 
-  <div class="search-bar">
+  <div class="search-bar" style="padding-top:12px;">
     <span class="search-icon" aria-hidden="true">🔍</span>
     <input type="text" id="searchInput" placeholder="Buscar despesa..."
            oninput="renderList()" aria-label="Buscar despesa por nome">
   </div>
 
-  <div class="filter-row" id="filterRow" role="group" aria-label="Filtros de despesas">
-    <span class="filter-chip active" data-filter="all"       onclick="setFilter('all', this)"       role="button" tabindex="0">Todas</span>
-    <span class="filter-chip"        data-filter="pendente"  onclick="setFilter('pendente', this)"  role="button" tabindex="0">A Pagar</span>
-    <span class="filter-chip"        data-filter="pago"      onclick="setFilter('pago', this)"      role="button" tabindex="0">Pagas</span>
-    <span class="filter-chip"        data-filter="fixo"      onclick="setFilter('fixo', this)"      role="button" tabindex="0">Fixas</span>
-    <span class="filter-chip"        data-filter="parcelado" onclick="setFilter('parcelado', this)" role="button" tabindex="0">Parceladas</span>
+  <div style="display:flex; align-items:center; justify-content:space-between; padding: 4px 14px 0;">
+    <div class="filter-row" id="filterRow" role="group" aria-label="Filtros de despesas" style="padding:8px 0 6px; flex:1; overflow-x:auto;">
+      <span class="filter-chip active" data-filter="all"       onclick="setFilter('all', this)"       role="button" tabindex="0">Todas</span>
+      <span class="filter-chip"        data-filter="pendente"  onclick="setFilter('pendente', this)"  role="button" tabindex="0">A Pagar</span>
+      <span class="filter-chip"        data-filter="pago"      onclick="setFilter('pago', this)"      role="button" tabindex="0">Pagas</span>
+      <span class="filter-chip"        data-filter="fixo"      onclick="setFilter('fixo', this)"      role="button" tabindex="0">Fixas</span>
+      <span class="filter-chip"        data-filter="parcelado" onclick="setFilter('parcelado', this)" role="button" tabindex="0">Parceladas</span>
+    </div>
+    <button class="compact-toggle-btn" id="compactBtn" onclick="toggleCompact()" title="Modo compacto">⊟ Compacto</button>
   </div>
 
   <div class="subtotal-row" id="subtotalContainer" style="display:none;">
@@ -796,7 +1039,7 @@
       <h3>Calculadora de Salário</h3>
 
       <div class="form-group" style="margin-top:10px;">
-        <label class="form-label" for="simDespesas">Suas Despesas Atuais (Mês)</label>
+        <label class="form-label" for="simDespesas">Total de Despesas do Mês</label>
         <input type="text" class="form-input" id="simDespesas" disabled
                style="background:var(--border);font-weight:800;" aria-readonly="true">
       </div>
@@ -833,6 +1076,14 @@
       <div style="display:flex;justify-content:space-between;margin-bottom:10px;padding-top:10px;border-top:1px dashed var(--border);">
         <span style="font-size:15px;font-weight:800;color:var(--text);">Sobra Líquida Final:</span>
         <span style="font-size:16px;font-weight:900;" id="simSobra" aria-live="polite">R$ 0,00</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;background:rgba(155,89,182,0.10);margin-bottom:4px;">
+        <div>
+          <div style="font-size:13px;font-weight:900;color:#6c3483;">💳 Saldo Disponível Agora</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-top:2px;">Salário − o que já foi pago</div>
+        </div>
+        <span style="font-size:17px;font-weight:900;" id="simSaldoDisp" aria-live="polite">—</span>
       </div>
 
       <div id="simAlertContainer" aria-live="polite"></div>
@@ -891,6 +1142,12 @@
       <div class="category-row" id="catRow" role="group" aria-label="Escolha a categoria"></div>
     </div>
 
+    <div class="form-group">
+      <label class="form-label" for="fNota">Observação (opcional)</label>
+      <input type="text" class="form-input" id="fNota"
+             placeholder="Ex: pagar no app do banco, boleto dia 10..." autocomplete="off">
+    </div>
+
     <div class="toggle-row">
       <span class="toggle-label" id="labelRepetir">Repetir</span>
       <button class="toggle" id="toggleRepetir" onclick="toggleRepetir()"
@@ -917,6 +1174,18 @@
 
     <button class="btn-save" onclick="saveExpense()" id="btnSave">Salvar</button>
     <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- INLINE EDIT VALOR (#4) -->
+<div class="inline-edit-overlay" id="inlineEditOverlay" onclick="closeInlineEdit(event)">
+  <div class="inline-edit-box">
+    <h4>✏️ Editar valor rapidamente</h4>
+    <input type="text" id="inlineEditInput" inputmode="decimal" placeholder="0,00">
+    <div class="inline-edit-actions">
+      <button onclick="cancelInlineEdit()" style="background:var(--confirm-secondary-bg);color:var(--text);">Cancelar</button>
+      <button onclick="confirmInlineEdit()" style="background:var(--green-dark);color:#fff;">Salvar</button>
+    </div>
   </div>
 </div>
 
@@ -1017,6 +1286,11 @@ let editingId     = null;
 let repeatType    = 'fixo';
 let repeatOn      = false;
 let selectedCat   = 'outros';
+let compactMode   = localStorage.getItem('compactMode') === 'true';
+let inlineEditId  = null;
+
+// Aplicar modo compacto salvo
+if (compactMode) document.body.classList.add('compact');
 
 // ═══════════════════════════════════════════════
 // SEGURANÇA: sanitize para prevenir XSS
@@ -1143,8 +1417,16 @@ function save() {
 
 function loadSimInputs() {
   try {
-    document.getElementById('simSalario').value  = localStorage.getItem('sim_salario') || '';
-    document.getElementById('simMetaPct').value  = localStorage.getItem('sim_meta_pct') || '';
+    const salRaw = localStorage.getItem('sim_salario') || '';
+    const metaRaw = localStorage.getItem('sim_meta_pct') || '';
+    // Restaura salário já no formato de máscara (ex: "3.500,00")
+    if (salRaw) {
+      const num = parseBRL(salRaw);
+      document.getElementById('simSalario').value = num > 0
+        ? num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+        : '';
+    }
+    document.getElementById('simMetaPct').value = metaRaw;
   } catch (e) {}
 }
 
@@ -1218,7 +1500,38 @@ function formatBRL(v) {
   return 'R$ ' + v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 function parseBRL(valStr) {
-  return parseFloat(valStr.replace(',', '.').replace(/[^0-9.]/g, '')) || 0;
+  if (!valStr) return 0;
+  // Remove "R$", espaços, pontos de milhar → troca vírgula decimal por ponto
+  const clean = String(valStr).replace(/R\$\s*/g, '').replace(/\./g, '').replace(',', '.');
+  return parseFloat(clean) || 0;
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS: VENCIMENTO (#3)
+// ═══════════════════════════════════════════════
+function getDueBadge(dateStr, paid) {
+  if (paid) return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const parts = dateStr.split('/'); // dd/mm/yyyy
+  if (parts.length < 3) return '';
+  const due = new Date(parts[2], parts[1]-1, parts[0]);
+  const diff = Math.floor((due - today) / 86400000);
+  if (diff < 0)  return `<span class="due-badge overdue">Vencida ${Math.abs(diff)}d</span>`;
+  if (diff === 0) return `<span class="due-badge today">Vence hoje!</span>`;
+  if (diff <= 3)  return `<span class="due-badge soon">Vence em ${diff}d</span>`;
+  return '';
+}
+
+// ═══════════════════════════════════════════════
+// FRASES MOTIVACIONAIS (#10)
+// ═══════════════════════════════════════════════
+function getMotivation(pct, pending, count) {
+  if (count === 0) return '✨ Nenhuma despesa este mês. Aproveite!';
+  if (pct === 100) return '🏆 Todas as contas pagas! Mês quitado!';
+  if (pct >= 80)   return `💪 Quase lá! Faltam só ${count - Math.round(count * pct/100)} conta(s)!`;
+  if (pct >= 50)   return '👍 Mais da metade paga. Continue assim!';
+  if (pct >= 20)   return '🚀 Bom começo! Mantenha o ritmo.';
+  return '📋 Organize seus pagamentos do mês!';
 }
 
 // ═══════════════════════════════════════════════
@@ -1256,25 +1569,46 @@ function renderList() {
   const paid    = disp.filter(e => e.paid).reduce((s, e) => s + e.valor, 0);
   const pending = total - paid;
   const pct     = total > 0 ? Math.round((paid / total) * 100) : 0;
+  const countPending = disp.filter(e => !e.paid).length;
 
-  document.getElementById('sumTotal').textContent   = formatBRL(total);
-  document.getElementById('sumPaid').textContent    = formatBRL(paid);
-  document.getElementById('sumPending').textContent = formatBRL(pending);
-  document.getElementById('footTotal').textContent  = formatBRL(total);
+  // Atualiza hidden elements (compatibilidade)
+  const sumTotal = document.getElementById('sumTotal');
+  const sumPaid  = document.getElementById('sumPaid');
+  const sumPend  = document.getElementById('sumPending');
+  if (sumTotal) sumTotal.textContent = formatBRL(total);
+  if (sumPaid)  sumPaid.textContent  = formatBRL(paid);
+  if (sumPend)  sumPend.textContent  = formatBRL(pending);
+
+  // Atualiza CARD COMPACTO (#10)
+  document.getElementById('rscPct').textContent      = pct + '%';
+  document.getElementById('rscFill').style.width     = pct + '%';
+  document.getElementById('rscFill').className       = 'rsc-bar-fill' + (pct >= 80 ? ' danger' : pct >= 50 ? ' warn' : '');
+  document.getElementById('rscTotal').textContent    = formatBRL(total);
+  document.getElementById('rscPaid').textContent     = formatBRL(paid);
+  document.getElementById('rscCount').textContent    = countPending + (countPending === 1 ? ' pend.' : ' pend.');
+  document.getElementById('rscMotivation').textContent = getMotivation(pct, pending, disp.length);
+  const chip = document.getElementById('rscPendingChip');
+  chip.textContent = pending > 0 ? formatBRL(pending) + ' a pagar' : '✓ Tudo pago';
+  chip.className   = 'rsc-pending-chip' + (pending === 0 ? ' clear' : '');
+
+  document.getElementById('footTotal').textContent   = formatBRL(total);
   document.getElementById('footPending').textContent = formatBRL(pending);
-  document.getElementById('progressPct').textContent = pct + '%';
 
-  const progressBar = document.getElementById('progressBar');
-  if (progressBar) progressBar.setAttribute('aria-valuenow', pct);
+  // Atualiza campo "Despesas do Mês" na calculadora com o TOTAL (não só pendente)
+  const simDespEl = document.getElementById('simDespesas');
+  if (simDespEl) simDespEl.value = formatBRL(total);
 
-  const fill = document.getElementById('progressFill');
-  fill.style.width = pct + '%';
-  // FIX: 3 estados distintos (verde / laranja / vermelho)
-  if      (pct < 50) fill.className = 'progress-fill';
-  else if (pct < 80) fill.className = 'progress-fill warning';
-  else               fill.className = 'progress-fill danger';
-
-  document.getElementById('simDespesas').value = formatBRL(pending);
+  // BADGE ALERTA (#9): verifica contas vencidas ou vencendo hoje
+  const today = new Date(); today.setHours(0,0,0,0);
+  const hasUrgent = disp.some(e => {
+    if (e.paid) return false;
+    const parts = e.dateStr.split('/');
+    if (parts.length < 3) return false;
+    const due = new Date(parts[2], parts[1]-1, parts[0]);
+    return due <= today;
+  });
+  const dot = document.getElementById('tabAlertDot');
+  if (dot) dot.classList.toggle('visible', hasUrgent);
 
   const subtotalContainer = document.getElementById('subtotalContainer');
   if (activeFilter !== 'all') {
@@ -1315,8 +1649,8 @@ function renderList() {
 
 // FIX: dados do usuário sanitizados antes de inserir no innerHTML
 function renderItem(e) {
-  const cat      = CATEGORIES.find(c => c.id === (e.categoria || 'outros')) || CATEGORIES[9];
-  const color    = CAT_COLORS[cat.id] || '#888';
+  const cat       = CATEGORIES.find(c => c.id === (e.categoria || 'outros')) || CATEGORIES[9];
+  const color     = CAT_COLORS[cat.id] || '#888';
   const paidClass = e.paid ? ' paid' : '';
   const safeName   = sanitize(e.label);
   const safeDate   = sanitize(e.dateStr);
@@ -1324,11 +1658,14 @@ function renderItem(e) {
   const safeAmount = sanitize(formatBRL(e.valor));
   const safeId     = sanitize(e.id);
   const safeKey    = sanitize(e.monthKey);
+  const dueBadge   = getDueBadge(e.dateStr, e.paid);
+  const noteHtml   = e.nota ? `<div class="expense-note">💬 ${sanitize(e.nota)}</div>` : '';
 
   return `
     <div class="swipe-wrapper">
       <div class="expense-item${paidClass}"
            onclick="togglePay('${safeId}','${safeKey}')"
+           oncontextmenu="openInlineEdit(event,'${safeId}')"
            role="button" tabindex="0"
            aria-label="${safeName} — ${safeAmount}${e.paid ? ' (pago)' : ' (pendente)'}">
         <div class="left">
@@ -1336,12 +1673,13 @@ function renderItem(e) {
             <span>${cat.emoji}</span>
           </div>
           <div class="expense-info">
-            <div class="expense-name">${safeName}</div>
+            <div class="expense-name">${safeName}${dueBadge}</div>
             <div class="expense-meta">${safeDate}${safeExtra}</div>
+            ${noteHtml}
           </div>
         </div>
         <div class="expense-right">
-          <div class="expense-amount">${safeAmount}</div>
+          <div class="expense-amount" ondblclick="openInlineEdit(event,'${safeId}')" style="cursor:pointer" title="Duplo toque para editar valor">${safeAmount}</div>
           ${e.paid ? '<div class="paid-tag" aria-label="Pago">✓ PAGO</div>' : ''}
         </div>
       </div>
@@ -1356,6 +1694,11 @@ function renderItem(e) {
                 aria-label="Editar despesa ${safeName}">
           <span aria-hidden="true">✏️</span>Editar
         </button>
+        <button class="action-bar-btn dup-btn"
+                onclick="event.stopPropagation();duplicateExpense('${safeId}')"
+                aria-label="Duplicar despesa ${safeName}">
+          <span aria-hidden="true">📋</span>Duplicar
+        </button>
         <button class="action-bar-btn del-btn"
                 onclick="event.stopPropagation();deleteExpense('${safeId}')"
                 aria-label="Excluir despesa ${safeName}">
@@ -1367,12 +1710,13 @@ function renderItem(e) {
 }
 
 // ═══════════════════════════════════════════════
-// RENDER — RELATÓRIO (STATS)
+// RENDER — RELATÓRIO (STATS) + META ECONOMIA (#8)
 // ═══════════════════════════════════════════════
 function renderStats() {
-  const raw  = getMonthExpenses(currentYear, currentMonth);
-  const disp = raw.map(e => getDisplayExpense(e, currentYear, currentMonth));
+  const raw   = getMonthExpenses(currentYear, currentMonth);
+  const disp  = raw.map(e => getDisplayExpense(e, currentYear, currentMonth));
   const total = disp.reduce((s, e) => s + e.valor, 0);
+  const paid  = disp.filter(e => e.paid).reduce((s, e) => s + e.valor, 0);
 
   const byCat = {};
   disp.forEach(e => {
@@ -1382,7 +1726,43 @@ function renderStats() {
   const sortedCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
   const maxVal = sortedCats[0]?.[1] || 1;
 
-  document.getElementById('statsContainer').innerHTML = `
+  // Meta de economia do localStorage
+  let salario = 0, metaPct = 0;
+  try {
+    salario = parseBRL(localStorage.getItem('sim_salario') || '');
+    metaPct = parseFloat(localStorage.getItem('sim_meta_pct')) || 0;
+  } catch(e) {}
+
+  const budgetHtml = salario > 0 ? (() => {
+    const gastoPct   = Math.min(Math.round((total / salario) * 100), 100);
+    const pagoPct    = Math.min(Math.round((paid  / salario) * 100), 100);
+    const metaVal    = (salario * metaPct) / 100;
+    const sobra      = salario - total - metaVal;
+    const gastoCor   = gastoPct > 80 ? 'var(--red)' : gastoPct > 60 ? 'var(--orange)' : 'var(--green)';
+    return `
+      <div class="budget-overview-card">
+        <h3>💵 Visão do Orçamento</h3>
+        <div class="budget-bar-row">
+          <div class="budget-bar-label"><span>Despesas vs Salário</span><span>${gastoPct}% (${formatBRL(total)})</span></div>
+          <div class="budget-bar-bg"><div class="budget-bar-fill" style="width:${gastoPct}%;background:${gastoCor}"></div></div>
+        </div>
+        <div class="budget-bar-row">
+          <div class="budget-bar-label"><span>Já pago do Salário</span><span>${pagoPct}% (${formatBRL(paid)})</span></div>
+          <div class="budget-bar-bg"><div class="budget-bar-fill" style="width:${pagoPct}%;background:var(--green)"></div></div>
+        </div>
+        ${metaPct > 0 ? `
+        <div class="budget-bar-row">
+          <div class="budget-bar-label"><span>Meta poupança (${metaPct}%)</span><span>${formatBRL(metaVal)}</span></div>
+          <div class="budget-bar-bg"><div class="budget-bar-fill" style="width:${metaPct}%;background:#9b59b6"></div></div>
+        </div>` : ''}
+        <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:1px dashed var(--border);margin-top:4px;">
+          <span style="font-size:13px;font-weight:800;color:var(--text-muted);">Saldo restante estimado:</span>
+          <span style="font-size:14px;font-weight:900;color:${sobra>=0?'var(--green-dark)':'var(--red)'};">${formatBRL(sobra)}</span>
+        </div>
+      </div>`;
+  })() : '';
+
+  document.getElementById('statsContainer').innerHTML = budgetHtml + `
     <div class="stats-card">
       <h3>Por Categoria</h3>
       ${sortedCats.length === 0
@@ -1414,41 +1794,94 @@ function renderStats() {
 // MELHORIA: exibe também o valor pago e nº de despesas
 // ═══════════════════════════════════════════════
 function renderHistorico() {
+  const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                       'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const todayKey = getMonthKey(new Date().getFullYear(), new Date().getMonth());
   const hist = [];
-  for (let i = 5; i >= 0; i--) {
-    let m = currentMonth - i;
+
+  // 3 meses passados + mês atual + 3 meses futuros
+  for (let i = -3; i <= 3; i++) {
+    let m = currentMonth + i;
     let y = currentYear;
-    while (m < 0) { m += 12; y--; }
-    const raw  = getMonthExpenses(y, m);
-    const disp = raw.map(e => getDisplayExpense(e, y, m));
-    const total = disp.reduce((s, e) => s + e.valor, 0);
-    const paid  = disp.filter(e => e.paid).reduce((s, e) => s + e.valor, 0);
-    const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-    hist.push({ label: months[m] + '/' + y, total, paid, count: disp.length });
+    while (m > 11) { m -= 12; y++; }
+    while (m < 0)  { m += 12; y--; }
+    const key      = getMonthKey(y, m);
+    const raw      = getMonthExpenses(y, m);
+    const items    = raw.map(e => getDisplayExpense(e, y, m));
+    const total    = items.reduce((s, e) => s + e.valor, 0);
+    const paid     = items.filter(e => e.paid).reduce((s, e) => s + e.valor, 0);
+    const isFuture = key > todayKey;
+    const isCurrent= key === todayKey;
+    hist.push({ label: MONTH_NAMES[m] + ' / ' + y, key, total, paid, items, isFuture, isCurrent });
   }
+
   const maxT = Math.max(...hist.map(h => h.total), 1);
 
   document.getElementById('historicoContainer').innerHTML = `
-    <div class="stats-card">
-      <h3>Últimos 6 Meses</h3>
-      ${hist.map(h => `
-        <div style="margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:13px;font-weight:800;color:var(--text)">${sanitize(h.label)}</span>
-            <span style="font-size:13px;font-weight:800;color:var(--text)">${formatBRL(h.total)}</span>
+    <div class="stats-card" style="padding-bottom:10px;">
+      <h3>📅 7 Meses — Passado e Futuro</h3>
+      ${hist.map(h => {
+        const badgeText  = h.isFuture ? `${h.items.length} previstas` : h.isCurrent ? 'Mês atual' : `${h.items.length} despesas`;
+        const badgeClass = h.isFuture ? 'hist-badge future' : 'hist-badge';
+        const icon       = h.isFuture ? '🔮' : h.isCurrent ? '📍' : '✅';
+        const subText    = h.total > 0
+          ? `${icon} ${formatBRL(h.paid)} de ${formatBRL(h.total)} ${h.isFuture ? 'previsto' : 'pagos'}`
+          : `${icon} Sem despesas`;
+
+        return `
+          <div style="margin-bottom:2px;">
+            <div class="hist-month-row${h.isCurrent ? ' current' : ''}" onclick="toggleHistPanel('${h.key}')">
+              <div class="hist-month-left">
+                <span class="hist-month-label">${sanitize(h.label)}</span>
+                <span class="hist-month-sub">${sanitize(subText)}</span>
+              </div>
+              <div class="hist-month-right">
+                <span class="${badgeClass}">${sanitize(badgeText)}</span>
+                <span class="hist-month-total">${h.total > 0 ? formatBRL(h.total) : '—'}</span>
+                <span class="hist-chevron" id="hchev-${h.key}">›</span>
+              </div>
+            </div>
+            <div class="hist-detail-panel" id="hpanel-${h.key}">
+              ${h.items.length === 0
+                ? `<div class="hist-empty">Nenhuma despesa neste mês</div>`
+                : h.items.map(e => `
+                    <div class="hist-detail-item">
+                      <div class="hist-detail-left">
+                        <span class="hist-detail-name">${sanitize(e.label)}</span>
+                        <span class="hist-detail-meta">${sanitize(e.dateStr)}${e.extra ? ' · ' + sanitize(e.extra) : ''}</span>
+                      </div>
+                      <span class="hist-detail-amount">${formatBRL(e.valor)}</span>
+                      ${h.isFuture ? '' : (e.paid
+                        ? '<span class="hist-status-paid">✓ Pago</span>'
+                        : '<span class="hist-status-pend">Pendente</span>')}
+                    </div>
+                  `).join('')
+              }
+              ${h.items.length > 0 ? `
+                <div class="hist-detail-footer">
+                  <span>TOTAL</span>
+                  <span style="color:var(--text)">${formatBRL(h.total)}</span>
+                </div>` : ''}
+            </div>
           </div>
-          <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden"
-               role="progressbar" aria-valuenow="${Math.round(h.total/maxT*100)}"
-               aria-valuemin="0" aria-valuemax="100">
-            <div style="width:${(h.total/maxT*100).toFixed(0)}%;height:100%;background:var(--green);border-radius:4px;transition:width 0.4s"></div>
-          </div>
-          ${h.count > 0 ? `<div style="font-size:11px;color:var(--text-muted);font-weight:700;margin-top:4px">
-            ${h.count} despesa(s) · Pago: ${formatBRL(h.paid)}
-          </div>` : '<div style="font-size:11px;color:var(--text-muted);font-weight:700;margin-top:4px">Sem despesas</div>'}
-        </div>
-      `).join('')}
+        `;
+      }).join('')}
     </div>
   `;
+}
+
+function toggleHistPanel(key) {
+  const panel = document.getElementById('hpanel-' + key);
+  const chev  = document.getElementById('hchev-'  + key);
+  const isOpen = panel.classList.contains('open');
+  // fecha todos
+  document.querySelectorAll('.hist-detail-panel').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.hist-chevron').forEach(c => c.classList.remove('open'));
+  // abre o clicado se estava fechado
+  if (!isOpen) {
+    panel.classList.add('open');
+    chev.classList.add('open');
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -1465,25 +1898,35 @@ function calcularSimulacao() {
   const salario  = parseBRL(document.getElementById('simSalario').value);
   const metaPct  = parseFloat(document.getElementById('simMetaPct').value) || 0;
 
-  let valorMeta      = 0;
+  let valorMeta       = 0;
   let comprometimento = 0;
   let sobra           = 0;
 
   if (salario > 0) {
-    comprometimento = Math.round((saldoAPagar / salario) * 100);
+    comprometimento = Math.round((totalDespesas / salario) * 100); // usa total, não só pendente
     valorMeta       = (salario * metaPct) / 100;
-    sobra           = salario - saldoAPagar - valorMeta;
+    sobra           = salario - totalDespesas - valorMeta;
   } else {
-    sobra = -saldoAPagar;
+    sobra = -totalDespesas;
   }
 
   document.getElementById('simValorMeta').textContent = formatBRL(valorMeta);
 
   const sobraEl = document.getElementById('simSobra');
-  sobraEl.textContent  = formatBRL(sobra);
-  sobraEl.style.color  = sobra >= 0 ? 'var(--green-dark)' : 'var(--red)';
+  sobraEl.textContent = formatBRL(Math.max(sobra, 0) === 0 && sobra < 0 ? sobra : sobra);
+  sobraEl.style.color = sobra >= 0 ? 'var(--green-dark)' : 'var(--red)';
 
-  // FIX: "pctLabel.textContent =Platform = ..." corrigido
+  // Saldo disponível: salário − o que já foi pago
+  const saldoDispEl = document.getElementById('simSaldoDisp');
+  if (salario > 0) {
+    const saldoDisp = salario - paidDespesas;
+    saldoDispEl.textContent = formatBRL(saldoDisp);
+    saldoDispEl.style.color = saldoDisp >= 0 ? '#6c3483' : 'var(--red)';
+  } else {
+    saldoDispEl.textContent = '—';
+    saldoDispEl.style.color = '#6c3483';
+  }
+
   document.getElementById('simPctBarLabel').textContent = comprometimento + '%';
 
   const bar = document.getElementById('simProgressBar');
@@ -1496,17 +1939,102 @@ function calcularSimulacao() {
   if (salario === 0) { alertContainer.innerHTML = ''; return; }
 
   if (sobra < 0) {
-    if (salario - saldoAPagar < 0) {
-      alertContainer.innerHTML = `<div class="sim-alert-box danger">🚨 <strong>Orçamento Estourado!</strong> Suas contas superam sua renda em ${formatBRL(Math.abs(salario - saldoAPagar))}.</div>`;
-    } else {
-      alertContainer.innerHTML = `<div class="sim-alert-box warning">⚠️ <strong>Atenção!</strong> O salário paga as contas, mas não cumpre a meta de guardar ${metaPct}%.</div>`;
-    }
+    alertContainer.innerHTML = `<div class="sim-alert-box danger">🚨 <strong>Orçamento Estourado!</strong> Suas despesas superam sua renda em ${formatBRL(Math.abs(sobra + valorMeta))}.</div>`;
+  } else if (sobra < valorMeta) {
+    alertContainer.innerHTML = `<div class="sim-alert-box warning">⚠️ <strong>Atenção!</strong> O salário paga as contas, mas não cumpre a meta de guardar ${metaPct}%.</div>`;
   } else if (comprometimento > 70) {
     alertContainer.innerHTML = `<div class="sim-alert-box warning">💡 <strong>Aviso:</strong> Você paga tudo, mas comprometeu ${comprometimento}% do orçamento.</div>`;
   } else {
     alertContainer.innerHTML = `<div class="sim-alert-box success">🎉 <strong>Parabéns!</strong> Finanças equilibradas. Sobram ${formatBRL(sobra)}.</div>`;
   }
 }
+
+// ═══════════════════════════════════════════════
+// MODO COMPACTO (#12)
+// ═══════════════════════════════════════════════
+function toggleCompact() {
+  compactMode = !compactMode;
+  document.body.classList.toggle('compact', compactMode);
+  try { localStorage.setItem('compactMode', compactMode); } catch(e) {}
+  const btn = document.getElementById('compactBtn');
+  if (btn) {
+    btn.classList.toggle('on', compactMode);
+    btn.textContent = compactMode ? '⊞ Normal' : '⊟ Compacto';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DUPLICAR DESPESA (#6)
+// ═══════════════════════════════════════════════
+function duplicateExpense(id) {
+  const orig = expenses.find(e => e.id === id);
+  if (!orig) return;
+  // Avança para o próximo mês
+  let nm = currentMonth + 1, ny = currentYear;
+  if (nm > 11) { nm = 0; ny++; }
+  const nextMonthStr = `${ny}-${String(nm+1).padStart(2,'0')}`;
+  const novaData = `${ny}-${String(nm+1).padStart(2,'0')}-${orig.dataOriginal.split('-')[2]}`;
+  const nova = {
+    id: Date.now().toString(),
+    descricao: orig.descricao,
+    valor: orig.valor,
+    dataOriginal: novaData,
+    categoria: orig.categoria || 'outros',
+    tipo: 'unico',
+    totalParcelas: null,
+    monthKey: nextMonthStr,
+    pagamentos: {},
+    nota: orig.nota || ''
+  };
+  expenses.push(nova);
+  save();
+  renderAll();
+  showToast(`📋 Duplicado para ${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][nm]}/${ny}!`);
+}
+
+// ═══════════════════════════════════════════════
+// INLINE EDIT VALOR (#4)
+// ═══════════════════════════════════════════════
+function openInlineEdit(event, id) {
+  event.preventDefault();
+  event.stopPropagation();
+  const exp = expenses.find(e => e.id === id);
+  if (!exp) return;
+  inlineEditId = id;
+  const overlay = document.getElementById('inlineEditOverlay');
+  const input   = document.getElementById('inlineEditInput');
+  input.value   = exp.valor.toFixed(2).replace('.', ',');
+  overlay.classList.add('open');
+  setTimeout(() => { input.focus(); input.select(); }, 100);
+}
+
+function closeInlineEdit(event) {
+  if (event && event.target !== document.getElementById('inlineEditOverlay')) return;
+  document.getElementById('inlineEditOverlay').classList.remove('open');
+  inlineEditId = null;
+}
+
+function cancelInlineEdit() {
+  document.getElementById('inlineEditOverlay').classList.remove('open');
+  inlineEditId = null;
+}
+
+function confirmInlineEdit() {
+  if (!inlineEditId) return;
+  const raw   = document.getElementById('inlineEditInput').value;
+  const valor = parseFloat(raw.replace(',', '.').replace(/[^0-9.]/g, ''));
+  if (!valor || valor <= 0) { showToast('⚠️ Valor inválido'); return; }
+  const exp = expenses.find(e => e.id === inlineEditId);
+  if (exp) { exp.valor = valor; save(); renderAll(); showToast('✏️ Valor atualizado!'); }
+  document.getElementById('inlineEditOverlay').classList.remove('open');
+  inlineEditId = null;
+}
+
+// Máscara no inline edit
+document.addEventListener('DOMContentLoaded', () => {
+  const iEl = document.getElementById('inlineEditInput');
+  if (iEl) aplicarMascaraDinheiro(iEl);
+});
 
 // ═══════════════════════════════════════════════
 // AÇÕES: TOGGLE, DELETE, EDIT, PAY ALL
@@ -1574,6 +2102,7 @@ function editExpense(id) {
   document.getElementById('fDesc').value            = exp.descricao;
   document.getElementById('fValor').value           = exp.valor.toFixed(2).replace('.', ',');
   document.getElementById('fData').value            = exp.dataOriginal;
+  document.getElementById('fNota').value            = exp.nota || '';
   selectedCat = exp.categoria || 'outros';
   repeatOn    = exp.tipo !== 'unico';
   repeatType  = exp.tipo === 'parcelado' ? 'parcelado' : 'fixo';
@@ -1601,6 +2130,7 @@ function openModal(reset = false) {
     document.getElementById('fDesc').value  = '';
     document.getElementById('fValor').value = '';
     document.getElementById('fData').value  = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05`;
+    document.getElementById('fNota').value  = '';
     selectedCat = 'outros';
     repeatOn    = false;
     repeatType  = 'fixo';
@@ -1663,6 +2193,7 @@ async function saveExpense() {
   const valorStr = document.getElementById('fValor').value.replace(',', '.').replace(/[^0-9.]/g, '');
   const valor    = parseFloat(valorStr);
   const data     = document.getElementById('fData').value;
+  const nota     = document.getElementById('fNota').value.trim();
 
   if (!desc)              { showToast('⚠️ Informe a descrição'); return; }
   if (!valor || valor <= 0) { showToast('⚠️ Informe um valor válido'); return; }
@@ -1713,11 +2244,11 @@ async function saveExpense() {
           expenses.push(novaUnica);
           showToast('✏️ Alterado apenas para este mês!');
         } else {
-          expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey };
+          expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey, nota };
           showToast('✏️ Despesa global atualizada!');
         }
       } else {
-        expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey };
+        expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey, nota };
         showToast('✏️ Despesa atualizada!');
       }
     }
@@ -1725,7 +2256,7 @@ async function saveExpense() {
     expenses.push({
       id: Date.now().toString(), descricao: desc, valor,
       dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey,
-      pagamentos: {}
+      pagamentos: {}, nota
     });
     // FIX: emoji estava faltando (era apenas um espaço em branco)
     showToast('✅ Despesa adicionada!');
@@ -1768,7 +2299,7 @@ function switchTab(tab, btn) {
   });
   const tabMap = { despesas: 'tabDespesas', stats: 'tabStats', simulacao: 'tabSimulacao', historico: 'tabHistorico' };
   document.getElementById(tabMap[tab]).style.display = 'block';
-  if (tab === 'stats')    renderStats();
+  if (tab === 'stats')     renderStats();
   if (tab === 'simulacao') { loadSimInputs(); calcularSimulacao(); }
   if (tab === 'historico') renderHistorico();
 }
@@ -1936,6 +2467,17 @@ function renderAll() { renderList(); calcularSimulacao(); }
 updateMonthLabel();
 renderCatChips();
 loadSimInputs();
+
+// Inicializar estado do botão compacto
+const compactBtn = document.getElementById('compactBtn');
+if (compactBtn && compactMode) {
+  compactBtn.classList.add('on');
+  compactBtn.textContent = '⊞ Normal';
+}
+
+// Máscara inline edit
+aplicarMascaraDinheiro(document.getElementById('inlineEditInput'));
+
 renderAll();
 </script>
 </body>
