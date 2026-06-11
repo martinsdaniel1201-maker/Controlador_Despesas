@@ -2146,7 +2146,11 @@ function renderList() {
     return true;
   });
 
-  filtered.sort((a, b) => a.dataOriginal.localeCompare(b.dataOriginal));
+  // Ordena pela data de vencimento no mês atual (dateStr: dd/mm/yyyy)
+  filtered.sort((a, b) => {
+    const toISO = s => { const p = s.split("/"); return `${p[2]}-${p[1]}-${p[0]}`; };
+    return toISO(a.dateStr).localeCompare(toISO(b.dateStr));
+  });
 
   const total   = disp.reduce((s, e) => s + e.valor, 0);
   const paid    = disp.filter(e => e.paid).reduce((s, e) => s + e.valor, 0);
@@ -2218,14 +2222,19 @@ function renderList() {
 
   const groups = {};
   filtered.forEach(e => {
-    if (!groups[e.dataOriginal]) groups[e.dataOriginal] = [];
-    groups[e.dataOriginal].push(e);
+    // Agrupa pela data de vencimento no mês atual (dateStr: dd/mm/yyyy)
+    // Ex: despesa fixa cadastrada em 05/09 → vencimento no mês exibido é sempre dia 05
+    const groupKey = e.dateStr;
+    if (!groups[groupKey]) groups[groupKey] = [];
+    groups[groupKey].push(e);
   });
 
   const dayNames = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   list.innerHTML = Object.entries(groups).map(([dateKey, items]) => {
-    const d = new Date(dateKey + 'T12:00:00');
-    const headerLabel = `${d.getDate().toString().padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} — ${dayNames[d.getDay()]}`;
+    // dateKey está no formato dd/mm/yyyy
+    const parts = dateKey.split('/');
+    const d = new Date(parts[2], parts[1] - 1, parts[0], 12, 0, 0);
+    const headerLabel = `${parts[0]}/${parts[1]} — ${dayNames[d.getDay()]}`;
     return `
       <div class="date-group-header">${sanitize(headerLabel)}</div>
       ${items.map(e => renderItem(e)).join('')}
