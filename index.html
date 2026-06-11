@@ -152,17 +152,21 @@
     display: none;
     background: linear-gradient(135deg, #f39c12, #e67e22);
     color: #fff;
-    padding: 12px 16px;
-    margin: 10px 14px 0;
+    padding: 14px 16px;
+    margin: 8px 14px 0;
     border-radius: 14px;
     font-size: 13px;
     font-weight: 800;
+    flex-direction: row;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 10px;
     box-shadow: 0 4px 15px rgba(243,156,18,0.3);
+    width: calc(100% - 28px);
+    box-sizing: border-box;
   }
   #migration-banner.visible { display: flex; }
-  #migration-banner span { flex: 1; }
+  #migration-banner span { flex: 1; min-width: 0; line-height: 1.4; }
   #migration-banner button {
     background: rgba(255,255,255,0.25);
     border: none;
@@ -171,18 +175,88 @@
     font-family: 'Nunito', sans-serif;
     font-size: 12px;
     font-weight: 900;
-    padding: 6px 12px;
+    padding: 8px 14px;
     cursor: pointer;
     white-space: nowrap;
+    flex-shrink: 0;
     transition: background 0.2s;
+    touch-action: manipulation;
   }
   #migration-banner button:hover { background: rgba(255,255,255,0.35); }
   #migration-banner .dismiss-btn {
     background: transparent;
     padding: 4px 8px;
     opacity: 0.7;
-    font-size: 16px;
+    font-size: 18px;
+    flex-shrink: 0;
   }
+
+  /* CARD DE ALERTA DE DÍVIDAS — destaque na tela inicial */
+  #debt-alert-card {
+    display: none;
+    margin: 8px 14px 0;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border-radius: var(--radius);
+    padding: 16px 16px;
+    box-shadow: 0 6px 20px rgba(231,76,60,0.35);
+    color: #fff;
+    animation: pulseAlert 2s ease-in-out infinite;
+  }
+  #debt-alert-card.visible { display: block; }
+  @keyframes pulseAlert {
+    0%, 100% { box-shadow: 0 6px 20px rgba(231,76,60,0.35); }
+    50%       { box-shadow: 0 8px 28px rgba(231,76,60,0.55); }
+  }
+  .debt-alert-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+  .debt-alert-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .debt-alert-amount {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .debt-alert-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .debt-alert-info {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.88);
+    flex: 1;
+    line-height: 1.5;
+  }
+  .debt-alert-btn {
+    background: rgba(255,255,255,0.22);
+    border: 1.5px solid rgba(255,255,255,0.5);
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    font-weight: 900;
+    padding: 9px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    touch-action: manipulation;
+  }
+  .debt-alert-btn:hover { background: rgba(255,255,255,0.35); }
 
   /* INFO DO USUÁRIO NO DRAWER */
   .drawer-user-info {
@@ -1190,6 +1264,27 @@
 <!-- ABA: DESPESAS -->
 <div id="tabDespesas" role="tabpanel">
 
+  <!-- BANNER DE MIGRAÇÃO — aparece aqui para funcionar no mobile -->
+  <div id="migration-banner">
+    <span>📦 Você tem dados locais — migrar para a nuvem?</span>
+    <button onclick="runMigration()">Migrar agora</button>
+    <button class="dismiss-btn" onclick="dismissMigration()" title="Fechar">✕</button>
+  </div>
+
+  <!-- CARD DE ALERTA DE DÍVIDAS — principal quando há valores pendentes -->
+  <div id="debt-alert-card">
+    <div class="debt-alert-header">
+      <span class="debt-alert-title">⚠️ Você tem dívidas pendentes!</span>
+    </div>
+    <div class="debt-alert-body">
+      <div class="debt-alert-info">
+        <span id="debtAlertCount"></span> despesa(s) ainda não pagas este mês.<br>
+        Valor total a quitar:
+      </div>
+      <span class="debt-alert-amount" id="debtAlertAmount">R$ 0,00</span>
+    </div>
+  </div>
+
   <!-- CARD RESUMO COMPACTO (#10) -->
   <div class="rich-summary-card" id="richSummaryCard">
     <div class="rsc-row1">
@@ -1432,13 +1527,6 @@
     <button class="auth-btn" id="auth-submit-btn" onclick="handleAuthSubmit()">Entrar</button>
     <div class="sync-indicator" id="auth-loading-msg"></div>
   </div>
-</div>
-
-<!-- BANNER DE MIGRAÇÃO -->
-<div id="migration-banner">
-  <span>📦 Você tem dados locais — migrar para a nuvem?</span>
-  <button onclick="runMigration()">Migrar agora</button>
-  <button class="dismiss-btn" onclick="dismissMigration()" title="Fechar">✕</button>
 </div>
 
 <!-- DRAWER: MENU LATERAL -->
@@ -2117,6 +2205,24 @@ function getMotivation(pct, pending, count) {
 }
 
 // ═══════════════════════════════════════════════
+// ALERTA DE DÍVIDAS — card destaque na tela inicial
+// ═══════════════════════════════════════════════
+function updateDebtAlertCard(pendingValue, countPending) {
+  const card        = document.getElementById('debt-alert-card');
+  const amountEl    = document.getElementById('debtAlertAmount');
+  const countEl     = document.getElementById('debtAlertCount');
+  if (!card || !amountEl || !countEl) return;
+
+  if (pendingValue > 0 && countPending > 0) {
+    amountEl.textContent = formatBRL(pendingValue);
+    countEl.textContent  = countPending;
+    card.classList.add('visible');
+  } else {
+    card.classList.remove('visible');
+  }
+}
+
+// ═══════════════════════════════════════════════
 // RENDER — LISTA PRINCIPAL
 // ═══════════════════════════════════════════════
 function updateMonthLabel() {
@@ -2191,6 +2297,9 @@ function renderList() {
   });
   const dot = document.getElementById('tabAlertDot');
   if (dot) dot.classList.toggle('visible', hasUrgent);
+
+  // ALERTA DE DÍVIDAS: atualiza card principal
+  updateDebtAlertCard(pending, countPending);
 
   const subtotalContainer = document.getElementById('subtotalContainer');
   if (activeFilter !== 'all') {
