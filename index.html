@@ -147,72 +147,32 @@
   }
   .auth-error.visible { display: block; }
 
-  /* CARD DE ALERTA DE DÍVIDAS — destaque na tela inicial */
+  /* AVISO DE DÍVIDAS — pílula discreta */
   #debt-alert-card {
     display: none;
-    margin: 8px 14px 0;
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    border-radius: var(--radius);
-    padding: 16px 16px;
-    box-shadow: 0 6px 20px rgba(231,76,60,0.35);
-    color: #fff;
-    animation: pulseAlert 2s ease-in-out infinite;
-  }
-  #debt-alert-card.visible { display: block; }
-  @keyframes pulseAlert {
-    0%, 100% { box-shadow: 0 6px 20px rgba(231,76,60,0.35); }
-    50%       { box-shadow: 0 8px 28px rgba(231,76,60,0.55); }
-  }
-  .debt-alert-header {
-    display: flex;
+    margin: 6px 14px 0;
+    background: var(--red-light);
+    border: 1.5px solid var(--red);
+    border-radius: 10px;
+    padding: 8px 14px;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
     gap: 8px;
   }
-  .debt-alert-title {
-    font-size: 15px;
-    font-weight: 900;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .debt-alert-amount {
-    font-size: 22px;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  }
-  .debt-alert-body {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
+  #debt-alert-card.visible { display: flex; }
   .debt-alert-info {
     font-size: 12px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.88);
+    font-weight: 800;
+    color: var(--red);
     flex: 1;
-    line-height: 1.5;
   }
-  .debt-alert-btn {
-    background: rgba(255,255,255,0.22);
-    border: 1.5px solid rgba(255,255,255,0.5);
-    border-radius: 10px;
-    color: #fff;
-    font-family: 'Nunito', sans-serif;
-    font-size: 12px;
+  .debt-alert-amount {
+    font-size: 13px;
     font-weight: 900;
-    padding: 9px 16px;
-    cursor: pointer;
-    white-space: nowrap;
+    color: var(--red);
     flex-shrink: 0;
-    transition: background 0.2s;
-    touch-action: manipulation;
   }
-  .debt-alert-btn:hover { background: rgba(255,255,255,0.35); }
 
   /* INFO DO USUÁRIO NO DRAWER */
   .drawer-user-info {
@@ -1040,20 +1000,13 @@
   /* ── BOTÃO DUPLICAR NA ACTION BAR (#6) ── */
   .action-bar-btn.dup-btn { color: #8e44ad; }
 
-  /* ── MODO COMPACTO (#12) ── */
-  body.compact .expense-item { padding: 9px 14px; }
-  body.compact .expense-icon { width: 36px; height: 36px; font-size: 16px; border-radius: 10px; }
-  body.compact .expense-name { font-size: 14px; }
-  body.compact .expense-amount { font-size: 14px; }
-  body.compact .swipe-wrapper { margin-bottom: 7px; }
-  body.compact .action-bar-btn { padding: 7px; font-size: 11px; }
-  .compact-toggle-btn {
-    background: none; border: 1.5px solid var(--border); border-radius: 10px;
-    padding: 5px 10px; font-size: 11px; font-weight: 800; color: var(--text-muted);
-    cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.2s;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .compact-toggle-btn.on { border-color: var(--green-dark); color: var(--green-dark); background: var(--green-light); }
+  /* ── MODO COMPACTO — sempre ativo ── */
+  .expense-item { padding: 9px 14px; }
+  .expense-icon { width: 36px; height: 36px; font-size: 16px; border-radius: 10px; }
+  .expense-name { font-size: 14px; }
+  .expense-amount { font-size: 14px; }
+  .swipe-wrapper { margin-bottom: 7px; }
+  .action-bar-btn { padding: 7px; font-size: 11px; }
 
   /* ── CARD RESUMO COMPACTO (#10) ── */
   .rich-summary-card {
@@ -1220,18 +1173,10 @@
 <!-- ABA: DESPESAS -->
 <div id="tabDespesas" role="tabpanel">
 
-  <!-- CARD DE ALERTA DE DÍVIDAS — principal quando há valores pendentes -->
+  <!-- AVISO DE DÍVIDAS — pílula discreta -->
   <div id="debt-alert-card">
-    <div class="debt-alert-header">
-      <span class="debt-alert-title">⚠️ Você tem dívidas pendentes!</span>
-    </div>
-    <div class="debt-alert-body">
-      <div class="debt-alert-info">
-        <span id="debtAlertCount"></span> despesa(s) ainda não pagas este mês.<br>
-        Valor total a quitar:
-      </div>
-      <span class="debt-alert-amount" id="debtAlertAmount">R$ 0,00</span>
-    </div>
+    <span class="debt-alert-info">⚠️ <span id="debtAlertCount"></span> pendente(s) a pagar</span>
+    <span class="debt-alert-amount" id="debtAlertAmount">R$ 0,00</span>
   </div>
 
   <!-- CARD RESUMO COMPACTO (#10) -->
@@ -1273,16 +1218,13 @@
            oninput="renderList()" aria-label="Buscar despesa por nome">
   </div>
 
-  <div style="display:flex; align-items:center; justify-content:space-between; padding: 4px 14px 0;">
-    <div class="filter-row" id="filterRow" role="group" aria-label="Filtros de despesas" style="padding:8px 0 6px; flex:1; overflow-x:auto;">
+  <div class="filter-row" id="filterRow" role="group" aria-label="Filtros de despesas" style="padding:8px 14px 6px; overflow-x:auto;">
       <span class="filter-chip active" data-filter="all"       onclick="setFilter('all', this)"       role="button" tabindex="0">Todas</span>
       <span class="filter-chip"        data-filter="pendente"  onclick="setFilter('pendente', this)"  role="button" tabindex="0">A Pagar</span>
       <span class="filter-chip"        data-filter="pago"      onclick="setFilter('pago', this)"      role="button" tabindex="0">Pagas</span>
       <span class="filter-chip"        data-filter="fixo"      onclick="setFilter('fixo', this)"      role="button" tabindex="0">Fixas</span>
       <span class="filter-chip"        data-filter="parcelado" onclick="setFilter('parcelado', this)" role="button" tabindex="0">Parceladas</span>
     </div>
-    <button class="compact-toggle-btn" id="compactBtn" onclick="toggleCompact()" title="Modo compacto">⊟ Compacto</button>
-  </div>
 
   <div class="subtotal-row" id="subtotalContainer" style="display:none;">
     <span id="subtotalLabel">Total do Filtro:</span>
@@ -1907,11 +1849,7 @@ let editingId     = null;
 let repeatType    = 'fixo';
 let repeatOn      = false;
 let selectedCat   = 'outros';
-let compactMode   = localStorage.getItem('compactMode') === 'true';
 let inlineEditId  = null;
-
-// Aplicar modo compacto salvo
-if (compactMode) document.body.classList.add('compact');
 
 // ═══════════════════════════════════════════════
 // SEGURANÇA: sanitize para prevenir XSS
@@ -2598,20 +2536,6 @@ function calcularSimulacao() {
 }
 
 // ═══════════════════════════════════════════════
-// MODO COMPACTO (#12)
-// ═══════════════════════════════════════════════
-function toggleCompact() {
-  compactMode = !compactMode;
-  document.body.classList.toggle('compact', compactMode);
-  try { localStorage.setItem('compactMode', compactMode); } catch(e) {}
-  const btn = document.getElementById('compactBtn');
-  if (btn) {
-    btn.classList.toggle('on', compactMode);
-    btn.textContent = compactMode ? '⊞ Normal' : '⊟ Compacto';
-  }
-}
-
-// ═══════════════════════════════════════════════
 // DUPLICAR DESPESA (#6)
 // ═══════════════════════════════════════════════
 function duplicateExpense(id) {
@@ -3115,13 +3039,6 @@ function renderAll() { renderList(); calcularSimulacao(); }
 updateMonthLabel();
 renderCatChips();
 loadSimInputs();
-
-// Inicializar estado do botão compacto
-const compactBtn = document.getElementById('compactBtn');
-if (compactBtn && compactMode) {
-  compactBtn.classList.add('on');
-  compactBtn.textContent = '⊞ Normal';
-}
 
 // Máscara inline edit
 aplicarMascaraDinheiro(document.getElementById('inlineEditInput'));
