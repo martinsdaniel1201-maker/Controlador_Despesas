@@ -147,50 +147,6 @@
   }
   .auth-error.visible { display: block; }
 
-  /* BANNER DE MIGRAÇÃO */
-  #migration-banner {
-    display: none;
-    background: linear-gradient(135deg, #f39c12, #e67e22);
-    color: #fff;
-    padding: 14px 16px;
-    margin: 8px 14px 0;
-    border-radius: 14px;
-    font-size: 13px;
-    font-weight: 800;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(243,156,18,0.3);
-    width: calc(100% - 28px);
-    box-sizing: border-box;
-  }
-  #migration-banner.visible { display: flex; }
-  #migration-banner span { flex: 1; min-width: 0; line-height: 1.4; }
-  #migration-banner button {
-    background: rgba(255,255,255,0.25);
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-family: 'Nunito', sans-serif;
-    font-size: 12px;
-    font-weight: 900;
-    padding: 8px 14px;
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: background 0.2s;
-    touch-action: manipulation;
-  }
-  #migration-banner button:hover { background: rgba(255,255,255,0.35); }
-  #migration-banner .dismiss-btn {
-    background: transparent;
-    padding: 4px 8px;
-    opacity: 0.7;
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
   /* CARD DE ALERTA DE DÍVIDAS — destaque na tela inicial */
   #debt-alert-card {
     display: none;
@@ -1264,13 +1220,6 @@
 <!-- ABA: DESPESAS -->
 <div id="tabDespesas" role="tabpanel">
 
-  <!-- BANNER DE MIGRAÇÃO — aparece aqui para funcionar no mobile -->
-  <div id="migration-banner">
-    <span>📦 Você tem dados locais — migrar para a nuvem?</span>
-    <button onclick="runMigration()">Migrar agora</button>
-    <button class="dismiss-btn" onclick="dismissMigration()" title="Fechar">✕</button>
-  </div>
-
   <!-- CARD DE ALERTA DE DÍVIDAS — principal quando há valores pendentes -->
   <div id="debt-alert-card">
     <div class="debt-alert-header">
@@ -1852,8 +1801,8 @@ async function saveToSupabase() {
 // FASE 3 — MIGRAÇÃO DE DADOS LOCAIS
 // ═══════════════════════════════════════════════
 
-// Verifica se há dados locais não migrados e mostra o banner
-function checkMigrationBanner() {
+// Verifica se há dados locais não migrados e exibe popup de migração
+async function checkMigrationBanner() {
   const jaFezMigracao = localStorage.getItem('supabase_migrated') === 'true';
   if (jaFezMigracao) return;
 
@@ -1863,29 +1812,38 @@ function checkMigrationBanner() {
     localExpenses = JSON.parse(stored || '[]');
   } catch { return; }
 
-  // Só mostra o banner se tiver dados locais E o Supabase estiver vazio
-  if (localExpenses.length > 0 && expenses.length === 0) {
-    document.getElementById('migration-banner').classList.add('visible');
+  // Só pergunta se tiver dados locais E o Supabase estiver vazio
+  if (localExpenses.length === 0 || expenses.length > 0) return;
+
+  const confirmar = await mostrarPopup({
+    emoji:  '📦',
+    titulo: 'Migrar dados para a nuvem?',
+    texto:  'Encontramos ' + localExpenses.length + ' despesa(s) salvas localmente neste dispositivo. Deseja enviá-las para sua conta na nuvem?',
+    botoes: [
+      { texto: '☁️ Migrar agora',  classe: 'confirm-btn-primary',   valor: true  },
+      { texto: 'Agora não',        classe: 'confirm-btn-secondary', valor: false }
+    ]
+  });
+
+  if (confirmar) {
+    await runMigration(localExpenses);
   }
 }
 
-// Executa a migração: lê localStorage, envia ao Supabase, grava flag
-async function runMigration() {
-  let localExpenses = [];
-  try {
-    const stored = localStorage.getItem('despesas_v2');
-    localExpenses = JSON.parse(stored || '[]');
-  } catch {
-    showToast('❌ Erro ao ler dados locais');
-    return;
+// Executa a migração: recebe os dados locais já lidos e envia ao Supabase
+async function runMigration(localExpenses) {
+  if (!localExpenses) {
+    try {
+      const stored = localStorage.getItem('despesas_v2');
+      localExpenses = JSON.parse(stored || '[]');
+    } catch {
+      showToast('❌ Erro ao ler dados locais');
+      return;
+    }
   }
 
-  if (!localExpenses.length) {
-    dismissMigration();
-    return;
-  }
+  if (!localExpenses.length) return;
 
-  dismissMigration();
   setSyncStatus('syncing', '⏳ Migrando dados...');
   showToast('⏳ Migrando ' + localExpenses.length + ' despesa(s)...');
 
@@ -1910,9 +1868,8 @@ async function runMigration() {
   }
 }
 
-function dismissMigration() {
-  document.getElementById('migration-banner').classList.remove('visible');
-}
+// Mantida por compatibilidade (não faz mais nada, popup é fechado pelo próprio mostrarPopup)
+function dismissMigration() {}
 
 // ═══════════════════════════════════════════════
 // CONSTANTES
