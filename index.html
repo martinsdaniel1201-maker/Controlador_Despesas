@@ -746,6 +746,13 @@
     transition: all 0.2s;
   }
   .form-input:focus { border-color: var(--green); background: var(--input-focus-bg); box-shadow: 0 0 0 3px rgba(39,174,96,0.15); }
+  .form-input.error { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(231,76,60,0.12); animation: shake 0.35s cubic-bezier(.36,.07,.19,.97); }
+  @keyframes shake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(3px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+  }
 
   .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0 12px; }
   .toggle-label { font-size: 16px; font-weight: 800; color: var(--text); }
@@ -798,6 +805,7 @@
     background: var(--input-focus-bg); color: var(--text);
   }
   .parcelas-input input:focus { border-color: var(--green); }
+  .parcelas-input input.error { border-color: var(--red); animation: shake 0.35s cubic-bezier(.36,.07,.19,.97); }
 
   .category-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
   .cat-chip {
@@ -815,8 +823,9 @@
     box-shadow: 0 4px 15px rgba(240,160,48,0.3);
     touch-action: manipulation;
   }
-  .btn-save:hover  { filter: brightness(1.05); }
-  .btn-save:active { transform: scale(0.98); }
+  .btn-save:hover:not(:disabled)  { filter: brightness(1.05); }
+  .btn-save:active:not(:disabled) { transform: scale(0.98); }
+  .btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; filter: none; }
 
   .btn-cancel {
     width: 100%; padding: 14px; border-radius: 14px; border: 2px solid var(--border);
@@ -1634,6 +1643,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') handleAuthSubmit(); });
   });
+
+  // Enter nos campos de texto do modal salva a despesa (não no campo de data, que usa seletor nativo)
+  ['fDesc','fValor','fNota'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); saveExpense(); }
+    });
+  });
+
+  // Enter no inline edit confirma
+  const iEl = document.getElementById('inlineEditInput');
+  if (iEl) iEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); confirmInlineEdit(); }
+    if (e.key === 'Escape') cancelInlineEdit();
+  });
+
+  // Escape fecha o modal principal
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('modalOverlay').classList.contains('open')) closeModal();
+      if (document.getElementById('inlineEditOverlay').classList.contains('open')) cancelInlineEdit();
+    }
+  });
 });
 
 // ── PÓS-LOGIN ─────────────────────────────────
@@ -2066,8 +2098,12 @@ function formatBRL(v) {
 }
 function parseBRL(valStr) {
   if (!valStr) return 0;
-  // Remove "R$", espaços, pontos de milhar → troca vírgula decimal por ponto
-  const clean = String(valStr).replace(/R\$\s*/g, '').replace(/\./g, '').replace(',', '.');
+  // Remove "R$", espaços → remove pontos de milhar → troca vírgula decimal por ponto
+  const clean = String(valStr)
+    .replace(/R\$\s*/g, '')
+    .trim()
+    .replace(/\./g, '')   // remove separador de milhar
+    .replace(',', '.');   // vírgula decimal → ponto
   return parseFloat(clean) || 0;
 }
 
@@ -2603,19 +2639,13 @@ function cancelInlineEdit() {
 function confirmInlineEdit() {
   if (!inlineEditId) return;
   const raw   = document.getElementById('inlineEditInput').value;
-  const valor = parseFloat(raw.replace(',', '.').replace(/[^0-9.]/g, ''));
+  const valor = parseBRL(raw);
   if (!valor || valor <= 0) { showToast('⚠️ Valor inválido'); return; }
   const exp = expenses.find(e => e.id === inlineEditId);
   if (exp) { exp.valor = valor; save(); renderAll(); showToast('✏️ Valor atualizado!'); }
   document.getElementById('inlineEditOverlay').classList.remove('open');
   inlineEditId = null;
 }
-
-// Máscara no inline edit
-document.addEventListener('DOMContentLoaded', () => {
-  const iEl = document.getElementById('inlineEditInput');
-  if (iEl) aplicarMascaraDinheiro(iEl);
-});
 
 // ═══════════════════════════════════════════════
 // AÇÕES: TOGGLE, DELETE, EDIT, PAY ALL
@@ -2680,8 +2710,13 @@ function editExpense(id) {
   if (!exp) return;
   editingId = id;
   document.getElementById('modalTitle').textContent = 'Editar Despesa';
+  document.getElementById('btnSave').textContent = '💾 Salvar Alterações';
   document.getElementById('fDesc').value            = exp.descricao;
-  document.getElementById('fValor').value           = exp.valor.toFixed(2).replace('.', ',');
+  // Aplica formato de máscara corretamente (ex: 1.234,56)
+  const valorFormatado = exp.valor.toFixed(2)
+    .replace('.', ',')
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  document.getElementById('fValor').value           = valorFormatado;
   document.getElementById('fData').value            = exp.dataOriginal;
   document.getElementById('fNota').value            = exp.nota || '';
   selectedCat = exp.categoria || 'outros';
@@ -2697,6 +2732,7 @@ function editExpense(id) {
   renderCatChips();
   document.getElementById('parcelasRow').style.display = repeatType === 'parcelado' ? 'flex' : 'none';
   if (exp.totalParcelas) document.getElementById('fParcelas').value = exp.totalParcelas;
+  ['fDesc','fValor','fData','fParcelas'].forEach(id => document.getElementById(id).classList.remove('error'));
 
   openModal();
 }
@@ -2706,19 +2742,23 @@ function editExpense(id) {
 // ═══════════════════════════════════════════════
 function openModal(reset = false) {
   if (!editingId || reset) {
-    editingId = null;
+    editingId   = null;
+    repeatOn    = false;
+    repeatType  = 'fixo';
+    selectedCat = 'outros';
     document.getElementById('modalTitle').textContent = 'Nova Despesa';
+    document.getElementById('btnSave').textContent = '✅ Adicionar Despesa';
     document.getElementById('fDesc').value  = '';
     document.getElementById('fValor').value = '';
     document.getElementById('fData').value  = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05`;
     document.getElementById('fNota').value  = '';
-    selectedCat = 'outros';
-    repeatOn    = false;
-    repeatType  = 'fixo';
     const toggle = document.getElementById('toggleRepetir');
     toggle.className = 'toggle';
     toggle.setAttribute('aria-checked', 'false');
     document.getElementById('repeatOptions').style.display = 'none';
+    document.getElementById('parcelasRow').style.display   = 'none';
+    document.getElementById('fParcelas').value = '2';
+    ['fDesc','fValor','fData','fParcelas'].forEach(id => document.getElementById(id).classList.remove('error'));
     updateRadios();
     renderCatChips();
   }
@@ -2728,7 +2768,10 @@ function openModal(reset = false) {
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
-  editingId = null;
+  editingId   = null;
+  repeatOn    = false;
+  repeatType  = 'fixo';
+  selectedCat = 'outros';
 }
 
 function handleOverlayClick(e) {
@@ -2770,27 +2813,56 @@ function renderCatChips() {
 function selectCat(id) { selectedCat = id; renderCatChips(); }
 
 async function saveExpense() {
+  const btnSave = document.getElementById('btnSave');
+  if (btnSave.disabled) return; // evita duplo clique
+
   const desc     = document.getElementById('fDesc').value.trim();
-  const valorStr = document.getElementById('fValor').value.replace(',', '.').replace(/[^0-9.]/g, '');
-  const valor    = parseFloat(valorStr);
+  const valorStr = document.getElementById('fValor').value;
+  const valor    = parseBRL(valorStr);
   const data     = document.getElementById('fData').value;
   const nota     = document.getElementById('fNota').value.trim();
 
-  if (!desc)              { showToast('⚠️ Informe a descrição'); return; }
-  if (!valor || valor <= 0) { showToast('⚠️ Informe um valor válido'); return; }
-  if (!data)              { showToast('⚠️ Informe a data'); return; }
+  if (!desc) {
+    const el = document.getElementById('fDesc');
+    el.classList.add('error');
+    el.focus();
+    showToast('⚠️ Informe a descrição');
+    return;
+  }
+  if (!valor || valor <= 0) {
+    const el = document.getElementById('fValor');
+    el.classList.add('error');
+    el.focus();
+    showToast('⚠️ Informe um valor válido');
+    return;
+  }
+  if (!data) {
+    const el = document.getElementById('fData');
+    el.classList.add('error');
+    el.focus();
+    showToast('⚠️ Informe a data');
+    return;
+  }
+  // Limpa marcação de erro
+  ['fDesc','fValor','fData'].forEach(id => document.getElementById(id).classList.remove('error'));
 
   const tipo = !repeatOn ? 'unico' : repeatType;
   let totalParcelas = null;
 
   if (tipo === 'parcelado') {
     totalParcelas = parseInt(document.getElementById('fParcelas').value) || 0;
-    // FIX: validação JS de parcelas (além do atributo HTML min/max)
     if (totalParcelas < 2 || totalParcelas > 60) {
+      document.getElementById('fParcelas').classList.add('error');
       showToast('⚠️ Informe entre 2 e 60 parcelas');
       return;
     }
   }
+  document.getElementById('fParcelas').classList.remove('error');
+
+  // Desabilita o botão durante o processamento assíncrono
+  const labelOriginal = btnSave.textContent;
+  btnSave.disabled = true;
+  btnSave.textContent = '⏳ Salvando...';
 
   const dateObj  = new Date(data + 'T12:00:00');
   const monthKey = getMonthKey(dateObj.getFullYear(), dateObj.getMonth());
@@ -2803,25 +2875,31 @@ async function saveExpense() {
         const modoEdicao = await mostrarPopup({
           emoji:  '🔄',
           titulo: 'Como deseja editar?',
-          texto:  'Esta é uma despesa recorrente. Aplicar a alteração a todo o histórico ou apenas a este mês?',
+          texto:  'Esta é uma despesa recorrente. Você pode alterar todos os meses futuros ou criar uma exceção apenas para o mês atual.',
           botoes: [
-            { texto: 'Todos os Meses', classe: 'confirm-btn-primary',   valor: 'todos' },
-            { texto: 'Apenas Este Mês', classe: 'confirm-btn-secondary', valor: 'unico' }
+            { texto: '🔁 Todos os Meses', classe: 'confirm-btn-primary',   valor: 'todos' },
+            { texto: '📌 Só Este Mês',    classe: 'confirm-btn-secondary', valor: 'unico' }
           ]
         });
 
         if (modoEdicao === 'unico') {
           const currentKey = getMonthKey(currentYear, currentMonth);
+          // Monta a data de vencimento no mês atual mantendo o dia da data original do form
+          const diaStr = data.split('-')[2] || '01';
+          const dataNoMesAtual = `${currentYear}-${String(currentMonth + 1).padStart(2,'0')}-${diaStr}`;
           const novaUnica  = {
-            id: Date.now().toString(), descricao: desc, valor, dataOriginal: data,
+            id: String(Date.now()) + Math.random().toString(36).slice(2,7),
+            descricao: desc, valor, dataOriginal: dataNoMesAtual,
             categoria: selectedCat, tipo: 'unico', totalParcelas: null,
-            monthKey: currentKey, pagamentos: {}
+            monthKey: currentKey, pagamentos: {}, nota
           };
           if (expAntiga.pagamentos?.[currentKey]) {
             novaUnica.pagamentos[currentKey] = expAntiga.pagamentos[currentKey];
           }
           if (!expAntiga.ignorarMeses) expAntiga.ignorarMeses = [];
-          expAntiga.ignorarMeses.push(currentKey);
+          if (!expAntiga.ignorarMeses.includes(currentKey)) {
+            expAntiga.ignorarMeses.push(currentKey);
+          }
           expenses.push(novaUnica);
           showToast('✏️ Alterado apenas para este mês!');
         } else {
@@ -2835,7 +2913,8 @@ async function saveExpense() {
     }
   } else {
     expenses.push({
-      id: Date.now().toString(), descricao: desc, valor,
+      id: String(Date.now()) + Math.random().toString(36).slice(2,7),
+      descricao: desc, valor,
       dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey,
       pagamentos: {}, nota
     });
@@ -2846,6 +2925,9 @@ async function saveExpense() {
   save();
   closeModal();
   renderAll();
+  // Reabilita o botão (caso o modal seja reaberto antes do re-render)
+  btnSave.disabled = false;
+  btnSave.textContent = labelOriginal;
 }
 
 // ═══════════════════════════════════════════════
