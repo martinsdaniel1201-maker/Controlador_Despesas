@@ -4,7 +4,7 @@ const CACHE_NAME = 'controlador-despesas-v4.6';
 const ASSETS = [
   './',
   './index.html',
-  './icone-192.png',
+  './icone-2.png',
   './manifest.json'
 ];
 
