@@ -693,13 +693,37 @@
     background: var(--card);
     border-radius: 30px 30px 0 0;
     width: 100%; max-width: 480px;
-    padding: 20px 24px 34px;
+    padding: 0;
     animation: slideUp 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15);
-    max-height: 88vh;
-    overflow-y: auto;
+    max-height: 92vh;
+    max-height: 92dvh; /* respeita a barra de teclado em navegadores modernos */
     box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  /* ── ÁREA ROLÁVEL DO FORMULÁRIO (mobile fix) ── */
+  .modal-scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 16px 20px 4px;
+    flex: 1 1 auto;
+    min-height: 0; /* necessário no Safari para o scroll funcionar dentro do flex */
+  }
+
+  /* ── RODAPÉ FIXO DO MODAL: botões sempre visíveis, mesmo com teclado aberto ── */
+  .modal-actions {
+    flex-shrink: 0;
+    padding: 10px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    background: var(--card);
+    border-top: 1px solid var(--border);
+  }
+  .modal-actions .btn-save,
+  .modal-actions .btn-cancel { margin-top: 0; }
+  .modal-actions .btn-cancel { margin-top: 8px; }
 
   /* ── POPUP CUSTOMIZADO ── */
   .custom-confirm-box {
@@ -807,11 +831,13 @@
   .parcelas-input input:focus { border-color: var(--green); }
   .parcelas-input input.error { border-color: var(--red); animation: shake 0.35s cubic-bezier(.36,.07,.19,.97); }
 
-  .category-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .category-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
   .cat-chip {
-    padding: 8px 14px; border-radius: 20px; border: 2px solid var(--border);
-    background: var(--card); font-size: 12px; font-weight: 800; color: var(--text-muted);
+    padding: 10px 16px; min-height: 40px; border-radius: 20px; border: 2px solid var(--border);
+    background: var(--card); font-size: 13px; font-weight: 800; color: var(--text-muted);
     cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; justify-content: center;
+    touch-action: manipulation;
   }
   .cat-chip.active { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
 
@@ -1263,7 +1289,7 @@
       <div class="form-group">
         <label class="form-label" for="simSalario">Informe Seu Salário / Renda (R$)</label>
         <input type="text" class="form-input" id="simSalario" placeholder="0,00"
-               inputmode="decimal" oninput="saveSimInputs(); calcularSimulacao();">
+               inputmode="decimal">
       </div>
 
       <button class="btn-sim-update" onclick="calcularSimulacao()">🔄 Atualizar Valores</button>
@@ -1334,62 +1360,66 @@
 <!-- MODAL: NOVA / EDITAR DESPESA -->
 <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
   <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="modalTitle">Nova Despesa</div>
+    <div class="modal-scroll">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="modalTitle">Nova Despesa</div>
 
-    <div class="form-group">
-      <label class="form-label" for="fDesc">Descrição</label>
-      <input type="text" class="form-input" id="fDesc"
-             placeholder="Ex: Aluguel, Netflix..." autocomplete="off">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="fValor">Valor (R$)</label>
-      <input type="text" class="form-input" id="fValor" placeholder="0,00" inputmode="decimal">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="fData">Data de vencimento</label>
-      <input type="date" class="form-input" id="fData">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Categoria</label>
-      <div class="category-row" id="catRow" role="group" aria-label="Escolha a categoria"></div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="fNota">Observação (opcional)</label>
-      <input type="text" class="form-input" id="fNota"
-             placeholder="Ex: pagar no app do banco, boleto dia 10..." autocomplete="off">
-    </div>
-
-    <div class="toggle-row">
-      <span class="toggle-label" id="labelRepetir">Repetir</span>
-      <button class="toggle" id="toggleRepetir" onclick="toggleRepetir()"
-              aria-labelledby="labelRepetir" role="switch" aria-checked="false"></button>
-    </div>
-
-    <div id="repeatOptions" style="display:none">
-      <div class="radio-group" id="radioGroup" role="radiogroup" aria-label="Tipo de repetição">
-        <label class="radio-option" onclick="selectType('fixo')">
-          <div class="radio-circle selected" id="radioFixo" role="radio" aria-checked="true"></div>
-          <span class="radio-text">Fixo (todo mês)</span>
-        </label>
-        <label class="radio-option" onclick="selectType('parcelado')">
-          <div class="radio-circle" id="radioParcela" role="radio" aria-checked="false"></div>
-          <span class="radio-text">Parcelado</span>
-        </label>
+      <div class="form-group">
+        <label class="form-label" for="fDesc">Descrição</label>
+        <input type="text" class="form-input" id="fDesc"
+               placeholder="Ex: Aluguel, Netflix..." autocomplete="off" enterkeyhint="next">
       </div>
-      <div class="parcelas-input" id="parcelasRow" style="display:none">
-        <label for="fParcelas">Número de parcelas:</label>
-        <input type="number" id="fParcelas" min="2" max="60" value="2" aria-label="Número de parcelas">
-        <span id="parcelaAtual" style="font-size:12px;color:var(--text-muted);font-weight:700;"></span>
+
+      <div class="form-group">
+        <label class="form-label" for="fValor">Valor (R$)</label>
+        <input type="text" class="form-input" id="fValor" placeholder="0,00" inputmode="decimal" enterkeyhint="next">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="fData">Data de vencimento</label>
+        <input type="date" class="form-input" id="fData">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Categoria</label>
+        <div class="category-row" id="catRow" role="group" aria-label="Escolha a categoria"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="fNota">Observação (opcional)</label>
+        <input type="text" class="form-input" id="fNota"
+               placeholder="Ex: pagar no app do banco, boleto dia 10..." autocomplete="off" enterkeyhint="done">
+      </div>
+
+      <div class="toggle-row">
+        <span class="toggle-label" id="labelRepetir">Repetir</span>
+        <button class="toggle" id="toggleRepetir" onclick="toggleRepetir()"
+                aria-labelledby="labelRepetir" role="switch" aria-checked="false"></button>
+      </div>
+
+      <div id="repeatOptions" style="display:none">
+        <div class="radio-group" id="radioGroup" role="radiogroup" aria-label="Tipo de repetição">
+          <label class="radio-option" onclick="selectType('fixo')">
+            <div class="radio-circle selected" id="radioFixo" role="radio" aria-checked="true"></div>
+            <span class="radio-text">Fixo (todo mês)</span>
+          </label>
+          <label class="radio-option" onclick="selectType('parcelado')">
+            <div class="radio-circle" id="radioParcela" role="radio" aria-checked="false"></div>
+            <span class="radio-text">Parcelado</span>
+          </label>
+        </div>
+        <div class="parcelas-input" id="parcelasRow" style="display:none">
+          <label for="fParcelas">Número de parcelas:</label>
+          <input type="number" id="fParcelas" min="2" max="60" value="2" aria-label="Número de parcelas">
+          <span id="parcelaAtual" style="font-size:12px;color:var(--text-muted);font-weight:700;"></span>
+        </div>
       </div>
     </div>
 
-    <button class="btn-save" onclick="saveExpense()" id="btnSave">Salvar</button>
-    <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+    <div class="modal-actions">
+      <button class="btn-save" onclick="saveExpense()" id="btnSave">Salvar</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
   </div>
 </div>
 
@@ -2763,16 +2793,52 @@ function openModal(reset = false) {
     renderCatChips();
   }
   document.getElementById('modalOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('fDesc').focus(), 400);
+  lockBodyScroll();
+  // Em mobile, abrir o teclado imediatamente some com o campo por trás dele;
+  // focamos só depois da animação, sem forçar rolagem do fundo da página.
+  setTimeout(() => {
+    const el = document.getElementById('fDesc');
+    el.focus({ preventScroll: true });
+  }, 400);
 }
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
+  unlockBodyScroll();
   editingId   = null;
   repeatOn    = false;
   repeatType  = 'fixo';
   selectedCat = 'outros';
 }
+
+// ── TRAVA DE SCROLL DO FUNDO ENQUANTO O MODAL ESTÁ ABERTO (fix mobile) ──
+let _scrollY = 0;
+function lockBodyScroll() {
+  _scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${_scrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+}
+function unlockBodyScroll() {
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+  window.scrollTo(0, _scrollY);
+}
+
+// Ao focar um campo dentro do modal (ex: com teclado aberto), garante que
+// ele fique visível na área rolável, evitando o campo "sumir" atrás do teclado.
+document.getElementById('modal').addEventListener('focusin', (e) => {
+  if (e.target.matches('input, textarea, select')) {
+    setTimeout(() => {
+      e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 300);
+  }
+});
 
 function handleOverlayClick(e) {
   if (e.target === document.getElementById('modalOverlay')) closeModal();
@@ -3081,16 +3147,26 @@ function importJSON() {
 // ═══════════════════════════════════════════════
 // MÁSCARAS DE INPUT
 // ═══════════════════════════════════════════════
-function aplicarMascaraDinheiro(elemento) {
+// BUGFIX: antes, o campo de salário tinha DOIS listeners de 'input' — o
+// oninput inline (salvar + recalcular) e este de máscara — registrados em
+// momentos diferentes. Isso fazia o "salvar/recalcular" rodar ANTES da
+// máscara reformatar o valor, então o número salvo/usado no cálculo ficava
+// sempre um dígito atrasado em relação ao que aparecia na tela (parecia
+// "travar" e não gravar o salário certo). Agora a máscara aplica o
+// formato primeiro e só then dispara o callback (onAfter), na ordem certa.
+function aplicarMascaraDinheiro(elemento, onAfter) {
   elemento.addEventListener('input', function () {
     let v = this.value.replace(/[^0-9]/g, '');
-    if (!v) { this.value = ''; return; }
-    this.value = (parseInt(v) / 100).toFixed(2).replace('.', ',');
+    this.value = v ? (parseInt(v, 10) / 100).toFixed(2).replace('.', ',') : '';
+    if (typeof onAfter === 'function') onAfter();
   });
 }
 
 aplicarMascaraDinheiro(document.getElementById('fValor'));
-aplicarMascaraDinheiro(document.getElementById('simSalario'));
+aplicarMascaraDinheiro(document.getElementById('simSalario'), () => {
+  saveSimInputs();
+  calcularSimulacao();
+});
 
 // ═══════════════════════════════════════════════
 // PWA
