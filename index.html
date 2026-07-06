@@ -239,7 +239,7 @@
     --red: #e74c3c;
     --red-light: #fdedec;
     --text: #2c3e50;
-    --text-muted: #7f8c8d;
+    --text-muted: #5c6b73;
     --bg: #f8f9fa;
     --card: #ffffff;
     --border: #e2e8f0;
@@ -317,7 +317,7 @@
     --red: #e74c3c;
     --red-light: #fdedec;
     --text: #2c3e50;
-    --text-muted: #7f8c8d;
+    --text-muted: #5c6b73;
     --bg: #f8f9fa;
     --card: #ffffff;
     --border: #e2e8f0;
@@ -818,7 +818,7 @@
   .repeat-card .toggle-row { padding: 10px 0; }
   .repeat-card #repeatOptions { padding-bottom: 10px; }
 
-  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0 12px; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0 12px; cursor: pointer; }
   .toggle-label { font-size: 16px; font-weight: 800; color: var(--text); }
   .toggle {
     width: 54px; height: 32px;
@@ -1111,7 +1111,7 @@
   .expense-name { font-size: 14px; }
   .expense-amount { font-size: 14px; }
   .swipe-wrapper { margin-bottom: 7px; }
-  .action-bar-btn { padding: 7px; font-size: 11px; }
+  .action-bar-btn { padding: 10px 4px; font-size: 11px; min-height: 44px; }
 
   /* ── CARD RESUMO COMPACTO (#10) ── */
   .rich-summary-card {
@@ -1236,6 +1236,25 @@
   .inline-edit-actions button {
     flex: 1; padding: 12px; border-radius: 12px; border: none;
     font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer;
+  }
+
+  /* ── FOCO VISÍVEL (teclado/leitor de tela) ──
+     Vários controles usam outline:none no estado padrão; sem isso, quem
+     navega por teclado ou switch control perde a referência de onde está. */
+  .cat-card:focus-visible,
+  .action-bar-btn:focus-visible,
+  .drawer-item:focus-visible,
+  .tab:focus-visible,
+  .fab:focus-visible,
+  .toggle:focus-visible,
+  .radio-option:focus-visible,
+  .filter-chip:focus-visible,
+  .btn-save:focus-visible,
+  .btn-cancel:focus-visible,
+  .auth-tab:focus-visible,
+  .toggle-row:focus-visible {
+    outline: 2.5px solid var(--green-dark);
+    outline-offset: 2px;
   }
 </style>
 </head>
@@ -1470,10 +1489,11 @@
       </div>
 
       <div class="repeat-card">
-        <div class="toggle-row">
+        <div class="toggle-row" onclick="toggleRepetir()" role="button" tabindex="0"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleRepetir();}">
           <span class="toggle-label" id="labelRepetir">Repetir</span>
-          <button class="toggle" id="toggleRepetir" onclick="toggleRepetir()"
-                  aria-labelledby="labelRepetir" role="switch" aria-checked="false"></button>
+          <button class="toggle" id="toggleRepetir" onclick="event.stopPropagation();toggleRepetir()"
+                  aria-labelledby="labelRepetir" role="switch" aria-checked="false" tabindex="-1"></button>
         </div>
 
         <div id="repeatOptions" style="display:none">
@@ -2617,7 +2637,7 @@ function renderHistorico() {
                       <span class="hist-detail-amount">${formatBRL(e.valor)}</span>
                       ${h.isFuture ? '' : (e.paid
                         ? '<span class="hist-status-paid">✓ Pago</span>'
-                        : '<span class="hist-status-pend">Pendente</span>')}
+                        : '<span class="hist-status-pend">○ Pendente</span>')}
                     </div>
                   `).join('')
               }
