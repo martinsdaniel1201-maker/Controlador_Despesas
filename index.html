@@ -704,10 +704,14 @@
   }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-  /* ── ÁREA ROLÁVEL DO FORMULÁRIO (mobile fix) ── */
+  /* ── ÁREA ROLÁVEL DO FORMULÁRIO (mobile fix) ──
+     FIX: removido -webkit-overflow-scrolling:touch — essa propriedade fazia
+     o iOS aplicar "rubber-band" (bounce elástico) dentro do próprio container
+     mesmo quando o conteúdo não precisava rolar, abrindo um vão em branco
+     acima do título/handle ao tocar/arrastar o formulário. O Safari moderno
+     já tem momentum scroll nativo sem precisar dessa flag. */
   .modal-scroll {
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     padding: 16px 20px 4px;
     flex: 1 1 auto;
@@ -744,8 +748,17 @@
   .confirm-btn-secondary { background: var(--confirm-secondary-bg); color: var(--text); border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-family: 'Nunito'; font-size: 14px; cursor: pointer; }
   .confirm-btn-danger    { background: var(--red); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-family: 'Nunito'; font-size: 14px; cursor: pointer; }
 
-  .modal-handle { width: 44px; height: 5px; background: var(--border); border-radius: 4px; margin: 0 auto 24px; }
+  .modal-handle { width: 44px; height: 5px; background: var(--border); border-radius: 4px; margin: 0 auto 16px; }
   .modal-title { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 24px; text-align: center; }
+
+  /* ── INDICADOR DE PASSOS (dots) ── */
+  .modal-steps { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 14px; }
+  .step-dot {
+    width: 7px; height: 7px; border-radius: 4px;
+    background: var(--border);
+    transition: all 0.25s ease;
+  }
+  .step-dot.active { width: 22px; background: var(--green); }
 
   .form-group { margin-bottom: 16px; }
   .form-label {
@@ -771,12 +784,39 @@
   }
   .form-input:focus { border-color: var(--green); background: var(--input-focus-bg); box-shadow: 0 0 0 3px rgba(39,174,96,0.15); }
   .form-input.error { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(231,76,60,0.12); animation: shake 0.35s cubic-bezier(.36,.07,.19,.97); }
+
+  /* ── VALOR: campo em destaque, é o dado mais importante do formulário ── */
+  .valor-group { margin-bottom: 20px; }
+  .valor-input-wrap { position: relative; display: flex; align-items: center; }
+  .valor-prefix {
+    position: absolute; left: 18px;
+    font-size: 20px; font-weight: 900; color: var(--green-dark);
+    pointer-events: none;
+  }
+  .valor-input {
+    padding-left: 46px !important;
+    font-size: 26px !important;
+    font-weight: 900 !important;
+    border-width: 2px;
+  }
+  .valor-input:focus { box-shadow: 0 0 0 4px rgba(39,174,96,0.15); }
   @keyframes shake {
     10%, 90% { transform: translateX(-2px); }
     20%, 80% { transform: translateX(3px); }
     30%, 50%, 70% { transform: translateX(-4px); }
     40%, 60% { transform: translateX(4px); }
   }
+
+  /* ── CARD "REPETIR": separa visualmente das opções dos dados da despesa ── */
+  .repeat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 4px 16px 6px;
+    margin-top: 6px;
+  }
+  .repeat-card .toggle-row { padding: 10px 0; }
+  .repeat-card #repeatOptions { padding-bottom: 10px; }
 
   .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0 12px; }
   .toggle-label { font-size: 16px; font-weight: 800; color: var(--text); }
@@ -831,15 +871,32 @@
   .parcelas-input input:focus { border-color: var(--green); }
   .parcelas-input input.error { border-color: var(--red); animation: shake 0.35s cubic-bezier(.36,.07,.19,.97); }
 
-  .category-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
-  .cat-chip {
-    padding: 10px 16px; min-height: 40px; border-radius: 20px; border: 2px solid var(--border);
-    background: var(--card); font-size: 13px; font-weight: 800; color: var(--text-muted);
+  /* ── CATEGORIA: grade de cartões com ícone grande + nome embaixo ── */
+  .category-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
+  @media (max-width: 380px) {
+    .category-row { grid-template-columns: repeat(3, 1fr); }
+  }
+  .cat-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px;
+    padding: 12px 4px 10px;
+    border-radius: 16px; border: 2px solid var(--border);
+    background: var(--card);
     cursor: pointer; transition: all 0.2s;
-    display: inline-flex; align-items: center; justify-content: center;
     touch-action: manipulation;
   }
-  .cat-chip.active { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
+  .cat-card .cat-emoji { font-size: 24px; line-height: 1; }
+  .cat-card .cat-label {
+    font-size: 11px; font-weight: 800; color: var(--text-muted);
+    text-align: center; line-height: 1.2;
+  }
+  .cat-card.active { border-color: var(--green); background: var(--green-light); }
+  .cat-card.active .cat-label { color: var(--green-dark); }
 
   .btn-save {
     width: 100%; padding: 16px; border-radius: 14px; border: none;
@@ -851,7 +908,20 @@
   }
   .btn-save:hover:not(:disabled)  { filter: brightness(1.05); }
   .btn-save:active:not(:disabled) { transform: scale(0.98); }
-  .btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; filter: none; }
+  .btn-save:disabled { opacity: 0.8; cursor: not-allowed; transform: none; filter: none; }
+
+  /* ── SPINNER DE CARREGAMENTO DO BOTÃO SALVAR ── */
+  .btn-spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    margin-right: 8px;
+    vertical-align: -3px;
+    border: 2.5px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: btnSpin 0.7s linear infinite;
+  }
+  @keyframes btnSpin { to { transform: rotate(360deg); } }
 
   .btn-cancel {
     width: 100%; padding: 14px; border-radius: 14px; border: 2px solid var(--border);
@@ -1360,8 +1430,13 @@
 <!-- MODAL: NOVA / EDITAR DESPESA -->
 <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
   <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-scroll">
+    <div class="modal-scroll" id="modalScroll">
       <div class="modal-handle"></div>
+      <div class="modal-steps" id="modalSteps" aria-hidden="true">
+        <span class="step-dot active" data-step="0"></span>
+        <span class="step-dot" data-step="1"></span>
+        <span class="step-dot" data-step="2"></span>
+      </div>
       <div class="modal-title" id="modalTitle">Nova Despesa</div>
 
       <div class="form-group">
@@ -1370,9 +1445,12 @@
                placeholder="Ex: Aluguel, Netflix..." autocomplete="off" enterkeyhint="next">
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="fValor">Valor (R$)</label>
-        <input type="text" class="form-input" id="fValor" placeholder="0,00" inputmode="decimal" enterkeyhint="next">
+      <div class="form-group valor-group">
+        <label class="form-label" for="fValor">Valor</label>
+        <div class="valor-input-wrap">
+          <span class="valor-prefix">R$</span>
+          <input type="text" class="form-input valor-input" id="fValor" placeholder="0,00" inputmode="decimal" enterkeyhint="next">
+        </div>
       </div>
 
       <div class="form-group">
@@ -1391,33 +1469,35 @@
                placeholder="Ex: pagar no app do banco, boleto dia 10..." autocomplete="off" enterkeyhint="done">
       </div>
 
-      <div class="toggle-row">
-        <span class="toggle-label" id="labelRepetir">Repetir</span>
-        <button class="toggle" id="toggleRepetir" onclick="toggleRepetir()"
-                aria-labelledby="labelRepetir" role="switch" aria-checked="false"></button>
-      </div>
-
-      <div id="repeatOptions" style="display:none">
-        <div class="radio-group" id="radioGroup" role="radiogroup" aria-label="Tipo de repetição">
-          <label class="radio-option" onclick="selectType('fixo')">
-            <div class="radio-circle selected" id="radioFixo" role="radio" aria-checked="true"></div>
-            <span class="radio-text">Fixo (todo mês)</span>
-          </label>
-          <label class="radio-option" onclick="selectType('parcelado')">
-            <div class="radio-circle" id="radioParcela" role="radio" aria-checked="false"></div>
-            <span class="radio-text">Parcelado</span>
-          </label>
+      <div class="repeat-card">
+        <div class="toggle-row">
+          <span class="toggle-label" id="labelRepetir">Repetir</span>
+          <button class="toggle" id="toggleRepetir" onclick="toggleRepetir()"
+                  aria-labelledby="labelRepetir" role="switch" aria-checked="false"></button>
         </div>
-        <div class="parcelas-input" id="parcelasRow" style="display:none">
-          <label for="fParcelas">Número de parcelas:</label>
-          <input type="number" id="fParcelas" min="2" max="60" value="2" aria-label="Número de parcelas">
-          <span id="parcelaAtual" style="font-size:12px;color:var(--text-muted);font-weight:700;"></span>
+
+        <div id="repeatOptions" style="display:none">
+          <div class="radio-group" id="radioGroup" role="radiogroup" aria-label="Tipo de repetição">
+            <label class="radio-option" onclick="selectType('fixo')">
+              <div class="radio-circle selected" id="radioFixo" role="radio" aria-checked="true"></div>
+              <span class="radio-text">Fixo (todo mês)</span>
+            </label>
+            <label class="radio-option" onclick="selectType('parcelado')">
+              <div class="radio-circle" id="radioParcela" role="radio" aria-checked="false"></div>
+              <span class="radio-text">Parcelado</span>
+            </label>
+          </div>
+          <div class="parcelas-input" id="parcelasRow" style="display:none">
+            <label for="fParcelas">Número de parcelas:</label>
+            <input type="number" id="fParcelas" min="2" max="60" value="2" aria-label="Número de parcelas">
+            <span id="parcelaAtual" style="font-size:12px;color:var(--text-muted);font-weight:700;"></span>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="modal-actions">
-      <button class="btn-save" onclick="saveExpense()" id="btnSave">Salvar</button>
+      <button class="btn-save" onclick="saveExpense()" id="btnSave">✅ Adicionar Despesa</button>
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
     </div>
   </div>
@@ -2047,6 +2127,22 @@ function save() {
       }
     }
   }, 60);
+}
+
+// Versão aguardável de save(), sem debounce: usada no formulário de despesa
+// para manter o spinner do botão "Salvar" visível até a gravação (Supabase
+// ou localStorage) realmente terminar, em vez de fechar o modal na hora.
+async function persistExpenses() {
+  clearTimeout(_saveTimer);
+  if (!IS_LOCAL && supabaseClient && currentUser) {
+    await saveToSupabase();
+  } else {
+    try {
+      localStorage.setItem('despesas_v2', JSON.stringify(expenses));
+    } catch (e) {
+      showToast('⚠️ Erro ao salvar! Armazenamento cheio?');
+    }
+  }
 }
 
 function loadSimInputs() {
@@ -2801,6 +2897,12 @@ function openModal(reset = false) {
   }
   document.getElementById('modalOverlay').classList.add('open');
   lockBodyScroll();
+  // FIX: garante que o formulário sempre abra do topo (evita herdar a posição
+  // de rolagem de uma abertura anterior, que causava o vão em branco acima
+  // do handle/título ao reabrir o modal).
+  const modalScrollEl = document.getElementById('modalScroll');
+  modalScrollEl.scrollTop = 0;
+  updateStepDots();
   // Em mobile, abrir o teclado imediatamente some com o campo por trás dele;
   // focamos só depois da animação, sem forçar rolagem do fundo da página.
   setTimeout(() => {
@@ -2808,6 +2910,19 @@ function openModal(reset = false) {
     el.focus({ preventScroll: true });
   }, 400);
 }
+
+// ── INDICADOR DE PASSOS (dots): acompanha o scroll do formulário ──
+function updateStepDots() {
+  const el = document.getElementById('modalScroll');
+  const dots = document.querySelectorAll('#modalSteps .step-dot');
+  const max = el.scrollHeight - el.clientHeight;
+  const frac = max > 0 ? el.scrollTop / max : 0;
+  let step = 0;
+  if (frac > 0.66) step = 2;
+  else if (frac > 0.2) step = 1;
+  dots.forEach((d, i) => d.classList.toggle('active', i === step));
+}
+document.getElementById('modalScroll').addEventListener('scroll', updateStepDots, { passive: true });
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
@@ -2842,7 +2957,7 @@ function unlockBodyScroll() {
 document.getElementById('modal').addEventListener('focusin', (e) => {
   if (e.target.matches('input, textarea, select')) {
     setTimeout(() => {
-      e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      e.target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }, 300);
   }
 });
@@ -2876,10 +2991,13 @@ function updateRadios() {
 
 function renderCatChips() {
   document.getElementById('catRow').innerHTML = CATEGORIES.map(c =>
-    `<span class="cat-chip${selectedCat === c.id ? ' active' : ''}"
-           onclick="selectCat('${c.id}')"
-           role="radio" aria-checked="${selectedCat === c.id}"
-           tabindex="0">${c.emoji} ${sanitize(c.label)}</span>`
+    `<div class="cat-card${selectedCat === c.id ? ' active' : ''}"
+          onclick="selectCat('${c.id}')"
+          role="radio" aria-checked="${selectedCat === c.id}"
+          tabindex="0">
+       <span class="cat-emoji">${c.emoji}</span>
+       <span class="cat-label">${sanitize(c.label)}</span>
+     </div>`
   ).join('');
 }
 
@@ -2932,10 +3050,11 @@ async function saveExpense() {
   }
   document.getElementById('fParcelas').classList.remove('error');
 
-  // Desabilita o botão durante o processamento assíncrono
+  // Desabilita o botão e mostra o spinner durante o processamento assíncrono
+  // (importante no modo online/Supabase, onde a gravação depende da rede)
   const labelOriginal = btnSave.textContent;
   btnSave.disabled = true;
-  btnSave.textContent = '⏳ Salvando...';
+  btnSave.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span>Salvando...';
 
   const dateObj  = new Date(data + 'T12:00:00');
   const monthKey = getMonthKey(dateObj.getFullYear(), dateObj.getMonth());
@@ -2995,7 +3114,7 @@ async function saveExpense() {
     showToast('✅ Despesa adicionada!');
   }
 
-  save();
+  await persistExpenses();
   closeModal();
   renderAll();
   // Reabilita o botão (caso o modal seja reaberto antes do re-render)
