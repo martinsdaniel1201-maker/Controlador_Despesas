@@ -1512,6 +1512,13 @@
 
   <hr class="drawer-divider">
 
+  <!-- NOVO: forçar atualização limpando cache do PWA -->
+  <button class="drawer-item" id="btnForceUpdate" onclick="forceUpdate()">
+    <span class="di">🔄</span> Buscar atualizações
+  </button>
+
+  <hr class="drawer-divider">
+
   <button class="drawer-item" onclick="closeDrawer()">
     <span class="di">✕</span> Fechar
   </button>
@@ -3196,6 +3203,44 @@ if ('serviceWorker' in navigator) {
       .then(reg => console.log('Service Worker registrado com sucesso!', reg))
       .catch(err => console.log('Erro ao registrar o Service Worker:', err));
   });
+}
+
+// NOVO: botão "Buscar atualizações" — limpa caches do PWA/Service Worker
+// e recarrega direto do GitHub, ignorando qualquer versão antiga guardada.
+async function forceUpdate() {
+  const btn = document.getElementById('btnForceUpdate');
+  const labelOriginal = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="di">⏳</span> Atualizando...';
+
+  try {
+    // 1) Apaga todos os caches criados pelo Service Worker (cache do App Shell/PWA)
+    if ('caches' in window) {
+      const nomes = await caches.keys();
+      await Promise.all(nomes.map(nome => caches.delete(nome)));
+    }
+
+    // 2) Desregistra o Service Worker atual, para que uma nova versão
+    //    seja instalada do zero na próxima carga (evita servir sw.js antigo)
+    if ('serviceWorker' in navigator) {
+      const registros = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registros.map(reg => reg.unregister()));
+    }
+
+    showToast('🔄 Cache limpo! Buscando versão mais recente...');
+  } catch (e) {
+    console.log('Erro ao limpar cache:', e);
+  } finally {
+    // 3) Recarrega a página forçando bypass do cache do navegador,
+    //    garantindo que o index.html mais novo do GitHub seja buscado.
+    setTimeout(() => {
+      // location.reload(true) é obsoleto em navegadores modernos, então
+      // adicionamos um parâmetro único na URL para "furar" o cache HTTP.
+      const url = new URL(window.location.href);
+      url.searchParams.set('_v', Date.now());
+      window.location.replace(url.toString());
+    }, 600);
+  }
 }
 
 // ═══════════════════════════════════════════════
