@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#2ecc71">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2184,6 +2184,7 @@ let expenses = [];
 let currentMonth  = new Date().getMonth();
 let currentYear   = new Date().getFullYear();
 let activeFilter  = 'all';
+let currentTab    = 'despesas';
 let editingId     = null;
 let repeatType    = 'fixo';
 let repeatOn      = false;
@@ -3612,6 +3613,8 @@ function changeMonth(dir) {
   updateMonthLabel();
   triggerListAnimation();
   renderAll();
+  if (currentTab === 'stats')     renderStats();
+  if (currentTab === 'historico') renderHistorico();
 }
 
 function setFilter(f, el) {
@@ -3623,6 +3626,7 @@ function setFilter(f, el) {
 }
 
 function switchTab(tab, btn) {
+  currentTab = tab;
   document.querySelectorAll('.tab').forEach(t => {
     t.classList.remove('active');
     t.setAttribute('aria-selected', 'false');
