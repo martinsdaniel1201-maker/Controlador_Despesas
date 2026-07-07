@@ -1,10 +1,13 @@
 // 1. TODA VEZ que você mudar algo no HTML/CSS, mude essa versão (ex: v2, v3, v4...)
-const CACHE_NAME = 'controlador-despesas-v6'; 
+const CACHE_NAME = 'controlador-despesas-v7'; 
 
 const ASSETS = [
   './',
   './index.html',
   './icone-192.png',
+  './icone-512.png',
+  './apple-touch-icon.png',
+  './favicon-32.png',
   './manifest.json'
 ];
 
