@@ -1639,7 +1639,13 @@
           </div>
           <div style="display:flex; gap:8px; margin-top:8px;">
             <button class="btn-sim-update" style="flex:1;" onclick="copiarCodigoPix()">📋 Copiar Código</button>
-            <button class="btn-sim-update" style="flex:1; background:#25D366;" onclick="enviarCobrancaWhatsApp()">📲 Enviar WhatsApp</button>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn-sim-update" style="flex:1; background:#25D366;" onclick="enviarCobrancaWhatsApp()">📲 Enviar Cobrança</button>
+            <button class="btn-sim-update" style="flex:1; background:#128C7E;" onclick="enviarCodigoWhatsApp()">🔑 Enviar só o Código</button>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:6px; text-align:center;">
+            Dica: mande as duas mensagens — a pessoa aperta e segura na do código pra copiar só ele, sem nada junto.
           </div>
         </div>
 
@@ -2636,12 +2642,20 @@ function copiarCodigoPix() {
 
 function enviarCobrancaWhatsApp() {
   if (!ultimaCobrancaGerada) return;
-  const { codigo, valor, descricao } = ultimaCobrancaGerada;
+  const { valor, descricao } = ultimaCobrancaGerada;
   const valorFmt = valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   let msg = 'Oi! Segue a cobrança de R$ ' + valorFmt;
   if (descricao) msg += ' referente a: ' + descricao;
-  msg += '\n\nPix Copia e Cola (é só copiar e colar no app do seu banco):\n' + codigo;
+  msg += '\n\nJá te mando o código Pix Copia e Cola na próxima mensagem 👇';
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// Mensagem separada contendo SOMENTE o código — assim quem recebe consegue
+// apertar e segurar a bolha da mensagem no WhatsApp e copiar só o código,
+// sem nenhum texto extra junto.
+function enviarCodigoWhatsApp() {
+  if (!ultimaCobrancaGerada) return;
+  window.open('https://wa.me/?text=' + encodeURIComponent(ultimaCobrancaGerada.codigo), '_blank');
 }
 
 // ═══════════════════════════════════════════════
