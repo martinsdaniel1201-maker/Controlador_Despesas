@@ -370,6 +370,7 @@
     letter-spacing: 0.5px;
   }
   .btn-menu {
+    position: relative;
     background: rgba(255,255,255,0.2);
     border: none;
     border-radius: 12px;
@@ -382,6 +383,17 @@
     backdrop-filter: blur(5px);
   }
   .btn-menu:hover { background: rgba(255,255,255,0.3); }
+  /* NOVO: indicador de que há verificação de atualização pendente */
+  .btn-menu-badge {
+    display: none;
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--orange);
+    border: 2px solid var(--green-dark);
+  }
+  .btn-menu-badge.visible { display: block; }
 
   .month-nav {
     display: flex;
@@ -987,6 +999,39 @@
   .drawer-header h2 { font-size: 24px; font-weight: 900; color: var(--green-dark); }
   .drawer-header p { font-size: 12px; color: var(--text-muted); font-weight: 700; margin-top: 4px; }
 
+  /* ── PAINEL DE CONFIGURAÇÕES (sub-drawer) ── */
+  .settings-drawer { z-index: 402; }
+  .settings-back {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 24px 20px; margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px; font-weight: 800; color: var(--text-muted);
+    cursor: pointer; background: none; border-left: none; border-right: none; border-top: none;
+    width: 100%; text-align: left; font-family: 'Nunito', sans-serif;
+  }
+  .settings-back:hover { color: var(--green-dark); }
+  .settings-section-label {
+    padding: 4px 24px 8px; font-size: 11px; font-weight: 900;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.7px;
+  }
+  /* Card de destaque: buscar atualizações */
+  .update-card {
+    margin: 4px 16px 14px; padding: 14px 16px; border-radius: 14px;
+    background: linear-gradient(135deg, rgba(243,156,18,0.14), rgba(243,156,18,0.06));
+    border: 1.5px solid var(--orange);
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: all 0.2s; text-align: left;
+    width: calc(100% - 32px); font-family: 'Nunito', sans-serif;
+  }
+  .update-card:hover { background: rgba(243,156,18,0.18); }
+  .update-card .di { font-size: 22px; }
+  .update-card-text { flex: 1; }
+  .update-card-title { font-size: 14px; font-weight: 900; color: var(--orange-dark); }
+  .update-card-sub { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 2px; }
+  .update-card-dot {
+    width: 9px; height: 9px; border-radius: 50%; background: var(--orange); flex-shrink: 0;
+  }
+
   /* ── STATS & HISTÓRICO ── */
   .stats-container { padding: 10px 14px 120px; }
   .stats-card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow); }
@@ -1354,7 +1399,7 @@
 <header class="header">
   <div class="header-top">
     <span class="header-title">💰 Minhas Despesas</span>
-    <button class="btn-menu" onclick="openDrawer()" aria-label="Abrir menu lateral">⋮</button>
+    <button class="btn-menu" onclick="openDrawer()" aria-label="Abrir menu lateral">⋮<span class="btn-menu-badge" id="btnMenuBadge"></span></button>
   </div>
   <nav class="month-nav" aria-label="Navegação de meses">
     <button class="btn-nav" onclick="changeMonth(-1)" aria-label="Mês anterior">‹</button>
@@ -1658,7 +1703,7 @@
 
   <hr class="drawer-divider">
 
-  <!-- NOVO: gerenciar categorias personalizadas -->
+  <!-- Ações de uso frequente ficam no menu principal -->
   <button class="drawer-item" onclick="openManageCategories();closeDrawer()">
     <span class="di">🏷</span> Gerenciar categorias
   </button>
@@ -1666,18 +1711,6 @@
   <button class="drawer-item" onclick="exportCSV();closeDrawer()">
     <span class="di">📥</span> Exportar CSV (mês atual)
   </button>
-  <button class="drawer-item" onclick="openExportRangeForm();closeDrawer()">
-    <span class="di">📅</span> Exportar CSV (período)
-  </button>
-  <!-- NOVO: exportar JSON para backup -->
-  <button class="drawer-item" onclick="exportJSON();closeDrawer()">
-    <span class="di">📦</span> Backup JSON
-  </button>
-  <button class="drawer-item" onclick="importJSON();closeDrawer()">
-    <span class="di">📤</span> Importar dados
-  </button>
-
-  <hr class="drawer-divider">
 
   <!-- NOVO: marcar todas as despesas do mês como pagas -->
   <button class="drawer-item" onclick="payAll();closeDrawer()">
@@ -1686,22 +1719,43 @@
 
   <hr class="drawer-divider">
 
-  <button class="drawer-item" onclick="clearMonth();closeDrawer()">
-    <span class="di">🗑</span> Limpar mês atual
-  </button>
-  <button class="drawer-item" onclick="clearAll();closeDrawer()">
-    <span class="di">⚠️</span> Limpar tudo
+  <!-- REORGANIZADO: opções menos usadas / de maior impacto agora ficam em Configurações -->
+  <button class="drawer-item" onclick="openSettingsDrawer();closeDrawer()">
+    <span class="di">⚙️</span> Configurações
+    <span class="btn-menu-badge" id="settingsEntryBadge" style="position:static; margin-left:auto;"></span>
   </button>
 
   <hr class="drawer-divider">
 
-  <!-- NOVO: botão de alternância de tema claro/escuro -->
+  <button class="drawer-item" onclick="closeDrawer()">
+    <span class="di">✕</span> Fechar
+  </button>
+</div>
+
+<!-- DRAWER: CONFIGURAÇÕES (sub-menu) -->
+<div class="drawer-overlay" id="settingsDrawerOverlay" onclick="closeSettingsDrawer()"></div>
+<div class="drawer settings-drawer" id="settingsDrawer" role="navigation" aria-label="Configurações">
+  <button class="settings-back" onclick="closeSettingsDrawer()">
+    <span class="di" style="font-size:16px;width:auto;">←</span> Voltar
+  </button>
+
+  <div class="settings-section-label">Atualizações</div>
+  <button class="update-card" id="btnForceUpdate" onclick="forceUpdate()">
+    <span class="di">🔄</span>
+    <span class="update-card-text">
+      <span class="update-card-title">Buscar atualizações</span>
+      <span class="update-card-sub" id="updateCardSub">Verifique se você está na última versão</span>
+    </span>
+    <span class="update-card-dot" id="updateCardDot" style="display:none;"></span>
+  </button>
+
+  <hr class="drawer-divider">
+
+  <div class="settings-section-label">Aparência</div>
   <button class="drawer-item" id="darkModeBtn" onclick="toggleDarkMode()">
     <span class="di" id="darkModeIcon">🌙</span>
     <span id="darkModeLabel">Modo Escuro</span>
   </button>
-
-  <!-- NOVO: lembretes de vencimento -->
   <button class="drawer-item" id="reminderBtn" onclick="toggleReminders()">
     <span class="di" id="reminderIcon">🔕</span>
     <span id="reminderLabel">Lembretes de Vencimento</span>
@@ -1709,14 +1763,30 @@
 
   <hr class="drawer-divider">
 
-  <!-- NOVO: forçar atualização limpando cache do PWA -->
-  <button class="drawer-item" id="btnForceUpdate" onclick="forceUpdate()">
-    <span class="di">🔄</span> Buscar atualizações
+  <div class="settings-section-label">Dados</div>
+  <button class="drawer-item" onclick="openExportRangeForm();closeSettingsDrawer()">
+    <span class="di">📅</span> Exportar CSV (período)
+  </button>
+  <button class="drawer-item" onclick="exportJSON();closeSettingsDrawer()">
+    <span class="di">📦</span> Backup JSON
+  </button>
+  <button class="drawer-item" onclick="importJSON();closeSettingsDrawer()">
+    <span class="di">📤</span> Importar dados
   </button>
 
   <hr class="drawer-divider">
 
-  <button class="drawer-item" onclick="closeDrawer()">
+  <div class="settings-section-label">Zona de risco</div>
+  <button class="drawer-item" onclick="clearMonth();closeSettingsDrawer()">
+    <span class="di">🗑</span> Limpar mês atual
+  </button>
+  <button class="drawer-item" onclick="clearAll();closeSettingsDrawer()">
+    <span class="di">⚠️</span> Limpar tudo
+  </button>
+
+  <hr class="drawer-divider">
+
+  <button class="drawer-item" onclick="closeSettingsDrawer()">
     <span class="di">✕</span> Fechar
   </button>
 </div>
@@ -3693,8 +3763,54 @@ function openDrawer() {
   updateDarkModeBtn();
   updateReminderBtn();
   updateLastSyncDisplay();
+  updateUpdateBadge();
   document.getElementById('drawerOverlay').classList.add('open');
   document.getElementById('drawer').classList.add('open');
+}
+
+// ── PAINEL DE CONFIGURAÇÕES (sub-menu do kebab) ──
+function openSettingsDrawer() {
+  updateDarkModeBtn();
+  updateReminderBtn();
+  updateUpdateBadge();
+  document.getElementById('settingsDrawerOverlay').classList.add('open');
+  document.getElementById('settingsDrawer').classList.add('open');
+}
+function closeSettingsDrawer() {
+  document.getElementById('settingsDrawerOverlay').classList.remove('open');
+  document.getElementById('settingsDrawer').classList.remove('open');
+}
+
+// ── BADGE DE ATUALIZAÇÃO PENDENTE ──
+// Não temos como comparar versão (não há endpoint de versão), então usamos
+// como sinal indireto o tempo desde a última vez que o usuário clicou em
+// "Buscar atualizações". Se passou muito tempo, damos destaque visual
+// (bolinha no kebab + no item Configurações + no próprio card) para chamar
+// atenção, já que hoje isso passava despercebido dentro do menu.
+const UPDATE_CHECK_THRESHOLD_DIAS = 7;
+function updateUpdateBadge() {
+  const ts = parseInt(localStorage.getItem('lastUpdateCheck') || '0', 10);
+  const diasSemChecar = ts ? Math.floor((Date.now() - ts) / 86400000) : Infinity;
+  const pendente = diasSemChecar >= UPDATE_CHECK_THRESHOLD_DIAS;
+
+  const kebabBadge = document.getElementById('btnMenuBadge');
+  const entryBadge = document.getElementById('settingsEntryBadge');
+  const cardDot    = document.getElementById('updateCardDot');
+  const cardSub    = document.getElementById('updateCardSub');
+
+  if (kebabBadge) kebabBadge.classList.toggle('visible', pendente);
+  if (entryBadge) entryBadge.classList.toggle('visible', pendente);
+  if (cardDot)    cardDot.style.display = pendente ? 'block' : 'none';
+
+  if (cardSub) {
+    if (!ts) {
+      cardSub.textContent = 'Você ainda não verificou nesta instalação';
+    } else if (diasSemChecar <= 0) {
+      cardSub.textContent = 'Verificado hoje ✓';
+    } else {
+      cardSub.textContent = 'Última verificação há ' + diasSemChecar + (diasSemChecar > 1 ? ' dias' : ' dia');
+    }
+  }
 }
 
 // ── ÚLTIMA SINCRONIZAÇÃO (indicador persistente) ──
@@ -3916,9 +4032,14 @@ if ('serviceWorker' in navigator) {
 // e recarrega direto do GitHub, ignorando qualquer versão antiga guardada.
 async function forceUpdate() {
   const btn = document.getElementById('btnForceUpdate');
-  const labelOriginal = btn.innerHTML;
+  const sub = document.getElementById('updateCardSub');
   btn.disabled = true;
-  btn.innerHTML = '<span class="di">⏳</span> Atualizando...';
+  btn.style.opacity = '0.7';
+  if (sub) sub.textContent = 'Atualizando...';
+
+  // Registra que o usuário verificou agora, para não exibir o badge de novo tão cedo
+  localStorage.setItem('lastUpdateCheck', Date.now().toString());
+  updateUpdateBadge();
 
   try {
     // 1) Apaga todos os caches criados pelo Service Worker (cache do App Shell/PWA)
@@ -3966,6 +4087,7 @@ aplicarMascaraDinheiro(document.getElementById('inlineEditInput'));
 // Se já logado, initAuth chama renderAll internamente via loadFromSupabase.
 // Se não logado, mostra a tela de login antes de qualquer render.
 initAuth();
+updateUpdateBadge();
 </script>
 </body>
 </html>
