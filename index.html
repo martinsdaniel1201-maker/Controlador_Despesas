@@ -1974,12 +1974,15 @@ async function loadFromSupabase() {
   try {
     const { data, error } = await supabaseClient
       .from('expenses')
-      .select('data')
+      .select('data, categories')
       .eq('user_id', currentUser.id)
       .maybeSingle();
 
     if (error) throw error;
     expenses = Array.isArray(data?.data) ? data.data : [];
+    if (Array.isArray(data?.categories) && data.categories.length > 0) {
+      applyCategoriesFromCloud(data.categories);
+    }
   } catch (e) {
     console.error('Erro ao carregar do Supabase:', e);
     // Fallback: mantém o que está no localStorage
@@ -2158,6 +2161,38 @@ function removeCustomCategory(id) {
   const idx = CATEGORIES.findIndex(c => c.id === id);
   if (idx >= 0) CATEGORIES.splice(idx, 1);
   delete CAT_COLORS[id];
+}
+
+// ── Aplica a lista de categorias vinda da nuvem (login/sincronização) ──
+// Substitui as categorias personalizadas locais pelas da nuvem, evitando duplicatas.
+function applyCategoriesFromCloud(cloudList) {
+  const existingCustomIds = CATEGORIES.filter(c => c.custom).map(c => c.id);
+  existingCustomIds.forEach(id => {
+    const idx = CATEGORIES.findIndex(c => c.id === id);
+    if (idx >= 0) CATEGORIES.splice(idx, 1);
+    delete CAT_COLORS[id];
+  });
+  saveCustomCategoriesList(cloudList);
+  loadCustomCategories();
+}
+
+// ── Envia as categorias personalizadas locais para o Supabase ──
+// Reaproveita o array `expenses` já carregado em memória para não sobrescrever despesas.
+async function syncCategoriesToSupabase() {
+  if (!supabaseClient || !currentUser) return; // modo local/offline: fica só no localStorage
+  try {
+    const list = getCustomCategoriesList();
+    const { error } = await supabaseClient
+      .from('expenses')
+      .upsert(
+        { user_id: currentUser.id, data: expenses, categories: list, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      );
+    if (error) throw error;
+  } catch (e) {
+    console.error('Erro ao sincronizar categorias com o Supabase:', e);
+    showToast('⚠️ Categoria salva localmente, mas falhou ao sincronizar');
+  }
 }
 
 loadCustomCategories();
@@ -3379,6 +3414,7 @@ function confirmNewCategory() {
     renderCatChips();
     closeNewCategoryForm();
     showToast('✅ Categoria "' + label + '" criada!');
+    syncCategoriesToSupabase();
   }
 }
 
@@ -3482,6 +3518,7 @@ async function confirmDeleteCategory(id, label) {
   renderManageCatList();
   showToast('Categoria removida');
   renderAll();
+  syncCategoriesToSupabase();
 }
 
 function selectCat(id) { selectedCat = id; renderCatChips(); }
