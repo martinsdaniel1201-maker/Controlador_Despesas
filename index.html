@@ -9,6 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="Despesas">
 <meta name="description" content="Controle suas despesas mensais">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <title>Minhas Despesas</title>
 <!-- MELHORIA: preconnect para reduzir latência da fonte -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2322,7 +2324,7 @@ function checkDueReminders(force) {
   try {
     if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
       navigator.serviceWorker.getRegistration().then(reg => {
-        if (reg) reg.showNotification(titulo, { body: corpo, icon: 'icon-192.png', tag: 'vencimento-' + todayKey });
+        if (reg) reg.showNotification(titulo, { body: corpo, icon: './icone-192.png', tag: 'vencimento-' + todayKey });
         else new Notification(titulo, { body: corpo });
       });
     } else {
