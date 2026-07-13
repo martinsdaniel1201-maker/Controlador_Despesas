@@ -363,11 +363,27 @@
     justify-content: space-between;
     margin-bottom: 16px;
   }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    flex-shrink: 0;
+  }
   .header-title {
     color: #fff;
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: 0.5px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
   }
   .btn-menu {
     position: relative;
@@ -455,7 +471,8 @@
     gap: 4px;
     line-height: 1.2;
   }
-  .tab span { font-size: 18px; display: block; line-height: 1; }
+  .tab span { display: block; line-height: 1; }
+  .tab .icon { width: 18px; height: 18px; }
   .tab.active { color: var(--green-dark); background: var(--green-light); }
 
   /* ── SUMMARY CARDS ── */
@@ -1306,12 +1323,63 @@
 </style>
 </head>
 <body>
+<!-- ══════════════════════════════════════════════════
+     SPRITE DE ÍCONES (substitui emojis de UI por SVG
+     consistente entre dispositivos/sistemas operacionais)
+══════════════════════════════════════════════════ -->
+<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+<defs>
+<symbol id="i-wallet" viewBox="0 0 24 24"><path d="M20 7H4a1 1 0 0 0-1 1v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-1-2Z"/><path d="M17 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M17 13h2"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></symbol>
+<symbol id="i-bar-chart" viewBox="0 0 24 24"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/><line x1="3" y1="21" x2="21" y2="21"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><circle cx="9" cy="12" r="2.2"/><line x1="4" y1="5" x2="20" y2="5"/><circle cx="16" cy="5" r="2.2"/><line x1="4" y1="19" x2="20" y2="19"/><circle cx="13" cy="19" r="2.2"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><line x1="3.5" y1="10" x2="20.5" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19L12 3.5Z"/><line x1="12" y1="9.5" x2="12" y2="14"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="20.5" y2="20.5"/></symbol>
+<symbol id="i-calculator" viewBox="0 0 24 24"><rect x="4.5" y="3" width="15" height="18" rx="2"/><line x1="7.5" y1="7" x2="16.5" y2="7"/><circle cx="8" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m3 11 18-8-8 18-2.5-7.5L3 11Z"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11A8 8 0 0 0 5.5 6.5L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.5 4.5L20 16"/><path d="M20 20v-4h-4"/></symbol>
+<symbol id="i-credit-card" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="6.5" y1="14.5" x2="10.5" y2="14.5"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="8" r="4"/><path d="M11 11 20.5 20.5"/><path d="M16 16l2.5-2.5"/><path d="M19 19l2-2"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5.5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5v1"/></symbol>
+<symbol id="i-smartphone" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.2"/><line x1="10.5" y1="18.2" x2="13.5" y2="18.2"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z"/><line x1="14.5" y1="6.5" x2="17.5" y2="9.5"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.5 3.5H6A2.5 2.5 0 0 0 3.5 6v6.5a1 1 0 0 0 .3.7l9.5 9.5a1 1 0 0 0 1.4 0l6.8-6.8a1 1 0 0 0 0-1.4l-9.5-9.5a1 1 0 0 0-.7-.3Z"/><circle cx="8" cy="8.5" r="1.4" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.5v12"/><path d="M7 11l5 5 5-5"/><path d="M4.5 19h15"/></symbol>
+<symbol id="i-check-square" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M7.5 12.5 11 16l6-7"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V19.4a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3.5a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1A2 2 0 1 1 7.5 3.1l.1.1a1.6 1.6 0 0 0 1.8.3H9.5a1.6 1.6 0 0 0 1-1.5V1.9a2 2 0 1 1 4 0V2a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V8a1.6 1.6 0 0 0 1.5 1h.1a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><line x1="5.5" y1="5.5" x2="18.5" y2="18.5"/><line x1="18.5" y1="5.5" x2="5.5" y2="18.5"/></symbol>
+<symbol id="i-arrow-left" viewBox="0 0 24 24"><line x1="20" y1="12" x2="5" y2="12"/><path d="M11 6 5 12l6 6"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4.5" y1="4.5" x2="6.2" y2="6.2"/><line x1="17.8" y1="17.8" x2="19.5" y2="19.5"/><line x1="4.5" y1="19.5" x2="6.2" y2="17.8"/><line x1="17.8" y1="6.2" x2="19.5" y2="4.5"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0c0 4.5 1.5 6 2 6.5H4c.5-.5 2-2 2-6.5Z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+<symbol id="i-bell-off" viewBox="0 0 24 24"><path d="M6.5 6.5A6 6 0 0 1 18 10c0 3.2.8 4.8 1.4 5.6M7 17H4c.5-.5 2-2 2-6.5"/><path d="M10 20a2 2 0 0 0 4 0"/><line x1="3" y1="3" x2="21" y2="21"/></symbol>
+<symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4.5" rx="1.2"/><path d="M4.5 8.5v9A2 2 0 0 0 6.5 19.5h11a2 2 0 0 0 2-2v-9"/><line x1="10" y1="12.5" x2="14" y2="12.5"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15.5v-12"/><path d="M7 7.5l5-5 5 5"/><path d="M4.5 19h15"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 6.5h15"/><path d="M9.5 6.5V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3v1.7"/><path d="M6.5 6.5 7.3 19a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-12.5"/><line x1="10" y1="10.5" x2="10" y2="16.5"/><line x1="14" y1="10.5" x2="14" y2="16.5"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="4.5" x2="12" y2="19.5"/><line x1="4.5" y1="12" x2="19.5" y2="12"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol>
+<symbol id="i-party" viewBox="0 0 24 24"><path d="M4 20 14.5 9.5"/><path d="M9 5.5l1.5 1.5"/><path d="M13 3l1 2"/><path d="M17 7l2 1"/><path d="M15.5 12.5 20 8"/><circle cx="6" cy="9" r="0.9" fill="currentColor" stroke="none"/><circle cx="16" cy="17" r="0.9" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-dollar" viewBox="0 0 24 24"><line x1="12" y1="2.5" x2="12" y2="21.5"/><path d="M16.5 6.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 2.7 4.5 3 4.5 1.3 4.5 3-2 3-4.5 3-4.5-1.3-4.5-3"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M4 10h11a5 5 0 0 1 0 10h-2"/><path d="M8 5 4 10l4 5"/></symbol>
+<symbol id="i-dots" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="18.5" r="1.6" fill="currentColor" stroke="none"/></symbol>
+</defs>
+</svg>
+<style>
+  .icon{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:middle;flex-shrink:0;}
+  .icon-sm{width:16px;height:16px;}
+  .icon-lg{width:28px;height:28px;}
+  .icon-xl{width:40px;height:40px;stroke-width:1.6;}
+</style>
 
 <!-- BANNER DE INSTALAÇÃO PWA -->
 <div class="install-banner" id="installBanner" role="banner">
-  <span>📱 Instale o app no seu dispositivo!</span>
+  <span style="display:flex;align-items:center;gap:8px;"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-smartphone"></use></svg> Instale o app no seu dispositivo!</span>
   <button class="btn-install" id="btnInstall">Instalar</button>
-  <button class="btn-install-close" id="btnInstallClose" aria-label="Fechar banner de instalação">✕</button>
+  <button class="btn-install-close" id="btnInstallClose" aria-label="Fechar banner de instalação"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-x"></use></svg></button>
 </div>
 
 <!-- OVERLAY GLOBAL PARA POPUPS -->
@@ -1322,7 +1390,7 @@
   <div class="modal">
     <div class="modal-scroll">
       <div class="modal-handle"></div>
-      <div class="modal-title" id="newCatTitle">🏷 Nova Categoria</div>
+      <div class="modal-title" id="newCatTitle" style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-tag"></use></svg> Nova Categoria</div>
 
       <div class="form-group" style="display:flex; gap:10px;">
         <div style="flex:0 0 70px;">
@@ -1339,7 +1407,7 @@
         <input type="color" id="newCatColor" value="#7f8c8d" style="width:100%; height:40px; border:none; border-radius:10px; cursor:pointer;">
       </div>
 
-      <button class="btn-save" onclick="confirmNewCategory()">✅ Criar Categoria</button>
+      <button class="btn-save" onclick="confirmNewCategory()"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> Criar Categoria</button>
       <button class="btn-cancel" onclick="closeNewCategoryForm()">Cancelar</button>
     </div>
   </div>
@@ -1350,7 +1418,7 @@
   <div class="modal">
     <div class="modal-scroll">
       <div class="modal-handle"></div>
-      <div class="modal-title" id="pixKeyTitle">🔑 Nova Chave Pix</div>
+      <div class="modal-title" id="pixKeyTitle" style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-key"></use></svg> Nova Chave Pix</div>
 
       <div class="form-group">
         <label class="form-label" for="pixKeyApelido">Apelido (só pra você identificar)</label>
@@ -1383,7 +1451,7 @@
         <input type="text" class="form-input" id="pixKeyCidade" maxlength="15" placeholder="Ex: Passos" autocomplete="off">
       </div>
 
-      <button class="btn-save" onclick="confirmNewPixKey()">✅ Salvar Chave</button>
+      <button class="btn-save" onclick="confirmNewPixKey()"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> Salvar Chave</button>
       <button class="btn-cancel" onclick="closePixKeyModal()">Cancelar</button>
     </div>
   </div>
@@ -1394,9 +1462,9 @@
   <div class="modal">
     <div class="modal-scroll">
       <div class="modal-handle"></div>
-      <div class="modal-title" id="manageCatTitle">🏷 Categorias</div>
+      <div class="modal-title" id="manageCatTitle" style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-tag"></use></svg> Categorias</div>
       <div id="manageCatList" style="margin-bottom:16px;"></div>
-      <button class="btn-save" onclick="closeManageCategories();openNewCategoryForm();">➕ Nova Categoria</button>
+      <button class="btn-save" onclick="closeManageCategories();openNewCategoryForm();"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"></use></svg> Nova Categoria</button>
       <button class="btn-cancel" onclick="closeManageCategories()">Fechar</button>
     </div>
   </div>
@@ -1407,13 +1475,13 @@
   <div class="modal">
     <div class="modal-scroll">
       <div class="modal-handle"></div>
-      <div class="modal-title" id="catBudgetTitle">🎯 Meta de Gasto</div>
+      <div class="modal-title" id="catBudgetTitle" style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg> Meta de Gasto</div>
       <p style="color:var(--text-muted);font-size:13px;font-weight:700;margin:-8px 0 16px;" id="catBudgetSubtitle"></p>
       <div class="form-group">
         <label class="form-label" for="catBudgetValue">Limite mensal (R$)</label>
         <input type="text" class="form-input" id="catBudgetValue" placeholder="0,00" inputmode="decimal">
       </div>
-      <button class="btn-save" onclick="confirmCategoryBudget()">✅ Salvar Meta</button>
+      <button class="btn-save" onclick="confirmCategoryBudget()"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> Salvar Meta</button>
       <button class="btn-cancel" onclick="closeCategoryBudgetEditor()">Cancelar</button>
     </div>
   </div>
@@ -1424,7 +1492,7 @@
   <div class="modal">
     <div class="modal-scroll">
       <div class="modal-handle"></div>
-      <div class="modal-title" id="exportRangeTitle">📅 Exportar por Período</div>
+      <div class="modal-title" id="exportRangeTitle" style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg> Exportar por Período</div>
       <div class="form-group">
         <label class="form-label" for="exportRangeStart">De</label>
         <input type="month" class="form-input" id="exportRangeStart">
@@ -1433,7 +1501,7 @@
         <label class="form-label" for="exportRangeEnd">Até</label>
         <input type="month" class="form-input" id="exportRangeEnd">
       </div>
-      <button class="btn-save" onclick="confirmExportRange()">📥 Exportar CSV</button>
+      <button class="btn-save" onclick="confirmExportRange()"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-download"></use></svg> Exportar CSV</button>
       <button class="btn-cancel" onclick="closeExportRangeForm()">Cancelar</button>
     </div>
   </div>
@@ -1442,8 +1510,11 @@
 <!-- CABEÇALHO -->
 <header class="header">
   <div class="header-top">
-    <span class="header-title">💰 Minhas Despesas</span>
-    <button class="btn-menu" onclick="openDrawer()" aria-label="Abrir menu lateral">⋮<span class="btn-menu-badge" id="btnMenuBadge"></span></button>
+    <div class="header-brand">
+      <span class="header-badge"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-wallet"></use></svg></span>
+      <span class="header-title">Minhas Despesas</span>
+    </div>
+    <button class="btn-menu" onclick="openDrawer()" aria-label="Abrir menu lateral"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-dots"></use></svg><span class="btn-menu-badge" id="btnMenuBadge"></span></button>
   </div>
   <nav class="month-nav" aria-label="Navegação de meses">
     <button class="btn-nav" onclick="changeMonth(-1)" aria-label="Mês anterior">‹</button>
@@ -1455,12 +1526,12 @@
 <!-- ABAS -->
 <div class="tabs" role="tablist" aria-label="Seções do app">
   <div class="tab-wrapper">
-    <button class="tab active" onclick="switchTab('despesas', this)" role="tab" aria-selected="true" aria-controls="tabDespesas"><span>📋</span>Despesas</button>
+    <button class="tab active" onclick="switchTab('despesas', this)" role="tab" aria-selected="true" aria-controls="tabDespesas"><span><svg class="icon" aria-hidden="true"><use href="#i-list"></use></svg></span>Despesas</button>
     <span class="tab-alert-dot" id="tabAlertDot"></span>
   </div>
-  <button class="tab" onclick="switchTab('stats', this)" role="tab" aria-selected="false" aria-controls="tabStats"><span>📊</span>Relatório</button>
-  <button class="tab" onclick="switchTab('simulacao', this)" role="tab" aria-selected="false" aria-controls="tabSimulacao"><span>🛠️</span>Ferramentas</button>
-  <button class="tab" onclick="switchTab('historico', this)" role="tab" aria-selected="false" aria-controls="tabHistorico"><span>🗓</span>Histórico</button>
+  <button class="tab" onclick="switchTab('stats', this)" role="tab" aria-selected="false" aria-controls="tabStats"><span><svg class="icon" aria-hidden="true"><use href="#i-bar-chart"></use></svg></span>Relatório</button>
+  <button class="tab" onclick="switchTab('simulacao', this)" role="tab" aria-selected="false" aria-controls="tabSimulacao"><span><svg class="icon" aria-hidden="true"><use href="#i-sliders"></use></svg></span>Ferramentas</button>
+  <button class="tab" onclick="switchTab('historico', this)" role="tab" aria-selected="false" aria-controls="tabHistorico"><span><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg></span>Histórico</button>
 </div>
 
 <!-- ABA: DESPESAS -->
@@ -1468,7 +1539,7 @@
 
   <!-- AVISO DE DÍVIDAS — pílula discreta -->
   <div id="debt-alert-card">
-    <span class="debt-alert-info">⚠️ <span id="debtAlertCount"></span> pendente(s) a pagar</span>
+    <span class="debt-alert-info"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-alert"></use></svg> <span id="debtAlertCount"></span> pendente(s) a pagar</span>
     <span class="debt-alert-amount" id="debtAlertAmount">R$ 0,00</span>
   </div>
 
@@ -1506,7 +1577,7 @@
   </div>
 
   <div class="search-bar" style="padding-top:12px;">
-    <span class="search-icon" aria-hidden="true">🔍</span>
+    <span class="search-icon" aria-hidden="true"><svg class="icon icon-sm"><use href="#i-search"></use></svg></span>
     <input type="text" id="searchInput" placeholder="Buscar despesa..."
            oninput="renderList()" aria-label="Buscar despesa por nome">
   </div>
@@ -1537,8 +1608,8 @@
 
   <!-- SUB-NAV: Ferramentas -->
   <div class="filter-row" role="group" aria-label="Sub-seções de Ferramentas" style="padding:8px 14px 6px;">
-      <span class="filter-chip active" data-ferr="calc" onclick="switchFerramenta('calc', this)" role="button" tabindex="0">🧮 Calculadora</span>
-      <span class="filter-chip" data-ferr="pix" onclick="switchFerramenta('pix', this)" role="button" tabindex="0">💸 Cobrar Pix</span>
+      <span class="filter-chip active" data-ferr="calc" onclick="switchFerramenta('calc', this)" role="button" tabindex="0"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-calculator"></use></svg> Calculadora</span>
+      <span class="filter-chip" data-ferr="pix" onclick="switchFerramenta('pix', this)" role="button" tabindex="0"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-send"></use></svg> Cobrar Pix</span>
   </div>
 
   <div id="painelCalculadora">
@@ -1558,7 +1629,7 @@
                inputmode="decimal">
       </div>
 
-      <button class="btn-sim-update" onclick="calcularSimulacao()">🔄 Atualizar Valores</button>
+      <button class="btn-sim-update" onclick="calcularSimulacao()"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-refresh"></use></svg> Atualizar Valores</button>
 
       <div class="form-group">
         <label class="form-label" for="simMetaPct">Meta de Economia (% do Salário)</label>
@@ -1588,7 +1659,7 @@
 
       <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;background:rgba(155,89,182,0.10);margin-bottom:4px;">
         <div>
-          <div style="font-size:13px;font-weight:900;color:#6c3483;">💳 Saldo Disponível Agora</div>
+          <div style="font-size:13px;font-weight:900;color:#6c3483;display:flex;align-items:center;gap:6px;"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-credit-card"></use></svg> Saldo Disponível Agora</div>
           <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-top:2px;">Salário − o que já foi pago</div>
         </div>
         <span style="font-size:17px;font-weight:900;" id="simSaldoDisp" aria-live="polite">—</span>
@@ -1606,14 +1677,14 @@
 
       <!-- CARD: MINHAS CHAVES PIX -->
       <div class="stats-card">
-        <h3>🔑 Minhas Chaves Pix</h3>
+        <h3 style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-key"></use></svg> Minhas Chaves Pix</h3>
         <div id="pixKeysList" style="margin-top:10px;"></div>
-        <button class="btn-sim-update" style="margin-top:12px;" onclick="openPixKeyModal()">➕ Cadastrar nova chave</button>
+        <button class="btn-sim-update" style="margin-top:12px;" onclick="openPixKeyModal()"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"></use></svg> Cadastrar nova chave</button>
       </div>
 
       <!-- CARD: GERAR COBRANÇA -->
       <div class="stats-card" style="margin-top:14px;">
-        <h3>💸 Nova Cobrança</h3>
+        <h3 style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg> Nova Cobrança</h3>
 
         <div class="form-group" style="margin-top:10px;">
           <label class="form-label" for="pixChargeKeySelect">Chave para receber</label>
@@ -1630,7 +1701,7 @@
           <input type="text" class="form-input" id="pixChargeDesc" placeholder="Ex: Almoço de sexta" maxlength="40">
         </div>
 
-        <button class="btn-sim-update" onclick="gerarCobrancaPix()">⚡ Gerar Cobrança</button>
+        <button class="btn-sim-update" onclick="gerarCobrancaPix()"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-zap"></use></svg> Gerar Cobrança</button>
 
         <div id="pixChargeResult" style="display:none; margin-top:16px;">
           <div class="form-group">
@@ -1638,11 +1709,11 @@
             <textarea class="form-input" id="pixChargeCodigo" readonly rows="3" style="font-family:monospace; font-size:12px; resize:none;"></textarea>
           </div>
           <div style="display:flex; gap:8px; margin-top:8px;">
-            <button class="btn-sim-update" style="flex:1;" onclick="copiarCodigoPix()">📋 Copiar Código</button>
+            <button class="btn-sim-update" style="flex:1;" onclick="copiarCodigoPix()"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-copy"></use></svg> Copiar Código</button>
           </div>
           <div style="display:flex; gap:8px; margin-top:8px;">
-            <button class="btn-sim-update" style="flex:1; background:#25D366;" onclick="enviarCobrancaWhatsApp()">📲 Enviar Cobrança</button>
-            <button class="btn-sim-update" style="flex:1; background:#128C7E;" onclick="enviarCodigoWhatsApp()">🔑 Enviar só o Código</button>
+            <button class="btn-sim-update" style="flex:1; background:#25D366;" onclick="enviarCobrancaWhatsApp()"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-smartphone"></use></svg> Enviar Cobrança</button>
+            <button class="btn-sim-update" style="flex:1; background:#128C7E;" onclick="enviarCodigoWhatsApp()"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-key"></use></svg> Enviar só o Código</button>
           </div>
           <div style="font-size:11px; color:var(--text-muted); margin-top:6px; text-align:center;">
             Dica: mande as duas mensagens — a pessoa aperta e segura na do código pra copiar só ele, sem nada junto.
@@ -1753,7 +1824,7 @@
     </div>
 
     <div class="modal-actions">
-      <button class="btn-save" onclick="saveExpense()" id="btnSave">✅ Adicionar Despesa</button>
+      <button class="btn-save" onclick="saveExpense()" id="btnSave"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> Adicionar Despesa</button>
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
     </div>
   </div>
@@ -1762,7 +1833,7 @@
 <!-- INLINE EDIT VALOR (#4) -->
 <div class="inline-edit-overlay" id="inlineEditOverlay" onclick="closeInlineEdit(event)">
   <div class="inline-edit-box">
-    <h4>✏️ Editar valor rapidamente</h4>
+    <h4 style="display:flex;align-items:center;gap:6px;"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-edit"></use></svg> Editar valor rapidamente</h4>
     <input type="text" id="inlineEditInput" inputmode="decimal" placeholder="0,00">
     <div class="inline-edit-actions">
       <button onclick="cancelInlineEdit()" style="background:var(--confirm-secondary-bg);color:var(--text);">Cancelar</button>
@@ -1774,7 +1845,7 @@
 <!-- TELA DE LOGIN/CADASTRO -->
 <div id="auth-screen" role="dialog" aria-label="Login ou Cadastro">
   <div class="auth-card">
-    <div class="auth-logo">💰</div>
+    <div class="auth-logo"><svg class="icon icon-xl" aria-hidden="true"><use href="#i-wallet"></use></svg></div>
     <div class="auth-title">Minhas Despesas</div>
     <div class="auth-subtitle">Controle financeiro pessoal</div>
     <div class="auth-tabs">
@@ -1799,13 +1870,13 @@
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer" role="navigation" aria-label="Menu lateral">
   <div class="drawer-header">
-    <h2>💰 Despesas</h2>
+    <h2 style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-wallet"></use></svg> Despesas</h2>
     <p>Controle financeiro pessoal</p>
   </div>
 
   <!-- INFO DO USUÁRIO LOGADO -->
   <div class="drawer-user-info" id="drawer-user-info" style="display:none">
-    <span>👤</span>
+    <span><svg class="icon" aria-hidden="true"><use href="#i-user"></use></svg></span>
     <span class="drawer-user-email" id="drawer-user-email"></span>
     <button class="drawer-logout-btn" onclick="handleLogout()">Sair</button>
   </div>
@@ -1816,30 +1887,30 @@
 
   <!-- Ações de uso frequente ficam no menu principal -->
   <button class="drawer-item" onclick="openManageCategories();closeDrawer()">
-    <span class="di">🏷</span> Gerenciar categorias
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-tag"></use></svg></span> Gerenciar categorias
   </button>
 
   <button class="drawer-item" onclick="exportCSV();closeDrawer()">
-    <span class="di">📥</span> Exportar CSV (mês atual)
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-download"></use></svg></span> Exportar CSV (mês atual)
   </button>
 
   <!-- NOVO: marcar todas as despesas do mês como pagas -->
   <button class="drawer-item" onclick="payAll();closeDrawer()">
-    <span class="di">✅</span> Marcar tudo como pago
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check-square"></use></svg></span> Marcar tudo como pago
   </button>
 
   <hr class="drawer-divider">
 
   <!-- REORGANIZADO: opções menos usadas / de maior impacto agora ficam em Configurações -->
   <button class="drawer-item" onclick="openSettingsDrawer();closeDrawer()">
-    <span class="di">⚙️</span> Configurações
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-settings"></use></svg></span> Configurações
     <span class="btn-menu-badge" id="settingsEntryBadge" style="position:static; margin-left:auto;"></span>
   </button>
 
   <hr class="drawer-divider">
 
   <button class="drawer-item" onclick="closeDrawer()">
-    <span class="di">✕</span> Fechar
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-x"></use></svg></span> Fechar
   </button>
 </div>
 
@@ -1847,12 +1918,12 @@
 <div class="drawer-overlay" id="settingsDrawerOverlay" onclick="closeSettingsDrawer()"></div>
 <div class="drawer settings-drawer" id="settingsDrawer" role="navigation" aria-label="Configurações">
   <button class="settings-back" onclick="closeSettingsDrawer()">
-    <span class="di" style="font-size:16px;width:auto;">←</span> Voltar
+    <span class="di" style="width:auto;"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-arrow-left"></use></svg></span> Voltar
   </button>
 
   <div class="settings-section-label">Atualizações</div>
   <button class="update-card" id="btnForceUpdate" onclick="forceUpdate()">
-    <span class="di">🔄</span>
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-refresh"></use></svg></span>
     <span class="update-card-text">
       <span class="update-card-title">Buscar atualizações</span>
       <span class="update-card-sub" id="updateCardSub">Verifique se você está na última versão</span>
@@ -1864,11 +1935,11 @@
 
   <div class="settings-section-label">Aparência</div>
   <button class="drawer-item" id="darkModeBtn" onclick="toggleDarkMode()">
-    <span class="di" id="darkModeIcon">🌙</span>
+    <span class="di" id="darkModeIcon"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-moon"></use></svg></span>
     <span id="darkModeLabel">Modo Escuro</span>
   </button>
   <button class="drawer-item" id="reminderBtn" onclick="toggleReminders()">
-    <span class="di" id="reminderIcon">🔕</span>
+    <span class="di" id="reminderIcon"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-bell-off"></use></svg></span>
     <span id="reminderLabel">Lembretes de Vencimento</span>
   </button>
 
@@ -1876,29 +1947,29 @@
 
   <div class="settings-section-label">Dados</div>
   <button class="drawer-item" onclick="openExportRangeForm();closeSettingsDrawer()">
-    <span class="di">📅</span> Exportar CSV (período)
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-calendar"></use></svg></span> Exportar CSV (período)
   </button>
   <button class="drawer-item" onclick="exportJSON();closeSettingsDrawer()">
-    <span class="di">📦</span> Backup JSON
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-archive"></use></svg></span> Backup JSON
   </button>
   <button class="drawer-item" onclick="importJSON();closeSettingsDrawer()">
-    <span class="di">📤</span> Importar dados
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-upload"></use></svg></span> Importar dados
   </button>
 
   <hr class="drawer-divider">
 
   <div class="settings-section-label">Zona de risco</div>
   <button class="drawer-item" onclick="clearMonth();closeSettingsDrawer()">
-    <span class="di">🗑</span> Limpar mês atual
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-trash"></use></svg></span> Limpar mês atual
   </button>
   <button class="drawer-item" onclick="clearAll();closeSettingsDrawer()">
-    <span class="di">⚠️</span> Limpar tudo
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-alert"></use></svg></span> Limpar tudo
   </button>
 
   <hr class="drawer-divider">
 
   <button class="drawer-item" onclick="closeSettingsDrawer()">
-    <span class="di">✕</span> Fechar
+    <span class="di"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-x"></use></svg></span> Fechar
   </button>
 </div>
 
@@ -2450,9 +2521,9 @@ function renderPixKeysList() {
     info.appendChild(detalhe);
 
     const del = document.createElement('button');
-    del.textContent = '🗑️';
+    del.innerHTML = '<svg class="icon icon-sm" aria-hidden="true"><use href="#i-trash"></use></svg>';
     del.setAttribute('aria-label', 'Excluir chave ' + (k.apelido || ''));
-    del.style.cssText = 'background:none;border:none;font-size:18px;cursor:pointer;padding:6px;';
+    del.style.cssText = 'background:none;border:none;color:var(--red);cursor:pointer;padding:6px;display:flex;align-items:center;';
     del.onclick = () => deletePixKey(k.id);
 
     row.appendChild(info);
@@ -2743,7 +2814,7 @@ function updateDarkModeBtn() {
   const dark  = isDarkActive();
   const icon  = document.getElementById('darkModeIcon');
   const label = document.getElementById('darkModeLabel');
-  if (icon)  icon.textContent  = dark ? '☀️' : '🌙';
+  if (icon)  icon.innerHTML    = `<svg class="icon icon-sm" aria-hidden="true"><use href="#i-${dark ? 'sun' : 'moon'}"></use></svg>`;
   if (label) label.textContent = dark ? 'Modo Claro' : 'Modo Escuro';
 }
 
@@ -2787,7 +2858,7 @@ function updateReminderBtn() {
   const icon  = document.getElementById('reminderIcon');
   const label = document.getElementById('reminderLabel');
   const on    = remindersEnabled();
-  if (icon)  icon.textContent  = on ? '🔔' : '🔕';
+  if (icon)  icon.innerHTML    = `<svg class="icon icon-sm" aria-hidden="true"><use href="#i-${on ? 'bell' : 'bell-off'}"></use></svg>`;
   if (label) label.textContent = on ? 'Lembretes Ativados' : 'Lembretes de Vencimento';
 }
 
@@ -3160,13 +3231,13 @@ function renderList() {
     const isFiltering = search || activeFilter !== 'all';
     if (isFiltering) {
       list.innerHTML = `<div class="empty-state">
-        <div class="emoji">🔍</div>
+        <div class="emoji"><svg class="icon icon-xl"><use href="#i-search"></use></svg></div>
         <h3>Nada encontrado</h3>
         <p>Nenhuma despesa combina com sua busca ou filtro atual.<br>Tente limpar a busca ou trocar o filtro.</p>
       </div>`;
     } else {
       list.innerHTML = `<div class="empty-state">
-        <div class="emoji">🎉</div>
+        <div class="emoji"><svg class="icon icon-xl"><use href="#i-party"></use></svg></div>
         <h3>Nenhuma despesa este mês</h3>
         <p>Toque no <strong>+</strong> para adicionar sua primeira despesa do mês!</p>
       </div>`;
@@ -3229,29 +3300,29 @@ function renderItem(e) {
         </div>
         <div class="expense-right">
           <div class="expense-amount" ondblclick="openInlineEdit(event,'${safeId}')" style="cursor:pointer" title="Duplo toque para editar valor">${safeAmount}</div>
-          ${e.paid ? '<div class="paid-tag" aria-label="Pago">✓ PAGO</div>' : ''}
+          ${e.paid ? '<div class="paid-tag" aria-label="Pago"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> PAGO</div>' : ''}
         </div>
       </div>
       <div class="item-actions-bar">
         <button class="action-bar-btn pay-btn"
                 onclick="togglePay('${safeId}','${safeKey}')"
                 aria-label="${e.paid ? 'Marcar como pendente' : 'Marcar como pago'}">
-          <span aria-hidden="true">${e.paid ? '↩' : '✓'}</span>${e.paid ? 'Pendente' : 'Pagar'}
+          <span aria-hidden="true"><svg class="icon icon-sm"><use href="#i-${e.paid ? 'undo' : 'check'}"></use></svg></span>${e.paid ? 'Pendente' : 'Pagar'}
         </button>
         <button class="action-bar-btn edit-btn"
                 onclick="event.stopPropagation();editExpense('${safeId}')"
                 aria-label="Editar despesa ${safeName}">
-          <span aria-hidden="true">✏️</span>Editar
+          <span aria-hidden="true"><svg class="icon icon-sm"><use href="#i-edit"></use></svg></span>Editar
         </button>
         <button class="action-bar-btn dup-btn"
                 onclick="event.stopPropagation();duplicateExpense('${safeId}')"
                 aria-label="Duplicar despesa ${safeName}">
-          <span aria-hidden="true">📋</span>Duplicar
+          <span aria-hidden="true"><svg class="icon icon-sm"><use href="#i-copy"></use></svg></span>Duplicar
         </button>
         <button class="action-bar-btn del-btn"
                 onclick="event.stopPropagation();deleteExpense('${safeId}')"
                 aria-label="Excluir despesa ${safeName}">
-          <span aria-hidden="true">🗑</span>Excluir
+          <span aria-hidden="true"><svg class="icon icon-sm"><use href="#i-trash"></use></svg></span>Excluir
         </button>
       </div>
     </div>
@@ -3323,7 +3394,7 @@ function renderStats() {
     const gastoCor   = gastoPct > 80 ? 'var(--red)' : gastoPct > 60 ? 'var(--orange)' : 'var(--green)';
     return `
       <div class="budget-overview-card">
-        <h3>💵 Visão do Orçamento</h3>
+        <h3 style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-dollar"></use></svg> Visão do Orçamento</h3>
         <div class="budget-bar-row">
           <div class="budget-bar-label"><span>Despesas vs Salário</span><span>${gastoPct}% (${formatBRL(total)})</span></div>
           <div class="budget-bar-bg"><div class="budget-bar-fill" style="width:${gastoPct}%;background:${gastoCor}"></div></div>
@@ -3350,7 +3421,7 @@ function renderStats() {
     <div class="stats-card">
       <h3>Por Categoria</h3>
       ${sortedCats.length === 0
-        ? '<div class="empty-state"><div class="emoji">📊</div><h3>Sem dados este mês</h3><p>Adicione despesas para ver o gráfico por categoria.</p></div>'
+        ? '<div class="empty-state"><div class="emoji"><svg class="icon icon-xl" aria-hidden="true"><use href="#i-bar-chart"></use></svg></div><h3>Sem dados este mês</h3><p>Adicione despesas para ver o gráfico por categoria.</p></div>'
         : buildDonutSVG(sortedCats, total) + sortedCats.map(([catId, val]) => {
             const cat    = CATEGORIES.find(c => c.id === catId) || CATEGORIES[9];
             const pct    = (val / maxVal * 100).toFixed(0);
@@ -3363,7 +3434,7 @@ function renderStats() {
             const budgetRow = limit > 0
               ? `<div class="budget-bar-row" style="margin-top:6px;">
                    <div class="budget-bar-label">
-                     <span>${overBudget ? '⚠️ ' : ''}Meta: ${formatBRL(limit)}</span>
+                     <span>${overBudget ? '<svg class="icon icon-sm" aria-hidden="true"><use href="#i-alert"></use></svg> ' : ''}Meta: ${formatBRL(limit)}</span>
                      <span onclick="openCategoryBudgetEditor('${catId}')" role="button" tabindex="0"
                            style="cursor:pointer;text-decoration:underline;color:var(--text-muted);">editar</span>
                    </div>
@@ -3372,7 +3443,7 @@ function renderStats() {
               : `<div style="margin-top:4px;">
                    <span onclick="openCategoryBudgetEditor('${catId}')" role="button" tabindex="0"
                          style="cursor:pointer;font-size:11px;font-weight:800;color:var(--text-muted);text-decoration:underline;">
-                     🎯 definir meta
+                     <svg class="icon icon-sm" aria-hidden="true"><use href="#i-target"></use></svg> definir meta
                    </span>
                  </div>`;
             return `<div class="cat-stat-row" style="flex-wrap:wrap;">
@@ -3423,7 +3494,7 @@ function renderHistorico() {
 
   document.getElementById('historicoContainer').innerHTML = `
     <div class="stats-card" style="padding-bottom:10px;">
-      <h3>📅 7 Meses — Passado e Futuro</h3>
+      <h3 style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg> 7 Meses — Passado e Futuro</h3>
       ${hist.map(h => {
         const badgeText  = h.isFuture ? `${h.items.length} previstas` : h.isCurrent ? 'Mês atual' : `${h.items.length} despesas`;
         const badgeClass = h.isFuture ? 'hist-badge future' : 'hist-badge';
@@ -3543,13 +3614,13 @@ function calcularSimulacao() {
   if (salario === 0) { alertContainer.innerHTML = ''; return; }
 
   if (sobra < 0) {
-    alertContainer.innerHTML = `<div class="sim-alert-box danger">🚨 <strong>Orçamento Estourado!</strong> Suas despesas superam sua renda em ${formatBRL(Math.abs(sobra + valorMeta))}.</div>`;
+    alertContainer.innerHTML = `<div class="sim-alert-box danger"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-alert"></use></svg> <strong>Orçamento Estourado!</strong> Suas despesas superam sua renda em ${formatBRL(Math.abs(sobra + valorMeta))}.</div>`;
   } else if (sobra < valorMeta) {
-    alertContainer.innerHTML = `<div class="sim-alert-box warning">⚠️ <strong>Atenção!</strong> O salário paga as contas, mas não cumpre a meta de guardar ${metaPct}%.</div>`;
+    alertContainer.innerHTML = `<div class="sim-alert-box warning"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-alert"></use></svg> <strong>Atenção!</strong> O salário paga as contas, mas não cumpre a meta de guardar ${metaPct}%.</div>`;
   } else if (comprometimento > 70) {
-    alertContainer.innerHTML = `<div class="sim-alert-box warning">💡 <strong>Aviso:</strong> Você paga tudo, mas comprometeu ${comprometimento}% do orçamento.</div>`;
+    alertContainer.innerHTML = `<div class="sim-alert-box warning"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-target"></use></svg> <strong>Aviso:</strong> Você paga tudo, mas comprometeu ${comprometimento}% do orçamento.</div>`;
   } else {
-    alertContainer.innerHTML = `<div class="sim-alert-box success">🎉 <strong>Parabéns!</strong> Finanças equilibradas. Sobram ${formatBRL(sobra)}.</div>`;
+    alertContainer.innerHTML = `<div class="sim-alert-box success"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-party"></use></svg> <strong>Parabéns!</strong> Finanças equilibradas. Sobram ${formatBRL(sobra)}.</div>`;
   }
 }
 
@@ -3846,7 +3917,7 @@ function renderCatChips() {
   ).join('') + `
     <div class="cat-card" onclick="openNewCategoryForm()" role="button" tabindex="0"
          aria-label="Criar nova categoria" style="border-style:dashed;">
-       <span class="cat-emoji">➕</span>
+       <span class="cat-emoji"><svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg></span>
        <span class="cat-label">Nova</span>
      </div>`;
 }
@@ -3922,8 +3993,8 @@ function renderManageCatList() {
 
     const delBtn = document.createElement('button');
     delBtn.setAttribute('aria-label', 'Remover categoria ' + c.label);
-    delBtn.style.cssText = 'background:none;border:none;font-size:18px;cursor:pointer;padding:4px 8px;';
-    delBtn.textContent = '🗑';
+    delBtn.style.cssText = 'background:none;border:none;color:var(--red);cursor:pointer;padding:4px 8px;display:flex;align-items:center;';
+    delBtn.innerHTML = '<svg class="icon icon-sm" aria-hidden="true"><use href="#i-trash"></use></svg>';
     delBtn.onclick = () => confirmDeleteCategory(c.id, c.label);
 
     row.appendChild(emojiSpan);
