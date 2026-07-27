@@ -49,7 +49,31 @@ function getMonthTotals(y, m) {
     const c = e.categoria || 'outros';
     byCat[c] = (byCat[c] || 0) + e.valor;
   });
-  return { disp, total, paid, pending: total - paid, byCat };
+  return { disp, total, paid, pending: total - paid, count: disp.length, byCat };
+}
+
+function buildInsightsSectionHtml() {
+  const list = generateInsights(currentYear, currentMonth);
+  if (!list.length) return '';
+  const cards = list.map((ins, idx) => `
+    <div class="insight-card tone-${ins.tone}" style="animation-delay:${Math.min(idx * 0.06, 0.6).toFixed(2)}s">
+      <span class="insight-icon"><svg class="icon icon-sm" aria-hidden="true"><use href="#${ins.icon}"></use></svg></span>
+      <div class="insight-body">
+        <div class="insight-title">${sanitize(ins.title)}</div>
+        <div class="insight-text">${ins.text}</div>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="insights-section">
+      <div class="insights-header">
+        <span class="insights-title"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-sparkle"></use></svg> Insights Financeiros</span>
+        <span class="insights-count">${list.length}</span>
+      </div>
+      <div class="insights-list">${cards}</div>
+    </div>
+  `;
 }
 
 function renderHome() {
@@ -234,6 +258,8 @@ function renderHome() {
       </div>
       <p class="dash-summary-text">${resumoTxt}</p>
     </div>
+
+    ${buildInsightsSectionHtml()}
   `;
 
   // ── ANIMAÇÕES: números "vivos" + entrada escalonada ──

@@ -231,3 +231,67 @@
 @media (min-width: 380px) {
   .dash-balance { font-size: 38px; }
 }
+
+/* ══════════════════════════════════════════════════
+   INSIGHTS FINANCEIROS (MOTOR DE REGRAS)
+══════════════════════════════════════════════════ */
+.dash-container.dash-animate > *:nth-child(7) { animation-delay: 0.48s; }
+
+.insights-section { margin-top: 4px; }
+.insights-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 4px 10px;
+}
+.insights-title {
+  font-size: 13px; font-weight: 900; color: var(--text);
+  text-transform: uppercase; letter-spacing: 0.6px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.insights-title .icon { color: #7c3aed; }
+.insights-count {
+  font-size: 11px; font-weight: 900; color: #7c3aed;
+  background: rgba(124,58,237,0.12); padding: 3px 10px; border-radius: 12px;
+}
+
+.insights-list { display: flex; flex-direction: column; gap: 10px; }
+
+.insight-card {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 13px 14px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--border);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: insightFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: transform 0.2s ease;
+}
+.insight-card:active { transform: scale(0.98); }
+@keyframes insightFadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.insight-icon {
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 1px;
+}
+.insight-body { min-width: 0; }
+.insight-title {
+  font-size: 12.5px; font-weight: 900; color: var(--text); margin-bottom: 2px;
+}
+.insight-text {
+  font-size: 12.5px; font-weight: 600; color: var(--text-muted); line-height: 1.5;
+}
+
+.insight-card.tone-good    { border-left-color: var(--green); }
+.insight-card.tone-good    .insight-icon { background: rgba(39,174,96,0.14);  color: var(--green-dark); }
+.insight-card.tone-bad     { border-left-color: var(--red); }
+.insight-card.tone-bad     .insight-icon { background: rgba(231,76,60,0.12); color: var(--red); }
+.insight-card.tone-warning { border-left-color: var(--orange); }
+.insight-card.tone-warning .insight-icon { background: rgba(243,156,18,0.14); color: var(--orange-dark); }
+.insight-card.tone-info    { border-left-color: #7c3aed; }
+.insight-card.tone-info    .insight-icon { background: rgba(124,58,237,0.12); color: #7c3aed; }
+.insight-card.tone-neutral { border-left-color: #64748b; }
+.insight-card.tone-neutral .insight-icon { background: rgba(100,116,139,0.14); color: #64748b; }
