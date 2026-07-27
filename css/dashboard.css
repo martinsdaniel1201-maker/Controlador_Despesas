@@ -1,0 +1,233 @@
+/* ══════════════════════════════════════════════════
+   DASHBOARD PREMIUM — ABA INÍCIO
+══════════════════════════════════════════════════ */
+
+.dash-container {
+  padding: 14px 14px 120px;
+}
+
+/* ── ENTRADA ESCALONADA ── */
+.dash-container > * {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.dash-container.dash-animate > * {
+  animation: dashFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.dash-container.dash-animate > *:nth-child(1) { animation-delay: 0.02s; }
+.dash-container.dash-animate > *:nth-child(2) { animation-delay: 0.10s; }
+.dash-container.dash-animate > *:nth-child(3) { animation-delay: 0.18s; }
+.dash-container.dash-animate > *:nth-child(4) { animation-delay: 0.26s; }
+.dash-container.dash-animate > *:nth-child(5) { animation-delay: 0.34s; }
+.dash-container.dash-animate > *:nth-child(6) { animation-delay: 0.42s; }
+@keyframes dashFadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── HERO: SALDO DO MÊS ── */
+.dash-hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg, #312e81 0%, #4338ca 45%, #7c3aed 100%);
+  border-radius: 26px;
+  padding: 22px 22px 20px;
+  margin-bottom: 14px;
+  box-shadow: 0 14px 34px rgba(67, 56, 202, 0.35);
+  color: #fff;
+}
+.dash-hero-glow {
+  position: absolute;
+  width: 220px; height: 220px;
+  top: -90px; right: -60px;
+  background: radial-gradient(circle, rgba(255,255,255,0.22), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: dashGlowPulse 5s ease-in-out infinite;
+}
+@keyframes dashGlowPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50%      { transform: scale(1.15); opacity: 0.6; }
+}
+.dash-hero-top { position: relative; z-index: 1; }
+.dash-greeting {
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dash-hero-label {
+  position: relative; z-index: 1;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(255,255,255,0.65);
+  margin-top: 14px;
+}
+.dash-balance {
+  position: relative; z-index: 1;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.dash-balance.negative { color: #fecaca; }
+.dash-hero-bottom {
+  position: relative; z-index: 1;
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-height: 26px;
+}
+.dash-delta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 5px 11px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+.dash-delta-chip .icon { width: 13px; height: 13px; }
+.dash-delta-chip.up-bad   { background: rgba(254, 202, 202, 0.22); color: #fecaca; }
+.dash-delta-chip.down-good{ background: rgba(187, 247, 208, 0.22); color: #bbf7d0; }
+.dash-delta-chip.neutral  { background: rgba(255,255,255,0.15);   color: #e0e7ff; }
+.dash-hint {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+}
+
+/* ── GRID 2 COLUNAS (RECEITAS / DESPESAS, INSIGHTS) ── */
+.dash-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.dash-mini-card {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 16px 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dash-mini-card:active { transform: scale(0.97); }
+.dash-mini-icon {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
+}
+.dash-mini-card.income .dash-mini-icon { background: rgba(39,174,96,0.14); color: var(--green-dark); }
+.dash-mini-card.expense .dash-mini-icon { background: rgba(231,76,60,0.12); color: var(--red); }
+.dash-mini-label {
+  font-size: 11px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 4px;
+}
+.dash-mini-value {
+  font-size: 17px; font-weight: 900; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── CARDS PADRÃO (ECONOMIA / META / RESUMO) ── */
+.dash-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 18px 18px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: transform 0.2s ease;
+}
+.dash-card:hover { transform: translateY(-2px); }
+.dash-card-head {
+  display: flex; align-items: center; gap: 9px; margin-bottom: 10px;
+}
+.dash-card-icon {
+  width: 30px; height: 30px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.dash-card-icon.econ    { background: rgba(124,58,237,0.12); color: #7c3aed; }
+.dash-card-icon.goal    { background: rgba(243,156,18,0.14); color: var(--orange-dark); }
+.dash-card-icon.summary { background: rgba(67,56,202,0.12);  color: #4338ca; }
+.dash-card-icon.alert   { background: rgba(231,76,60,0.12);  color: var(--red); }
+.dash-card-icon.good    { background: rgba(39,174,96,0.14);  color: var(--green-dark); }
+.dash-card-title {
+  font-size: 13px; font-weight: 900; color: var(--text);
+  text-transform: uppercase; letter-spacing: 0.5px; flex: 1;
+}
+.dash-card-badge {
+  font-size: 11px; font-weight: 900; color: var(--text-muted);
+  background: var(--input-bg); padding: 3px 10px; border-radius: 12px;
+  flex-shrink: 0;
+}
+.dash-card-value {
+  font-size: 22px; font-weight: 900; color: var(--text);
+  margin-bottom: 10px; font-variant-numeric: tabular-nums;
+}
+.dash-card-value-sub {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: none; margin-left: 4px;
+}
+.dash-bar-bg {
+  height: 9px; background: var(--border); border-radius: 6px;
+  overflow: hidden; margin-bottom: 10px;
+}
+.dash-bar-fill {
+  height: 100%; border-radius: 6px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dash-bar-fill.econ-fill { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+.dash-bar-fill.goal-fill { background: linear-gradient(90deg, var(--orange-dark), var(--orange)); }
+.dash-card-explain {
+  font-size: 12.5px; font-weight: 700; color: var(--text-muted); line-height: 1.5;
+}
+
+/* ── CARDS DE INSIGHT (MAIOR GASTO / MAIOR ECONOMIA) ── */
+.dash-insight-card {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 15px 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: transform 0.2s ease;
+}
+.dash-insight-card:active { transform: scale(0.97); }
+.dash-insight-label {
+  font-size: 10.5px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--text-muted); margin: 8px 0 6px;
+}
+.dash-insight-name {
+  font-size: 13px; font-weight: 800; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dash-insight-value {
+  font-size: 16px; font-weight: 900; color: var(--text); margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.dash-insight-value.good { color: var(--green-dark); }
+.dash-insight-sub {
+  font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-top: 2px;
+}
+.dash-insight-empty {
+  font-size: 12px; font-weight: 700; color: var(--text-muted); margin-top: 4px;
+}
+
+/* ── RESUMO FINANCEIRO (NARRATIVA) ── */
+.dash-summary-text {
+  font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.6;
+}
+
+@media (min-width: 380px) {
+  .dash-balance { font-size: 38px; }
+}

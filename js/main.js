@@ -1,6 +1,6 @@
 // INICIALIZAÇÃO
 // ═══════════════════════════════════════════════
-function renderAll() { renderList(); calcularSimulacao(); }
+function renderAll() { renderList(); calcularSimulacao(); renderHome(); }
 
 updateMonthLabel();
 renderCatChips();

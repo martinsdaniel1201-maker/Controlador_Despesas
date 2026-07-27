@@ -9,6 +9,7 @@ function changeMonth(dir) {
   renderAll();
   if (currentTab === 'stats')     renderStats();
   if (currentTab === 'historico') renderHistorico();
+  if (currentTab === 'inicio')    renderHome();
 }
 
 function setFilter(f, el) {
@@ -27,11 +28,12 @@ function switchTab(tab, btn) {
   });
   btn.classList.add('active');
   btn.setAttribute('aria-selected', 'true');
-  ['tabDespesas','tabStats','tabSimulacao','tabHistorico'].forEach(id => {
+  ['tabInicio','tabDespesas','tabStats','tabSimulacao','tabHistorico'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
-  const tabMap = { despesas: 'tabDespesas', stats: 'tabStats', simulacao: 'tabSimulacao', historico: 'tabHistorico' };
+  const tabMap = { inicio: 'tabInicio', despesas: 'tabDespesas', stats: 'tabStats', simulacao: 'tabSimulacao', historico: 'tabHistorico' };
   document.getElementById(tabMap[tab]).style.display = 'block';
+  if (tab === 'inicio')    renderHome();
   if (tab === 'stats')     renderStats();
   if (tab === 'simulacao') { loadSimInputs(); calcularSimulacao(); }
   if (tab === 'historico') renderHistorico();
