@@ -1,0 +1,207 @@
+  /* ══════════════════════════════════════════════════
+     TELA DE LOGIN / CADASTRO (SUPABASE AUTH)
+  ══════════════════════════════════════════════════ */
+  #auth-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Nunito', sans-serif;
+  }
+  #auth-screen.visible { display: flex; }
+
+  .auth-card {
+    background: var(--card);
+    border-radius: 28px;
+    padding: 32px 28px 36px;
+    width: 100%;
+    max-width: 400px;
+    margin: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    border: 1px solid var(--border);
+  }
+  .auth-logo {
+    text-align: center;
+    font-size: 48px;
+    margin-bottom: 8px;
+  }
+  .auth-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .auth-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 28px;
+  }
+  .auth-tabs {
+    display: flex;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 24px;
+    gap: 4px;
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 9px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.2s;
+  }
+  .auth-tab.active {
+    background: var(--card);
+    color: var(--green-dark);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .auth-field {
+    margin-bottom: 16px;
+  }
+  .auth-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+  .auth-field input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background: var(--input-bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .auth-field input:focus {
+    border-color: var(--green);
+    background: var(--input-focus-bg);
+  }
+  .auth-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .auth-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .auth-btn:active { transform: translateY(0); }
+  .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .auth-error {
+    background: var(--red-light);
+    color: var(--red);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .auth-error.visible { display: block; }
+
+  /* AVISO DE DÍVIDAS — pílula discreta */
+  #debt-alert-card {
+    display: none;
+    margin: 6px 14px 0;
+    background: var(--red-light);
+    border: 1.5px solid var(--red);
+    border-radius: 10px;
+    padding: 8px 14px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  #debt-alert-card.visible { display: flex; }
+  .debt-alert-info {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--red);
+    flex: 1;
+  }
+  .debt-alert-amount {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--red);
+    flex-shrink: 0;
+  }
+
+  /* INFO DO USUÁRIO NO DRAWER */
+  .drawer-user-info {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .drawer-user-email {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 800;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+  .drawer-logout-btn {
+    background: var(--red-light);
+    border: none;
+    border-radius: 8px;
+    color: var(--red);
+    font-family: 'Nunito', sans-serif;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 5px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .drawer-logout-btn:hover { opacity: 0.8; }
+
+  /* INDICADOR DE SINCRONIZAÇÃO */
+  .sync-indicator {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-align: center;
+    padding: 4px;
+    min-height: 18px;
+  }
+  .sync-indicator.syncing { color: var(--orange); }
+  .sync-indicator.synced  { color: var(--green-dark); }
+  .sync-indicator.error   { color: var(--red); }

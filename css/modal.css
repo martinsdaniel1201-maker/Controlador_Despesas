@@ -1,0 +1,281 @@
+  /* ── MODAIS ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(44, 62, 80, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--card);
+    border-radius: 30px 30px 0 0;
+    width: 100%; max-width: 480px;
+    padding: 0;
+    animation: slideUp 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+    max-height: 92vh;
+    max-height: 92dvh; /* respeita a barra de teclado em navegadores modernos */
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  /* ── ÁREA ROLÁVEL DO FORMULÁRIO (mobile fix) ──
+     FIX: removido -webkit-overflow-scrolling:touch — essa propriedade fazia
+     o iOS aplicar "rubber-band" (bounce elástico) dentro do próprio container
+     mesmo quando o conteúdo não precisava rolar, abrindo um vão em branco
+     acima do título/handle ao tocar/arrastar o formulário. O Safari moderno
+     já tem momentum scroll nativo sem precisar dessa flag. */
+  .modal-scroll {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px 20px 4px;
+    flex: 1 1 auto;
+    min-height: 0; /* necessário no Safari para o scroll funcionar dentro do flex */
+  }
+
+  /* ── RODAPÉ FIXO DO MODAL: botões sempre visíveis, mesmo com teclado aberto ── */
+  .modal-actions {
+    flex-shrink: 0;
+    padding: 10px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    background: var(--card);
+    border-top: 1px solid var(--border);
+  }
+  .modal-actions .btn-save,
+  .modal-actions .btn-cancel { margin-top: 0; }
+  .modal-actions .btn-cancel { margin-top: 8px; }
+
+  /* ── POPUP CUSTOMIZADO ── */
+  .custom-confirm-box {
+    background: var(--card);
+    border-radius: 24px;
+    width: 90%; max-width: 400px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: scaleUpPopup 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes scaleUpPopup { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .confirm-emoji  { font-size: 42px; margin-bottom: 12px; display: block; }
+  .confirm-title  { font-size: 18px; font-weight: 900; color: var(--text); margin-bottom: 8px; }
+  .confirm-text   { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+  .confirm-buttons { display: flex; flex-direction: column; gap: 8px; }
+  .confirm-btn-primary   { background: var(--green-dark); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-family: 'Nunito'; font-size: 14px; cursor: pointer; }
+  .confirm-btn-secondary { background: var(--confirm-secondary-bg); color: var(--text); border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-family: 'Nunito'; font-size: 14px; cursor: pointer; }
+  .confirm-btn-danger    { background: var(--red); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-family: 'Nunito'; font-size: 14px; cursor: pointer; }
+
+  .modal-handle { width: 44px; height: 5px; background: var(--border); border-radius: 4px; margin: 0 auto 16px; }
+  .modal-title { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 24px; text-align: center; }
+
+  /* ── INDICADOR DE PASSOS (dots) ── */
+  .modal-steps { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 14px; }
+  .step-dot {
+    width: 7px; height: 7px; border-radius: 4px;
+    background: var(--border);
+    transition: all 0.25s ease;
+  }
+  .step-dot.active { width: 22px; background: var(--green); }
+
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    font-size: 12px; font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .form-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    font-size: 16px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--input-bg);
+    outline: none;
+    transition: all 0.2s;
+  }
+  .form-input:focus { border-color: var(--green); background: var(--input-focus-bg); box-shadow: 0 0 0 3px rgba(39,174,96,0.15); }
+  .form-input.error { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(231,76,60,0.12); animation: shake 0.35s cubic-bezier(.36,.07,.19,.97); }
+
+  /* ── VALOR: campo em destaque, é o dado mais importante do formulário ── */
+  .valor-group { margin-bottom: 20px; }
+  .valor-input-wrap { position: relative; display: flex; align-items: center; }
+  .valor-prefix {
+    position: absolute; left: 18px;
+    font-size: 20px; font-weight: 900; color: var(--green-dark);
+    pointer-events: none;
+  }
+  .valor-input {
+    padding-left: 46px !important;
+    font-size: 26px !important;
+    font-weight: 900 !important;
+    border-width: 2px;
+  }
+  .valor-input:focus { box-shadow: 0 0 0 4px rgba(39,174,96,0.15); }
+  @keyframes shake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(3px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+  }
+
+  /* ── CARD "REPETIR": separa visualmente das opções dos dados da despesa ── */
+  .repeat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 4px 16px 6px;
+    margin-top: 6px;
+  }
+  .repeat-card .toggle-row { padding: 10px 0; }
+  .repeat-card #repeatOptions { padding-bottom: 10px; }
+
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0 12px; cursor: pointer; }
+  .toggle-label { font-size: 16px; font-weight: 800; color: var(--text); }
+  .toggle {
+    width: 54px; height: 32px;
+    background: var(--border);
+    border-radius: 16px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.25s;
+    border: none;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--green); }
+  .toggle::after {
+    content: ''; position: absolute;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    top: 4px; left: 4px;
+    transition: left 0.25s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  }
+  .toggle.on::after { left: 26px; }
+
+  .radio-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+  .radio-option { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px 0; }
+  .radio-circle {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .radio-circle.selected { border-color: var(--green); }
+  .radio-circle.selected::after { content: ''; width: 12px; height: 12px; border-radius: 50%; background: var(--green); }
+  .radio-text { font-size: 15px; font-weight: 700; color: var(--text); }
+
+  .parcelas-input {
+    display: flex; align-items: center; gap: 12px; margin-top: 12px;
+    background: var(--input-bg); padding: 10px; border-radius: 12px;
+  }
+  .parcelas-input label { font-size: 14px; font-weight: 800; color: var(--text); }
+  .parcelas-input input {
+    width: 80px; padding: 8px;
+    border: 2px solid var(--border); border-radius: 10px;
+    font-size: 16px; font-family: 'Nunito', sans-serif; font-weight: 800;
+    text-align: center; outline: none;
+    background: var(--input-focus-bg); color: var(--text);
+  }
+  .parcelas-input input:focus { border-color: var(--green); }
+  .parcelas-input input.error { border-color: var(--red); animation: shake 0.35s cubic-bezier(.36,.07,.19,.97); }
+
+  /* ── CATEGORIA: grade de cartões com ícone grande + nome embaixo ── */
+  .category-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
+  @media (max-width: 380px) {
+    .category-row { grid-template-columns: repeat(3, 1fr); }
+  }
+  .cat-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px;
+    padding: 12px 4px 10px;
+    border-radius: 16px; border: 2px solid var(--border);
+    background: var(--card);
+    cursor: pointer; transition: all 0.2s;
+    touch-action: manipulation;
+  }
+  .cat-card .cat-emoji { font-size: 24px; line-height: 1; }
+  .cat-card .cat-label {
+    font-size: 11px; font-weight: 800; color: var(--text-muted);
+    text-align: center; line-height: 1.2;
+  }
+  .cat-card.active { border-color: var(--green); background: var(--green-light); }
+  .cat-card.active .cat-label { color: var(--green-dark); }
+
+  .btn-save {
+    width: 100%; padding: 16px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+    color: #fff; font-size: 17px; font-weight: 900; font-family: 'Nunito', sans-serif;
+    cursor: pointer; margin-top: 14px; transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(240,160,48,0.3);
+    touch-action: manipulation;
+  }
+  .btn-save:hover:not(:disabled)  { filter: brightness(1.05); }
+  .btn-save:active:not(:disabled) { transform: scale(0.98); }
+  .btn-save:disabled { opacity: 0.8; cursor: not-allowed; transform: none; filter: none; }
+
+  /* ── SPINNER DE CARREGAMENTO DO BOTÃO SALVAR ── */
+  .btn-spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    margin-right: 8px;
+    vertical-align: -3px;
+    border: 2.5px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: btnSpin 0.7s linear infinite;
+  }
+  @keyframes btnSpin { to { transform: rotate(360deg); } }
+
+  .btn-cancel {
+    width: 100%; padding: 14px; border-radius: 14px; border: 2px solid var(--border);
+    background: transparent; color: var(--text-muted);
+    font-size: 15px; font-weight: 800; font-family: 'Nunito', sans-serif;
+    cursor: pointer; margin-top: 10px; transition: all 0.2s;
+    touch-action: manipulation;
+  }
+  .btn-cancel:hover { background: var(--bg); color: var(--text); }
+
+  .btn-sim-update {
+    width: 100%; padding: 12px;
+    background: var(--green-dark); color: #fff; border: none; border-radius: 12px;
+    font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800;
+    cursor: pointer; margin-top: 4px; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 10px rgba(30, 132, 73, 0.2); transition: background 0.2s;
+  }
+  .btn-sim-update:hover { background: var(--green); }
+
+  .empty-state { text-align: center; padding: 60px 30px; color: var(--text-muted); }
+  .empty-state .emoji { font-size: 56px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 19px; font-weight: 900; margin-bottom: 6px; color: var(--text); }
+  .empty-state p { font-size: 14px; font-weight: 600; line-height: 1.6; }
+
+  .toast {
+    position: fixed; bottom: 100px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #2c3e50; color: #fff;
+    padding: 12px 24px; border-radius: 30px;
+    font-size: 14px; font-weight: 800;
+    opacity: 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 999; pointer-events: none; white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+

@@ -1,0 +1,78 @@
+  /* ── STATS & HISTÓRICO ── */
+  .stats-container { padding: 10px 14px 120px; }
+  .stats-card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow); }
+  .stats-card h3 { font-size: 14px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+  .cat-stat-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .cat-stat-icon { font-size: 22px; width: 32px; text-align: center; }
+  .cat-stat-info { flex: 1; min-width: 0; }
+  .cat-stat-name { font-size: 14px; font-weight: 800; color: var(--text); }
+  .cat-stat-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .cat-stat-fill { height: 100%; border-radius: 3px; background: var(--green); }
+  .cat-stat-amount { font-size: 14px; font-weight: 800; color: var(--text); flex-shrink: 0; }
+
+  .sim-alert-box { padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 700; margin-top: 14px; display: flex; align-items: center; gap: 8px; }
+  .sim-alert-box.success { background: rgba(39,174,96,0.12); color: var(--green-dark); }
+  .sim-alert-box.danger  { background: rgba(231,76,60,0.12);  color: var(--red); }
+  .sim-alert-box.warning { background: rgba(243,156,18,0.12); color: var(--orange-dark); }
+
+  @media (min-width: 480px) {
+    body { box-shadow: 0 0 40px rgba(0,0,0,0.08); min-height: 100vh; }
+  }
+
+  .install-banner {
+    display: none;
+    background: linear-gradient(90deg, var(--green-dark), var(--green));
+    color: #fff; padding: 12px 18px; font-size: 13px; font-weight: 800;
+    align-items: center; justify-content: space-between; gap: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  }
+  .install-banner.visible { display: flex; }
+  .btn-install { background: #fff; color: var(--green-dark); border: none; border-radius: 10px; padding: 8px 16px; font-size: 12px; font-weight: 900; font-family: 'Nunito', sans-serif; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  .btn-install-close { background: none; border: none; color: rgba(255,255,255,0.8); font-size: 18px; cursor: pointer; flex-shrink: 0; }
+  /* ── HISTÓRICO EXPANDÍVEL ── */
+  .hist-month-row {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding: 14px 18px;
+    border-radius: var(--radius); background: var(--card);
+    box-shadow: var(--shadow); margin-bottom: 4px;
+    transition: background 0.2s; user-select: none;
+  }
+  .hist-month-row:hover { background: var(--drawer-hover); }
+  .hist-month-row.current { border: 2px solid var(--green); }
+  .hist-month-left { display: flex; flex-direction: column; gap: 3px; }
+  .hist-month-label { font-size: 15px; font-weight: 900; color: var(--text); text-transform: capitalize; }
+  .hist-month-sub { font-size: 11px; font-weight: 700; color: var(--text-muted); }
+  .hist-month-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .hist-month-total { font-size: 15px; font-weight: 900; color: var(--text); }
+  .hist-chevron { font-size: 16px; color: var(--text-muted); transition: transform 0.25s; line-height: 1; }
+  .hist-chevron.open { transform: rotate(90deg); }
+  .hist-badge {
+    font-size: 10px; font-weight: 900; padding: 2px 8px;
+    border-radius: 20px; background: var(--green-light); color: var(--green-dark);
+  }
+  .hist-badge.future { background: #fef5e7; color: var(--orange-dark); }
+  .hist-detail-panel {
+    display: none; background: var(--input-bg);
+    border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .hist-detail-panel.open { display: block; }
+  .hist-detail-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px; border-bottom: 1px solid var(--border); gap: 10px;
+  }
+  .hist-detail-item:last-child { border-bottom: none; }
+  .hist-detail-left { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .hist-detail-name { font-size: 13px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hist-detail-meta { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 2px; }
+  .hist-detail-amount { font-size: 13px; font-weight: 900; color: var(--text); flex-shrink: 0; }
+  .hist-status-paid { font-size: 10px; font-weight: 900; color: var(--green-dark); background: var(--green-light); padding: 2px 7px; border-radius: 10px; flex-shrink: 0; }
+  .hist-status-pend { font-size: 10px; font-weight: 900; color: var(--red); background: var(--red-light); padding: 2px 7px; border-radius: 10px; flex-shrink: 0; }
+  .hist-detail-footer {
+    padding: 10px 18px; background: var(--actions-bg);
+    display: flex; justify-content: space-between;
+    font-size: 12px; font-weight: 900; color: var(--text-muted);
+  }
+  .hist-empty { padding: 20px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-muted); }
+

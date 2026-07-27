@@ -1,5 +1,5 @@
 // 1. TODA VEZ que você mudar algo no HTML/CSS, mude essa versão (ex: v2, v3, v4...)
-const CACHE_NAME = 'controlador-despesas-v7'; 
+const CACHE_NAME = 'controlador-despesas-v8'; 
 
 const ASSETS = [
   './',
@@ -8,7 +8,49 @@ const ASSETS = [
   './icone-512.png',
   './apple-touch-icon.png',
   './favicon-32.png',
-  './manifest.json'
+  './manifest.json',
+  './css/accessibility.css',
+  './css/auth-screen.css',
+  './css/badges-misc.css',
+  './css/compact-mode.css',
+  './css/drawer.css',
+  './css/expense-list.css',
+  './css/icons.css',
+  './css/inline-edit.css',
+  './css/layout.css',
+  './css/modal.css',
+  './css/stats.css',
+  './css/theme.css',
+  './js/main.js',
+  './js/ui/modal.js',
+  './js/ui/navigation.js',
+  './js/ui/popup.js',
+  './js/ui/render-historico.js',
+  './js/ui/render-list.js',
+  './js/ui/render-stats.js',
+  './js/config/auth.js',
+  './js/config/state.js',
+  './js/config/supabase-client.js',
+  './js/features/budgets.js',
+  './js/features/categories.js',
+  './js/features/darkmode.js',
+  './js/features/data-cleanup.js',
+  './js/features/expense-actions.js',
+  './js/features/expense-form.js',
+  './js/features/export-import.js',
+  './js/features/pix.js',
+  './js/features/pwa.js',
+  './js/features/reminders.js',
+  './js/features/simulation.js',
+  './js/data/constants.js',
+  './js/data/migration.js',
+  './js/data/persistence.js',
+  './js/data/sync.js',
+  './js/utils/date.js',
+  './js/utils/format.js',
+  './js/utils/masks.js',
+  './js/utils/motivation.js',
+  './js/utils/sanitize.js'
 ];
 
 // Instala o Service Worker e guarda os arquivos no cache

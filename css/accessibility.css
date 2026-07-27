@@ -1,0 +1,18 @@
+  /* ── FOCO VISÍVEL (teclado/leitor de tela) ──
+     Vários controles usam outline:none no estado padrão; sem isso, quem
+     navega por teclado ou switch control perde a referência de onde está. */
+  .cat-card:focus-visible,
+  .action-bar-btn:focus-visible,
+  .drawer-item:focus-visible,
+  .tab:focus-visible,
+  .fab:focus-visible,
+  .toggle:focus-visible,
+  .radio-option:focus-visible,
+  .filter-chip:focus-visible,
+  .btn-save:focus-visible,
+  .btn-cancel:focus-visible,
+  .auth-tab:focus-visible,
+  .toggle-row:focus-visible {
+    outline: 2.5px solid var(--green-dark);
+    outline-offset: 2px;
+  }
