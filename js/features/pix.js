@@ -8,7 +8,9 @@ function switchFerramenta(nome, el) {
   document.querySelectorAll('#tabSimulacao .filter-chip').forEach(c => c.classList.remove('active'));
   if (el) el.classList.add('active');
   document.getElementById('painelCalculadora').style.display = (nome === 'calc') ? '' : 'none';
+  document.getElementById('painelSimulacoes').style.display = (nome === 'sim') ? '' : 'none';
   document.getElementById('painelPix').style.display = (nome === 'pix') ? '' : 'none';
+  if (nome === 'sim') initSimulacoesPanel();
 }
 
 function maskPixKey(tipo, chave) {
