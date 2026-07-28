@@ -31,8 +31,151 @@ function buildDonutSVG(sortedCats, total) {
 }
 
 // ═══════════════════════════════════════════════
-// RENDER — RELATÓRIO (STATS) + META ECONOMIA (#8)
+// RENDER — RELATÓRIO (STATS): visão geral + gráficos modernos
 // ═══════════════════════════════════════════════
+const STATS_SHORT_MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const STATS_WEEKDAYS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function sparseMonthLabels(hist) {
+  return hist.map((h, i) => (i % 2 === 1 || i === hist.length - 1) ? STATS_SHORT_MONTHS[h.month] : '');
+}
+
+function buildEvolucaoMensalHtml(hist) {
+  const values = hist.map(h => h.total);
+  const labels = sparseMonthLabels(hist);
+  return `
+    <div class="stats-card">
+      <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-trend-up"></use></svg> Evolução Mensal de Gastos</h3>
+      ${buildLineAreaChart(values, labels, { color: '#4338ca', highlightLast: true })}
+    </div>`;
+}
+
+function buildReceitasDespesasHtml(hist, salario) {
+  const values = hist.map(h => h.total);
+  const labels = sparseMonthLabels(hist);
+  if (salario <= 0) {
+    return `
+      <div class="stats-card">
+        <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-dollar"></use></svg> Receitas x Despesas</h3>
+        ${buildBarChart(values, labels, { color: '#4338ca', highlightIndex: values.length - 1, highlightColor: '#7c3aed' })}
+        <p class="stats-chart-hint">Informe sua renda na aba Ferramentas para comparar com suas despesas mês a mês.</p>
+      </div>`;
+  }
+  return `
+    <div class="stats-card">
+      <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-dollar"></use></svg> Receitas x Despesas</h3>
+      ${buildBarChart(values, labels, {
+        guideValue: salario, guideColor: '#16a34a', guideLabel: `Renda mensal: ${formatBRL(salario)}`,
+        colorFn: v => (v > salario ? 'var(--red)' : '#16a34a'),
+      })}
+    </div>`;
+}
+
+function buildEvolucaoSaldoHtml(hist, salario) {
+  const values = hist.map(h => salario > 0 ? (salario - h.total) : -h.total);
+  const labels = sparseMonthLabels(hist);
+  return `
+    <div class="stats-card">
+      <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-bar-chart"></use></svg> Evolução do Saldo</h3>
+      ${buildLineAreaChart(values, labels, { dualColor: true, showZeroLine: true, highlightLast: true })}
+      ${salario === 0 ? '<p class="stats-chart-hint">Sem renda informada, o saldo aqui é apenas o total de despesas invertido — cadastre sua renda em Ferramentas para um saldo real.</p>' : ''}
+    </div>`;
+}
+
+function buildComparacao12MesesHtml(hist) {
+  const values = hist.map(h => h.total);
+  const labels = hist.map(h => STATS_SHORT_MONTHS[h.month]);
+  const ativos = values.filter(v => v > 0);
+  const media = ativos.length ? ativos.reduce((s, v) => s + v, 0) / ativos.length : 0;
+  return `
+    <div class="stats-card">
+      <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-calendar"></use></svg> Comparação dos Últimos 12 Meses</h3>
+      ${buildBarChart(values, labels, {
+        highlightIndex: values.length - 1, highlightColor: '#7c3aed', color: '#a5b4fc',
+        guideValue: media, guideColor: 'var(--text-muted)', guideLabel: `Média: ${formatBRL(media)}`,
+      })}
+    </div>`;
+}
+
+function buildDiasQueMaisGastaHtml() {
+  const sums = [0, 0, 0, 0, 0, 0, 0];
+  let counted = 0;
+  expenses.forEach(e => {
+    if (!e.dataOriginal) return;
+    const d = new Date(e.dataOriginal + 'T12:00:00');
+    if (isNaN(d.getTime())) return;
+    sums[d.getDay()] += e.valor;
+    counted++;
+  });
+  if (counted < 3) {
+    return `
+      <div class="stats-card">
+        <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-calendar"></use></svg> Dias que Mais Gasta</h3>
+        <div class="empty-state"><div class="emoji"><svg class="icon icon-xl" aria-hidden="true"><use href="#i-calendar"></use></svg></div><p>Lance mais despesas para revelar seu padrão de gastos na semana.</p></div>
+      </div>`;
+  }
+  let maxIdx = 0;
+  for (let i = 1; i < 7; i++) if (sums[i] > sums[maxIdx]) maxIdx = i;
+  return `
+    <div class="stats-card">
+      <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-calendar"></use></svg> Dias que Mais Gasta</h3>
+      ${buildBarChart(sums, STATS_WEEKDAYS, { highlightIndex: maxIdx, highlightColor: '#7c3aed', color: '#a5b4fc' })}
+      <p class="stats-chart-hint">Baseado em todo o histórico de vencimentos lançados — ${sanitize(STATS_WEEKDAYS[maxIdx])} concentra o maior volume: ${formatBRL(sums[maxIdx])}.</p>
+    </div>`;
+}
+
+function buildCategoriaDeltaListHtml(items, tone) {
+  if (!items.length) return `<div class="stat-delta-empty">Nenhuma categoria ${tone === 'up' ? 'cresceu' : 'diminuiu'} em relação ao mês passado.</div>`;
+  const maxDiff = Math.max(...items.map(i => i.diff), 1);
+  return `
+    <div class="chart-reveal-wrap stat-delta-list">
+      ${items.map(i => {
+        const pct = Math.max((i.diff / maxDiff) * 100, 4);
+        const color = tone === 'up' ? 'var(--red)' : 'var(--green)';
+        return `
+          <div class="stat-delta-row">
+            <span class="stat-delta-emoji">${i.cat.emoji}</span>
+            <div class="stat-delta-info">
+              <div class="stat-delta-name">${sanitize(i.cat.label)}</div>
+              <div class="stat-delta-track"><div class="stat-delta-fill" style="width:${pct.toFixed(1)}%;background:${color}"></div></div>
+            </div>
+            <span class="stat-delta-value" style="color:${color}">${tone === 'up' ? '+' : '-'}${formatBRL(i.diff)}</span>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function buildCategoriasEmAltaEQuedaHtml(cur, prev) {
+  if (!prev || prev.count === 0) {
+    return `
+      <div class="stats-card">
+        <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-trend-up"></use></svg> Categorias em Alta e em Queda</h3>
+        <div class="empty-state"><p>Sem dados do mês anterior para comparar ainda.</p></div>
+      </div>`;
+  }
+  const subiram = [], cairam = [];
+  const allCatIds = new Set([...Object.keys(cur.byCat), ...Object.keys(prev.byCat)]);
+  allCatIds.forEach(catId => {
+    const antes = prev.byCat[catId] || 0;
+    const agora = cur.byCat[catId] || 0;
+    const cat = CATEGORIES.find(c => c.id === catId) || CATEGORIES[9];
+    const diff = agora - antes;
+    if (antes > 0 && diff > 0.01) subiram.push({ cat, diff });
+    else if (antes > 0 && -diff > 0.01) cairam.push({ cat, diff: -diff });
+  });
+  subiram.sort((a, b) => b.diff - a.diff);
+  cairam.sort((a, b) => b.diff - a.diff);
+
+  return `
+    <div class="stats-card">
+      <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-trend-up"></use></svg> Categorias em Alta e em Queda</h3>
+      <div class="stat-delta-subtitle up"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-trend-up"></use></svg> Cresceram vs. mês passado</div>
+      ${buildCategoriaDeltaListHtml(subiram.slice(0, 4), 'up')}
+      <div class="stat-delta-subtitle down"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-trend-down"></use></svg> Diminuíram vs. mês passado</div>
+      ${buildCategoriaDeltaListHtml(cairam.slice(0, 4), 'down')}
+    </div>`;
+}
+
 function renderStats() {
   const raw   = getMonthExpenses(currentYear, currentMonth);
   const disp  = raw.map(e => getDisplayExpense(e, currentYear, currentMonth));
@@ -85,12 +228,12 @@ function renderStats() {
 
   const catBudgets = loadCategoryBudgets();
 
-  document.getElementById('statsContainer').innerHTML = budgetHtml + `
+  const categoriaCardHtml = `
     <div class="stats-card">
       <h3>Por Categoria</h3>
       ${sortedCats.length === 0
         ? '<div class="empty-state"><div class="emoji"><svg class="icon icon-xl" aria-hidden="true"><use href="#i-bar-chart"></use></svg></div><h3>Sem dados este mês</h3><p>Adicione despesas para ver o gráfico por categoria.</p></div>'
-        : buildDonutSVG(sortedCats, total) + sortedCats.map(([catId, val]) => {
+        : `<div class="chart-reveal-wrap">${buildDonutSVG(sortedCats, total)}</div>` + sortedCats.map(([catId, val]) => {
             const cat    = CATEGORIES.find(c => c.id === catId) || CATEGORIES[9];
             const pct    = (val / maxVal * 100).toFixed(0);
             const color  = CAT_COLORS[catId] || '#888';
@@ -128,8 +271,24 @@ function renderStats() {
               <span class="cat-stat-amount">${formatBRL(val)}</span>
             </div>`;
           }).join('')}
-    </div>
-  `;
+    </div>`;
+
+  // ── HISTÓRICO PARA OS NOVOS GRÁFICOS (12 meses, ascendente) ──
+  const hist = buildInsightsHistory(currentYear, currentMonth, INSIGHTS_HISTORY_MONTHS);
+  const cur  = hist[hist.length - 1];
+  const prev = hist[hist.length - 2] || null;
+
+  const chartsHtml = [
+    buildEvolucaoMensalHtml(hist),
+    buildReceitasDespesasHtml(hist, salario),
+    buildEvolucaoSaldoHtml(hist, salario),
+    buildComparacao12MesesHtml(hist),
+    buildCategoriasEmAltaEQuedaHtml(cur, prev),
+    buildDiasQueMaisGastaHtml(),
+  ].join('');
+
+  document.getElementById('statsContainer').innerHTML = budgetHtml + chartsHtml + categoriaCardHtml;
+  triggerChartReveal(document.getElementById('statsContainer'));
 }
 
 // ═══════════════════════════════════════════════
