@@ -76,6 +76,93 @@ function buildInsightsSectionHtml() {
   `;
 }
 
+function buildScoreCardHtml() {
+  const data = computeFinancialScore();
+  const band = getScoreBand(data.score);
+  const prevScore = getStoredScore();
+  const baseline = prevScore === null ? data.score : prevScore;
+  const delta = data.score - baseline;
+  const explanation = buildScoreExplanation(data);
+  const tips = buildScoreTips(data);
+
+  const R = 52, CX = 60, CY = 60;
+  const circumference = 2 * Math.PI * R;
+
+  const deltaChip = delta > 0
+    ? `<span class="score-delta-chip up">+${delta}</span>`
+    : delta < 0
+      ? `<span class="score-delta-chip down">${delta}</span>`
+      : '';
+
+  const tipsHtml = tips.length
+    ? `<div class="score-tips">
+         <div class="score-tips-title">Dicas para melhorar</div>
+         <ul class="score-tips-list">${tips.map(t => `<li>${t}</li>`).join('')}</ul>
+       </div>`
+    : `<div class="score-tips score-tips-ok">Todos os indicadores estão em bom nível — continue assim!</div>`;
+
+  return {
+    html: `
+      <div class="dash-card score-card ${delta > 0 ? 'score-improved' : ''}">
+        <div class="dash-card-head">
+          <span class="dash-card-icon score-shield"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-shield"></use></svg></span>
+          <span class="dash-card-title">Score Financeiro</span>
+          ${deltaChip}
+        </div>
+        <div class="score-ring-row">
+          <div class="score-ring-wrap">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--border)" stroke-width="12"/>
+              <circle id="scoreRingFill" cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${band.color}"
+                stroke-width="12" stroke-linecap="round"
+                stroke-dasharray="${circumference.toFixed(2)}" stroke-dashoffset="${circumference.toFixed(2)}"
+                transform="rotate(-90 ${CX} ${CY})"/>
+            </svg>
+            <div class="score-ring-center">
+              <span class="score-number" id="scoreNumberValue">0</span>
+              <span class="score-max">/100</span>
+            </div>
+          </div>
+          <div class="score-info">
+            <span class="score-band-badge" style="color:${band.color};background:${band.color}1f">${band.label}</span>
+            <p class="score-explain">${explanation}</p>
+          </div>
+        </div>
+        ${tipsHtml}
+      </div>
+    `,
+    finalScore: data.score,
+    baseline,
+    circumference,
+  };
+}
+
+function animateScoreCard(scoreData) {
+  const numEl  = document.getElementById('scoreNumberValue');
+  const ringEl = document.getElementById('scoreRingFill');
+  if (ringEl) {
+    requestAnimationFrame(() => {
+      const target = scoreData.circumference * (1 - scoreData.finalScore / 100);
+      ringEl.style.transition = 'stroke-dashoffset 1s cubic-bezier(0.16,1,0.3,1)';
+      ringEl.style.strokeDashoffset = target.toFixed(2);
+    });
+  }
+  if (numEl) {
+    const from = scoreData.baseline;
+    const to = scoreData.finalScore;
+    const duration = 900;
+    const start = performance.now();
+    function tick(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      numEl.textContent = Math.round(from + (to - from) * eased);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  storeScore(scoreData.finalScore);
+}
+
 function renderHome() {
   const container = document.getElementById('dashContainer');
   if (!container) return;
@@ -167,6 +254,9 @@ function renderHome() {
        </span>`
     : '';
 
+  // ── SCORE FINANCEIRO PREMIUM ──
+  const scoreCard = buildScoreCardHtml();
+
   container.innerHTML = `
     <div class="dash-hero">
       <div class="dash-hero-glow"></div>
@@ -180,6 +270,8 @@ function renderHome() {
         ${salario === 0 ? '<span class="dash-hint">Informe sua renda em Ferramentas para ver o saldo completo</span>' : ''}
       </div>
     </div>
+
+    ${scoreCard.html}
 
     <div class="dash-grid-2">
       <div class="dash-mini-card income">
@@ -267,6 +359,7 @@ function renderHome() {
   animateDashValue(document.getElementById('dashReceitaValue'), salario);
   animateDashValue(document.getElementById('dashDespesaValue'), cur.total);
   animateDashValue(document.getElementById('dashEconomiaValue'), economiaMes);
+  animateScoreCard(scoreCard);
 
   container.classList.remove('dash-animate');
   void container.offsetWidth;
