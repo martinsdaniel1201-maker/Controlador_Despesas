@@ -103,6 +103,7 @@ async function payAll() {
   save();
   renderAll();
   showToast(`✅ ${pending.length} despesa(s) marcadas como pagas!`);
+  fireConfetti(30);
 }
 
 async function deleteExpense(id) {
@@ -116,10 +117,24 @@ async function deleteExpense(id) {
     ]
   });
   if (!confirmar) return;
-  expenses = expenses.filter(e => e.id !== id);
-  save();
-  renderAll();
-  showToast('🗑 Despesa excluída');
+
+  const finish = () => {
+    expenses = expenses.filter(e => e.id !== id);
+    save();
+    renderAll();
+    showToast('🗑 Despesa excluída');
+  };
+
+  const el = document.querySelector(`.swipe-wrapper[data-expid="${id}"]`);
+  if (el) {
+    el.style.maxHeight = el.scrollHeight + 'px';
+    void el.offsetHeight; // força o navegador a fixar o valor antes de animar
+    el.classList.add('item-removing');
+    requestAnimationFrame(() => { el.style.maxHeight = '0px'; });
+    setTimeout(finish, 340);
+  } else {
+    finish();
+  }
 }
 
 function editExpense(id) {

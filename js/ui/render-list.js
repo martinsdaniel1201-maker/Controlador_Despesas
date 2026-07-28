@@ -24,9 +24,16 @@ function updateMonthLabel() {
   document.getElementById('monthLabel').textContent = `${months[currentMonth]} / ${currentYear}`;
 }
 
-function triggerListAnimation() {
+function triggerListAnimation(dir) {
   const c = document.getElementById('expenseList');
-  if (c) { c.classList.remove('fade-in-up'); void c.offsetWidth; c.classList.add('fade-in-up'); }
+  if (!c) return;
+  c.classList.remove('fade-in-up', 'content-slide-in-l', 'content-slide-in-r');
+  void c.offsetWidth;
+  if (dir === 1 || dir === -1) {
+    c.classList.add(dir > 0 ? 'content-slide-in-l' : 'content-slide-in-r');
+  } else {
+    c.classList.add('fade-in-up');
+  }
 }
 
 function renderList() {
@@ -164,7 +171,7 @@ function renderItem(e) {
   const noteHtml   = e.nota ? `<div class="expense-note">💬 ${sanitize(e.nota)}</div>` : '';
 
   return `
-    <div class="swipe-wrapper">
+    <div class="swipe-wrapper" data-expid="${safeId}">
       <div class="expense-item${paidClass}"
            onclick="togglePay('${safeId}','${safeKey}')"
            oncontextmenu="openInlineEdit(event,'${safeId}')"

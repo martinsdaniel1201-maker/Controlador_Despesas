@@ -1,0 +1,76 @@
+/* ══════════════════════════════════════════════════
+   MICROINTERAÇÕES — o app nunca deve parecer parado
+══════════════════════════════════════════════════ */
+
+/* ── FEEDBACK DE TOQUE (todo elemento tocável reage) ── */
+.btn-nav, .tab, .filter-chip, .action-bar-btn, .sim-type-card,
+.hist-month-row, .cat-card, .btn-save, .btn-cancel {
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-nav:active     { transform: scale(0.90); }
+.tab:active         { transform: scale(0.95); }
+.filter-chip:active { transform: scale(0.94); }
+.btn-nav, .tab, .filter-chip { transition: transform 0.12s ease, background 0.2s ease, color 0.2s ease; }
+
+/* ── LISTA DE DESPESAS: cada card entra deslizando (add / excluir / trocar mês / filtrar) ── */
+.swipe-wrapper {
+  animation: itemSlideIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.28s ease,
+              transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+              margin-bottom 0.32s ease;
+}
+@keyframes itemSlideIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.swipe-wrapper:nth-child(1)  { animation-delay: 0.01s; }
+.swipe-wrapper:nth-child(2)  { animation-delay: 0.05s; }
+.swipe-wrapper:nth-child(3)  { animation-delay: 0.09s; }
+.swipe-wrapper:nth-child(4)  { animation-delay: 0.13s; }
+.swipe-wrapper:nth-child(5)  { animation-delay: 0.17s; }
+.swipe-wrapper:nth-child(6)  { animation-delay: 0.21s; }
+.swipe-wrapper:nth-child(7)  { animation-delay: 0.25s; }
+.swipe-wrapper:nth-child(n+8) { animation-delay: 0.28s; }
+
+/* saída elegante ao excluir: o próprio JS define max-height antes de somar esta classe */
+.swipe-wrapper.item-removing {
+  opacity: 0;
+  transform: scale(0.92) translateX(28px);
+  margin-bottom: 0 !important;
+  max-height: 0 !important;
+}
+
+/* ── TROCA DE MÊS: transição direcional suave no conteúdo ── */
+@keyframes contentSlideInL { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes contentSlideInR { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
+.content-slide-in-l { animation: contentSlideInL 0.32s cubic-bezier(0.16, 1, 0.3, 1); }
+.content-slide-in-r { animation: contentSlideInR 0.32s cubic-bezier(0.16, 1, 0.3, 1); }
+
+@keyframes monthLabelPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.month-label-pulse { animation: monthLabelPulse 0.35s ease; }
+
+/* ── TROCA DE ABA: fade suave em vez de "piscar" ── */
+@keyframes tabFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.tab-fade-in { animation: tabFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* ── CONFETES (conclusão de meta / mês 100% quitado) ── */
+.confetti-overlay {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden;
+}
+.confetti-piece {
+  position: absolute; top: -12px;
+  width: 8px; height: 14px;
+  opacity: 0.95;
+  animation-name: confettiFall;
+  animation-timing-function: cubic-bezier(0.35, 0, 0.65, 1);
+  animation-fill-mode: forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--drift, 0px), 100vh) rotate(var(--spin, 360deg)); opacity: 0; }
+}

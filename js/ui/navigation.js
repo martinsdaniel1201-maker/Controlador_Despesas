@@ -5,11 +5,35 @@ function changeMonth(dir) {
   if (currentMonth > 11) { currentMonth = 0; currentYear++; }
   if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
   updateMonthLabel();
-  triggerListAnimation();
+  animateMonthLabel();
+  triggerListAnimation(dir);
   renderAll();
   if (currentTab === 'stats')     renderStats();
   if (currentTab === 'historico') renderHistorico();
   if (currentTab === 'inicio')    renderHome();
+  animateContentSwitch(dir);
+}
+
+function animateMonthLabel() {
+  const label = document.getElementById('monthLabel');
+  if (!label) return;
+  label.classList.remove('month-label-pulse');
+  void label.offsetWidth;
+  label.classList.add('month-label-pulse');
+}
+
+// Aplica uma transição direcional suave ao conteúdo da aba que está
+// visível no momento da troca de mês (a lista já ganha a própria
+// animação via triggerListAnimation; aqui cobrimos Início/Relatório/Histórico).
+function animateContentSwitch(dir) {
+  const idByTab = { inicio: 'dashContainer', stats: 'statsContainer', historico: 'historicoContainer' };
+  const id = idByTab[currentTab];
+  if (!id) return;
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('content-slide-in-l', 'content-slide-in-r');
+  void el.offsetWidth;
+  el.classList.add(dir > 0 ? 'content-slide-in-l' : 'content-slide-in-r');
 }
 
 function setFilter(f, el) {
@@ -32,7 +56,11 @@ function switchTab(tab, btn) {
     document.getElementById(id).style.display = 'none';
   });
   const tabMap = { inicio: 'tabInicio', despesas: 'tabDespesas', stats: 'tabStats', simulacao: 'tabSimulacao', historico: 'tabHistorico' };
-  document.getElementById(tabMap[tab]).style.display = 'block';
+  const panel = document.getElementById(tabMap[tab]);
+  panel.style.display = 'block';
+  panel.classList.remove('tab-fade-in');
+  void panel.offsetWidth;
+  panel.classList.add('tab-fade-in');
   if (tab === 'inicio')    renderHome();
   if (tab === 'stats')     renderStats();
   if (tab === 'simulacao') { loadSimInputs(); calcularSimulacao(); }

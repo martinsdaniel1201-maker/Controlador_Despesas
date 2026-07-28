@@ -188,6 +188,17 @@ function renderHome() {
   const valorMeta     = salario > 0 ? (salario * metaPct) / 100 : 0;
   const metaProgress  = valorMeta > 0 ? Math.min(Math.round((economiaMes / valorMeta) * 100), 100) : 0;
 
+  // ── CELEBRAÇÃO: confetes na primeira vez que a meta do mês é batida ──
+  if (valorMeta > 0 && metaProgress >= 100) {
+    const celebrKey = `meta_celebrated_${currentYear}-${currentMonth}`;
+    try {
+      if (!localStorage.getItem(celebrKey)) {
+        localStorage.setItem(celebrKey, '1');
+        if (typeof fireConfetti === 'function') fireConfetti();
+      }
+    } catch (e) {}
+  }
+
   // ── COMPARAÇÃO COM MÊS ANTERIOR ──
   const delta = cur.total - prev.total;
   let deltaPct = 0;
