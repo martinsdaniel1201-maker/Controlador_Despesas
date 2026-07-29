@@ -12,7 +12,17 @@
   .btn-save:focus-visible,
   .btn-cancel:focus-visible,
   .auth-tab:focus-visible,
-  .toggle-row:focus-visible {
+  .toggle-row:focus-visible,
+  .sim-type-card:focus-visible,
+  .sim-calc-btn:focus-visible,
+  .sim-add-btn:focus-visible,
+  .sim-compare-remove:focus-visible {
     outline: 2.5px solid var(--green-dark);
+    outline-offset: 2px;
+  }
+
+  /* .btn-nav vive sobre o header colorido: precisa de contraste próprio */
+  .btn-nav:focus-visible {
+    outline: 2.5px solid #fff;
     outline-offset: 2px;
   }

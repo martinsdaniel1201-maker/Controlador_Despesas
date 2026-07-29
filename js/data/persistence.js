@@ -2,6 +2,7 @@
 // ═══════════════════════════════════════════════
 let _saveTimer;
 function save() {
+  if (typeof invalidateMonthTotalsCache === 'function') invalidateMonthTotalsCache();
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(() => {
     if (!IS_LOCAL && supabaseClient && currentUser) {
@@ -22,6 +23,7 @@ function save() {
 // para manter o spinner do botão "Salvar" visível até a gravação (Supabase
 // ou localStorage) realmente terminar, em vez de fechar o modal na hora.
 async function persistExpenses() {
+  if (typeof invalidateMonthTotalsCache === 'function') invalidateMonthTotalsCache();
   clearTimeout(_saveTimer);
   if (!IS_LOCAL && supabaseClient && currentUser) {
     await saveToSupabase();

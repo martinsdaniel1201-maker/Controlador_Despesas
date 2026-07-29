@@ -67,6 +67,8 @@
     align-items: center;
     justify-content: space-between;
     background: rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     padding: 6px 8px;
     border-radius: 14px;
   }

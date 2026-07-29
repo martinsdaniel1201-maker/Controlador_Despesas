@@ -105,6 +105,15 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+  /* Fora dos 480px do "shell" do app, em telas largas (desktop/tablet),
+     em vez de deixar o conteúdo colado e sem moldura, mostramos um
+     fundo neutro e uma sombra profunda — o app passa a impressão de
+     um produto acabado, não de uma página mobile esticada. */
+  html {
+    background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0b0f1a 60%, #05070d 100%);
+    min-height: 100vh;
+  }
+
   body {
     font-family: 'Nunito', sans-serif;
     background: var(--bg);
@@ -115,5 +124,15 @@
     position: relative;
     overflow-x: hidden;
     transition: background 0.3s, color 0.3s;
+  }
+
+  @media (min-width: 520px) {
+    html { padding: 28px 0; }
+    body {
+      min-height: calc(100vh - 56px);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06);
+    }
   }
 

@@ -27,6 +27,7 @@ async function loadFromSupabase() {
       expenses = JSON.parse(stored || '[]');
     } catch { expenses = []; }
   }
+  if (typeof invalidateMonthTotalsCache === 'function') invalidateMonthTotalsCache();
   renderAll();
 }
 

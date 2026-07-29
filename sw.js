@@ -1,5 +1,5 @@
 // 1. TODA VEZ que você mudar algo no HTML/CSS, mude essa versão (ex: v2, v3, v4...)
-const CACHE_NAME = 'controlador-despesas-v14'; 
+const CACHE_NAME = 'controlador-despesas-v15'; 
 
 const ASSETS = [
   './',

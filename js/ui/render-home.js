@@ -39,7 +39,19 @@ function animateDashValue(el, finalValue) {
   requestAnimationFrame(tick);
 }
 
+// Cache simples por "ano-mês": Home, Insights, Score e Relatório calculam
+// o histórico dos últimos 12 meses de forma independente, então sem isso
+// o mesmo mês acaba sendo recalculado várias vezes a cada toque (adicionar
+// despesa, marcar como paga, trocar de mês...). Invalidado em qualquer
+// gravação de dados — ver invalidateMonthTotalsCache() em persistence.js.
+let _monthTotalsCache = {};
+function invalidateMonthTotalsCache() { _monthTotalsCache = {}; }
+
 function getMonthTotals(y, m) {
+  const cacheKey = y + '-' + m;
+  const cached = _monthTotalsCache[cacheKey];
+  if (cached) return cached;
+
   const raw  = getMonthExpenses(y, m);
   const disp = raw.map(e => getDisplayExpense(e, y, m));
   const total = disp.reduce((s, e) => s + e.valor, 0);
@@ -49,7 +61,9 @@ function getMonthTotals(y, m) {
     const c = e.categoria || 'outros';
     byCat[c] = (byCat[c] || 0) + e.valor;
   });
-  return { disp, total, paid, pending: total - paid, count: disp.length, byCat };
+  const result = { disp, total, paid, pending: total - paid, count: disp.length, byCat };
+  _monthTotalsCache[cacheKey] = result;
+  return result;
 }
 
 function buildInsightsSectionHtml() {
