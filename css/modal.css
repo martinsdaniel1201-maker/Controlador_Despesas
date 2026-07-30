@@ -64,7 +64,7 @@
   .confirm-title  { font-size: 18px; font-weight: 900; color: var(--text); margin-bottom: 8px; }
   .confirm-text   { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
   .confirm-buttons { display: flex; flex-direction: column; gap: 8px; }
-  .confirm-btn-primary   { background: var(--green-dark); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-family: 'Nunito'; font-size: 14px; cursor: pointer; }
+  .confirm-btn-primary   { background: var(--brand-dark); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-family: 'Nunito'; font-size: 14px; cursor: pointer; }
   .confirm-btn-secondary { background: var(--confirm-secondary-bg); color: var(--text); border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-family: 'Nunito'; font-size: 14px; cursor: pointer; }
   .confirm-btn-danger    { background: var(--red); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-family: 'Nunito'; font-size: 14px; cursor: pointer; }
 
@@ -78,7 +78,7 @@
     background: var(--border);
     transition: all 0.25s ease;
   }
-  .step-dot.active { width: 22px; background: var(--green); }
+  .step-dot.active { width: 22px; background: var(--brand); }
 
   .form-group { margin-bottom: 16px; }
   .form-label {
@@ -102,7 +102,7 @@
     outline: none;
     transition: all 0.2s;
   }
-  .form-input:focus { border-color: var(--green); background: var(--input-focus-bg); box-shadow: 0 0 0 3px rgba(39,174,96,0.15); }
+  .form-input:focus { border-color: var(--brand); background: var(--input-focus-bg); box-shadow: 0 0 0 3px rgba(67,56,202,0.15); }
   .form-input.error { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(231,76,60,0.12); animation: shake 0.35s cubic-bezier(.36,.07,.19,.97); }
 
   /* ── VALOR: campo em destaque, é o dado mais importante do formulário ── */
@@ -110,7 +110,7 @@
   .valor-input-wrap { position: relative; display: flex; align-items: center; }
   .valor-prefix {
     position: absolute; left: 18px;
-    font-size: 20px; font-weight: 900; color: var(--green-dark);
+    font-size: 20px; font-weight: 900; color: var(--brand-dark);
     pointer-events: none;
   }
   .valor-input {
@@ -150,7 +150,7 @@
     border: none;
     flex-shrink: 0;
   }
-  .toggle.on { background: var(--green); }
+  .toggle.on { background: var(--brand); }
   .toggle::after {
     content: ''; position: absolute;
     width: 24px; height: 24px;
@@ -172,8 +172,8 @@
     transition: all 0.2s;
     flex-shrink: 0;
   }
-  .radio-circle.selected { border-color: var(--green); }
-  .radio-circle.selected::after { content: ''; width: 12px; height: 12px; border-radius: 50%; background: var(--green); }
+  .radio-circle.selected { border-color: var(--brand); }
+  .radio-circle.selected::after { content: ''; width: 12px; height: 12px; border-radius: 50%; background: var(--brand); }
   .radio-text { font-size: 15px; font-weight: 700; color: var(--text); }
 
   .parcelas-input {
@@ -188,7 +188,7 @@
     text-align: center; outline: none;
     background: var(--input-focus-bg); color: var(--text);
   }
-  .parcelas-input input:focus { border-color: var(--green); }
+  .parcelas-input input:focus { border-color: var(--brand); }
   .parcelas-input input.error { border-color: var(--red); animation: shake 0.35s cubic-bezier(.36,.07,.19,.97); }
 
   /* ── CATEGORIA: grade de cartões com ícone grande + nome embaixo ── */
@@ -215,8 +215,8 @@
     font-size: 11px; font-weight: 800; color: var(--text-muted);
     text-align: center; line-height: 1.2;
   }
-  .cat-card.active { border-color: var(--green); background: var(--green-light); }
-  .cat-card.active .cat-label { color: var(--green-dark); }
+  .cat-card.active { border-color: var(--brand); background: var(--brand-light); }
+  .cat-card.active .cat-label { color: var(--brand-dark); }
 
   .btn-save {
     width: 100%; padding: 16px; border-radius: 14px; border: none;
@@ -254,13 +254,13 @@
 
   .btn-sim-update {
     width: 100%; padding: 12px;
-    background: var(--green-dark); color: #fff; border: none; border-radius: 12px;
+    background: var(--brand-dark); color: #fff; border: none; border-radius: 12px;
     font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800;
     cursor: pointer; margin-top: 4px; margin-bottom: 12px;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     box-shadow: 0 4px 10px rgba(30, 132, 73, 0.2); transition: background 0.2s;
   }
-  .btn-sim-update:hover { background: var(--green); }
+  .btn-sim-update:hover { background: var(--brand); }
 
   .empty-state { text-align: center; padding: 60px 30px; color: var(--text-muted); }
   .empty-state .emoji { font-size: 56px; margin-bottom: 16px; }

@@ -65,7 +65,7 @@
   }
   .auth-tab.active {
     background: var(--card);
-    color: var(--green-dark);
+    color: var(--brand-dark);
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
   .auth-field {
@@ -95,7 +95,7 @@
     box-sizing: border-box;
   }
   .auth-field input:focus {
-    border-color: var(--green);
+    border-color: var(--brand);
     background: var(--input-focus-bg);
   }
   .auth-btn {
@@ -103,7 +103,7 @@
     padding: 15px;
     border: none;
     border-radius: 14px;
-    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid));
     color: #fff;
     font-family: 'Nunito', sans-serif;
     font-size: 16px;

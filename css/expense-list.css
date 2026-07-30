@@ -96,9 +96,11 @@
   .footer {
     position: fixed;
     bottom: 0; left: 50%;
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
     width: 100%; max-width: 480px;
-    background: linear-gradient(135deg, var(--green-dark), #1e8449);
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid));
     padding: 14px 20px 20px;
     z-index: 100;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
@@ -117,15 +119,17 @@
     z-index: 200;
     width: 56px; height: 56px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--orange), #e67e22);
+    background: linear-gradient(135deg, var(--brand-mid), var(--brand-dark));
     border: none;
     color: #fff;
     font-size: 28px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
-    box-shadow: 0 6px 20px rgba(240,160,48,0.4);
+    box-shadow: 0 6px 20px rgba(67,56,202,0.45);
     transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     touch-action: manipulation;
+    will-change: transform;
+    backface-visibility: hidden;
   }
   .fab:hover  { transform: scale(1.08); box-shadow: 0 8px 25px rgba(240,160,48,0.5); }
   .fab:active { transform: scale(0.92); }

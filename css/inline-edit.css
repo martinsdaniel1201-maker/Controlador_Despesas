@@ -18,7 +18,7 @@
     font-family: 'Nunito', sans-serif; color: var(--text); background: var(--input-bg);
     outline: none; margin-bottom: 14px;
   }
-  .inline-edit-box input:focus { border-color: var(--green); }
+  .inline-edit-box input:focus { border-color: var(--brand); }
   .inline-edit-actions { display: flex; gap: 10px; }
   .inline-edit-actions button {
     flex: 1; padding: 12px; border-radius: 12px; border: none;

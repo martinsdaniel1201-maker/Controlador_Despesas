@@ -1,12 +1,13 @@
   /* ── HEADER ── */
   .header {
-    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid));
     padding: 16px 20px 20px;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
+    box-shadow: 0 4px 15px rgba(67, 56, 202, 0.25);
     border-radius: 0 0 24px 24px;
+    will-change: transform;
   }
   .header-top {
     display: flex;
@@ -58,7 +59,7 @@
     width: 10px; height: 10px;
     border-radius: 50%;
     background: var(--orange);
-    border: 2px solid var(--green-dark);
+    border: 2px solid var(--brand-dark);
   }
   .btn-menu-badge.visible { display: block; }
 
@@ -126,7 +127,7 @@
   }
   .tab span { display: block; line-height: 1; }
   .tab .icon { width: 18px; height: 18px; }
-  .tab.active { color: var(--green-dark); background: var(--green-light); }
+  .tab.active { color: var(--brand-dark); background: var(--brand-light); }
 
   /* ── SUMMARY CARDS ── */
   .summary { display: flex; gap: 10px; padding: 4px 14px; }
@@ -194,10 +195,10 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.02);
   }
   .filter-chip.active {
-    background: var(--green-dark);
-    border-color: var(--green-dark);
+    background: var(--brand-dark);
+    border-color: var(--brand-dark);
     color: #fff;
-    box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+    box-shadow: 0 4px 10px rgba(67, 56, 202, 0.3);
   }
   .subtotal-row {
     padding: 2px 18px 8px;
@@ -223,6 +224,6 @@
     color: var(--text);
     box-shadow: var(--shadow);
   }
-  .search-bar input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(39,174,96,0.15); }
+  .search-bar input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(67,56,202,0.15); }
   .search-icon { position: absolute; left: 28px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--text-muted); }
 

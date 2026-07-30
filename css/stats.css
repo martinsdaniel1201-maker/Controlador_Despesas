@@ -21,13 +21,13 @@
 
   .install-banner {
     display: none;
-    background: linear-gradient(90deg, var(--green-dark), var(--green));
+    background: linear-gradient(90deg, var(--brand-dark), var(--brand-mid));
     color: #fff; padding: 12px 18px; font-size: 13px; font-weight: 800;
     align-items: center; justify-content: space-between; gap: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   }
   .install-banner.visible { display: flex; }
-  .btn-install { background: #fff; color: var(--green-dark); border: none; border-radius: 10px; padding: 8px 16px; font-size: 12px; font-weight: 900; font-family: 'Nunito', sans-serif; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  .btn-install { background: #fff; color: var(--brand-dark); border: none; border-radius: 10px; padding: 8px 16px; font-size: 12px; font-weight: 900; font-family: 'Nunito', sans-serif; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
   .btn-install-close { background: none; border: none; color: rgba(255,255,255,0.8); font-size: 18px; cursor: pointer; flex-shrink: 0; }
   /* ── HISTÓRICO EXPANDÍVEL ── */
   .hist-month-row {
@@ -38,7 +38,7 @@
     transition: background 0.2s; user-select: none;
   }
   .hist-month-row:hover { background: var(--drawer-hover); }
-  .hist-month-row.current { border: 2px solid var(--green); }
+  .hist-month-row.current { border: 2px solid var(--brand); }
   .hist-month-left { display: flex; flex-direction: column; gap: 3px; }
   .hist-month-label { font-size: 15px; font-weight: 900; color: var(--text); text-transform: capitalize; }
   .hist-month-sub { font-size: 11px; font-weight: 700; color: var(--text-muted); }
