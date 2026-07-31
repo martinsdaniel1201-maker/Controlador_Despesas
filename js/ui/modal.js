@@ -6,6 +6,7 @@ function openModal(reset = false) {
     repeatOn    = false;
     repeatType  = 'fixo';
     selectedCat = 'outros';
+    _catUserPicked = false;
     document.getElementById('modalTitle').textContent = 'Nova Despesa';
     document.getElementById('btnSave').textContent = '✅ Adicionar Despesa';
     document.getElementById('fDesc').value  = '';

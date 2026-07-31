@@ -1,6 +1,6 @@
 // INICIALIZAÇÃO
 // ═══════════════════════════════════════════════
-function renderAll() { renderList(); calcularSimulacao(); renderHome(); }
+function renderAll() { renderList(); calcularSimulacao(); renderHome(); if (typeof updateAppBadge === 'function') updateAppBadge(); }
 
 updateMonthLabel();
 renderCatChips();
@@ -14,3 +14,4 @@ aplicarMascaraDinheiro(document.getElementById('inlineEditInput'));
 // Se não logado, mostra a tela de login antes de qualquer render.
 initAuth();
 updateUpdateBadge();
+setTimeout(() => { if (typeof maybeShowOnboarding === 'function') maybeShowOnboarding(); }, 1500);

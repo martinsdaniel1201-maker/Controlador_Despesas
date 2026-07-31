@@ -188,5 +188,5 @@ async function confirmDeleteCategory(id, label) {
   syncCategoriesToSupabase();
 }
 
-function selectCat(id) { selectedCat = id; renderCatChips(); }
+function selectCat(id) { selectedCat = id; _catUserPicked = true; renderCatChips(); }
 

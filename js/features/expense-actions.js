@@ -152,6 +152,7 @@ function editExpense(id) {
   document.getElementById('fData').value            = exp.dataOriginal;
   document.getElementById('fNota').value            = exp.nota || '';
   selectedCat = exp.categoria || 'outros';
+  _catUserPicked = true;
   repeatOn    = exp.tipo !== 'unico';
   repeatType  = exp.tipo === 'parcelado' ? 'parcelado' : 'fixo';
 

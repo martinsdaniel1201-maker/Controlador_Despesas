@@ -374,6 +374,9 @@ function renderHome() {
         <span class="dash-card-title">Resumo financeiro</span>
       </div>
       <p class="dash-summary-text">${resumoTxt}</p>
+      <button type="button" class="dash-share-btn" onclick="shareMonthCard()">
+        <svg class="icon icon-sm" aria-hidden="true"><use href="#i-send"></use></svg> Compartilhar resumo do mês
+      </button>
     </div>
 
     ${buildInsightsSectionHtml()}

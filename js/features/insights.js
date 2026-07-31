@@ -377,6 +377,32 @@ function ruleFirstMonth(cur, priorActiveMonths) {
     'Este é o seu primeiro mês com despesas registradas por aqui. Continue lançando para desbloquear mais insights nos próximos meses!');
 }
 
+// R27 — categoria perto ou acima da meta definida (alerta proativo na Home)
+function ruleCategoryBudgetAlert(cur) {
+  if (cur.count === 0 || typeof loadCategoryBudgets !== 'function') return null;
+  const budgets = loadCategoryBudgets();
+  const catIds = Object.keys(budgets).filter(id => budgets[id] > 0);
+  if (!catIds.length) return null;
+
+  let worst = null;
+  catIds.forEach(catId => {
+    const gasto = cur.byCat[catId] || 0;
+    const limite = budgets[catId];
+    const pct = limite > 0 ? gasto / limite : 0;
+    if (pct >= 0.9 && (!worst || pct > worst.pct)) worst = { catId, gasto, limite, pct };
+  });
+  if (!worst) return null;
+
+  const cat = CATEGORIES.find(c => c.id === worst.catId) || CATEGORIES[9];
+  const pctInt = Math.round(worst.pct * 100);
+  if (worst.pct >= 1) {
+    return insight('cat-budget-over', 'bad', 'i-alert', 3, 'Meta de categoria estourada',
+      `${cat.emoji} ${sanitize(cat.label)} já passou da meta: ${formatBRL(worst.gasto)} de ${formatBRL(worst.limite)} (${pctInt}%).`);
+  }
+  return insight('cat-budget-near', 'warning', 'i-alert', 7, 'Meta de categoria quase no limite',
+    `${cat.emoji} ${sanitize(cat.label)} já consumiu ${pctInt}% da meta (${formatBRL(worst.gasto)} de ${formatBRL(worst.limite)}).`);
+}
+
 // ═══════════════════════════════════════════════════════════
 // ORQUESTRAÇÃO: roda todas as regras e devolve os insights válidos,
 // já ordenados por prioridade (menor número = mais relevante)
@@ -421,6 +447,7 @@ function generateInsights(y, m) {
     ruleWorstMonth(cur, priorActiveMonths),
     ruleYearToDate(y, m),
     ruleFirstMonth(cur, priorActiveMonths),
+    ruleCategoryBudgetAlert(cur),
   ].filter(Boolean);
 
   results.sort((a, b) => a.priority - b.priority);

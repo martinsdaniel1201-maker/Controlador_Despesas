@@ -279,3 +279,24 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+
+  /* ── TOUR DE NOVIDADES (ONBOARDING) ── */
+  .onboarding-modal { max-width: 380px; margin: 0 20px; border-radius: 24px; }
+  .onboarding-icon {
+    width: 72px; height: 72px; border-radius: 20px; margin: 8px auto 18px;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid));
+    display: flex; align-items: center; justify-content: center; color: #fff;
+  }
+  .onboarding-icon .icon { width: 34px; height: 34px; }
+  #onboardingBody { text-align: center; padding-bottom: 4px; }
+  #onboardingBody h3 { font-size: 19px; font-weight: 900; color: var(--text); margin-bottom: 10px; }
+  #onboardingBody p { font-size: 14px; font-weight: 600; color: var(--text-muted); line-height: 1.55; padding: 0 6px; }
+  .onboarding-dots { display: flex; justify-content: center; gap: 7px; margin-top: 22px; }
+  .onboarding-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all 0.25s ease; }
+  .onboarding-dot.active { width: 22px; border-radius: 4px; background: var(--brand); }
+  .onboarding-actions { display: flex; align-items: center; gap: 10px; padding: 4px 24px 24px; }
+  .onboarding-actions .btn-save { flex: 1; margin: 0; }
+  .onboarding-skip {
+    background: none; border: none; color: var(--text-muted); font-weight: 800;
+    font-size: 13px; font-family: 'Nunito', sans-serif; cursor: pointer; padding: 10px;
+  }

@@ -28,6 +28,7 @@ async function loadFromSupabase() {
     } catch { expenses = []; }
   }
   if (typeof invalidateMonthTotalsCache === 'function') invalidateMonthTotalsCache();
+  pickSmartMonthOnLaunch();
   renderAll();
 }
 

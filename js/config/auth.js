@@ -4,6 +4,7 @@ async function initAuth() {
   // Modo offline (file://) ou SDK não carregou: pula login, usa localStorage
   if (IS_LOCAL || !supabaseClient) {
     loadLocalFallback();
+    pickSmartMonthOnLaunch();
     renderAll();
     return;
   }
@@ -18,6 +19,7 @@ async function initAuth() {
   } catch(e) {
     // Falha de rede na inicialização: vai para modo local
     loadLocalFallback();
+    pickSmartMonthOnLaunch();
     renderAll();
     return;
   }
