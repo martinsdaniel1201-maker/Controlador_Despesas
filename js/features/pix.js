@@ -7,10 +7,17 @@
 function switchFerramenta(nome, el) {
   document.querySelectorAll('#tabSimulacao .filter-chip').forEach(c => c.classList.remove('active'));
   if (el) el.classList.add('active');
-  document.getElementById('painelCalculadora').style.display = (nome === 'calc') ? '' : 'none';
-  document.getElementById('painelSimulacoes').style.display = (nome === 'sim') ? '' : 'none';
-  document.getElementById('painelPix').style.display = (nome === 'pix') ? '' : 'none';
+
+  const setPanel = (id, show) => {
+    const p = document.getElementById(id);
+    if (p) p.style.display = show ? '' : 'none';
+  };
+  setPanel('painelCalculadora', nome === 'calc');
+  setPanel('painelSimulacoes', nome === 'sim');
+  setPanel('painelPix', nome === 'pix');
+
   if (nome === 'sim') initSimulacoesPanel();
+  if (nome === 'pix') renderPixKeysList();
 }
 
 function maskPixKey(tipo, chave) {
@@ -79,40 +86,57 @@ function renderPixKeysList() {
 }
 
 function openPixKeyModal() {
-  document.getElementById('pixKeyApelido').value = '';
-  document.getElementById('pixKeyTipo').value = 'cpf';
-  document.getElementById('pixKeyChave').value = '';
-  document.getElementById('pixKeyNome').value = '';
-  document.getElementById('pixKeyCidade').value = '';
-  document.getElementById('pixKeyOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('pixKeyApelido').focus(), 50);
+  const ids = ['pixKeyApelido', 'pixKeyTipo', 'pixKeyChave', 'pixKeyNome', 'pixKeyCidade'];
+  const els = {};
+  for (const id of ids) {
+    els[id] = document.getElementById(id);
+    if (!els[id]) { console.error('Elemento do formulário Pix não encontrado:', id); showToast('⚠️ Não foi possível abrir o cadastro de chave'); return; }
+  }
+  els.pixKeyApelido.value = '';
+  els.pixKeyTipo.value = 'cpf';
+  els.pixKeyChave.value = '';
+  els.pixKeyNome.value = '';
+  els.pixKeyCidade.value = '';
+  els.pixKeyApelido.classList.remove('error');
+  els.pixKeyChave.classList.remove('error');
+  els.pixKeyNome.classList.remove('error');
+  els.pixKeyCidade.classList.remove('error');
+  const overlay = document.getElementById('pixKeyOverlay');
+  if (overlay) overlay.classList.add('open');
+  setTimeout(() => els.pixKeyApelido.focus(), 50);
 }
 
 function closePixKeyModal() {
-  document.getElementById('pixKeyOverlay').classList.remove('open');
+  const overlay = document.getElementById('pixKeyOverlay');
+  if (overlay) overlay.classList.remove('open');
 }
 
 function confirmNewPixKey() {
-  const apelido = document.getElementById('pixKeyApelido').value.trim();
-  const tipo    = document.getElementById('pixKeyTipo').value;
-  const chave   = document.getElementById('pixKeyChave').value.trim();
-  const nome    = document.getElementById('pixKeyNome').value.trim();
-  const cidade  = document.getElementById('pixKeyCidade').value.trim().toUpperCase();
+  try {
+    const apelido = document.getElementById('pixKeyApelido').value.trim();
+    const tipo    = document.getElementById('pixKeyTipo').value;
+    const chave   = document.getElementById('pixKeyChave').value.trim();
+    const nome    = document.getElementById('pixKeyNome').value.trim();
+    const cidade  = document.getElementById('pixKeyCidade').value.trim().toUpperCase();
 
-  if (!chave)  { document.getElementById('pixKeyChave').classList.add('error'); showToast('⚠️ Informe a chave Pix'); return; }
-  if (!nome)   { document.getElementById('pixKeyNome').classList.add('error'); showToast('⚠️ Informe o nome do recebedor'); return; }
-  if (!cidade) { document.getElementById('pixKeyCidade').classList.add('error'); showToast('⚠️ Informe a cidade'); return; }
+    if (!chave)  { document.getElementById('pixKeyChave').classList.add('error'); showToast('⚠️ Informe a chave Pix'); return; }
+    if (!nome)   { document.getElementById('pixKeyNome').classList.add('error'); showToast('⚠️ Informe o nome do recebedor'); return; }
+    if (!cidade) { document.getElementById('pixKeyCidade').classList.add('error'); showToast('⚠️ Informe a cidade'); return; }
 
-  const novaChave = {
-    id: 'pk_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-    apelido: apelido || nome,
-    tipo, chave, nome, cidade
-  };
-  pixKeys.push(novaChave);
-  persistPixKeys();
-  renderPixKeysList();
-  closePixKeyModal();
-  showToast('✅ Chave Pix cadastrada!');
+    const novaChave = {
+      id: 'pk_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      apelido: apelido || nome,
+      tipo, chave, nome, cidade
+    };
+    pixKeys.push(novaChave);
+    persistPixKeys();
+    renderPixKeysList();
+    closePixKeyModal();
+    showToast('✅ Chave Pix cadastrada!');
+  } catch (e) {
+    console.error('Erro ao cadastrar chave Pix:', e);
+    showToast('⚠️ Não deu pra salvar a chave. Tente novamente.');
+  }
 }
 
 async function deletePixKey(id) {
@@ -175,7 +199,8 @@ function emvField(id, value) {
 }
 
 function sanitizePixText(str, maxLen) {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  if (str == null) return '';
+  return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^A-Za-z0-9 ]/g, '').trim().slice(0, maxLen);
 }
 
@@ -210,33 +235,38 @@ function gerarCobrancaPix() {
   const alertBox = document.getElementById('pixAlertContainer');
   if (alertBox) alertBox.innerHTML = '';
 
-  const keyId = document.getElementById('pixChargeKeySelect').value;
-  const chaveObj = pixKeys.find(k => k.id === keyId);
-  if (!chaveObj) { showToast('⚠️ Cadastre e selecione uma chave Pix primeiro'); return; }
+  try {
+    const keyId = document.getElementById('pixChargeKeySelect').value;
+    const chaveObj = pixKeys.find(k => k.id === keyId);
+    if (!chaveObj) { showToast('⚠️ Cadastre e selecione uma chave Pix primeiro'); return; }
 
-  const valor = parseBRL(document.getElementById('pixChargeValor').value);
-  const valorInput = document.getElementById('pixChargeValor');
-  if (!(valor > 0)) {
-    valorInput.classList.add('error');
-    showToast('⚠️ Informe um valor válido');
-    return;
+    const valorInput = document.getElementById('pixChargeValor');
+    const valor = parseBRL(valorInput.value);
+    if (!(valor > 0)) {
+      valorInput.classList.add('error');
+      showToast('⚠️ Informe um valor válido');
+      return;
+    }
+    valorInput.classList.remove('error');
+
+    const descricao = document.getElementById('pixChargeDesc').value.trim();
+
+    const codigo = buildPixPayload({
+      chave: chaveObj.chave,
+      nome: chaveObj.nome,
+      cidade: chaveObj.cidade,
+      valor,
+      descricao
+    });
+
+    ultimaCobrancaGerada = { codigo, valor, descricao };
+
+    document.getElementById('pixChargeCodigo').value = codigo;
+    document.getElementById('pixChargeResult').style.display = 'block';
+  } catch (e) {
+    console.error('Erro ao gerar cobrança Pix:', e);
+    showToast('⚠️ Não deu pra gerar a cobrança. Tente editar a chave Pix e cadastrar novamente.');
   }
-  valorInput.classList.remove('error');
-
-  const descricao = document.getElementById('pixChargeDesc').value.trim();
-
-  const codigo = buildPixPayload({
-    chave: chaveObj.chave,
-    nome: chaveObj.nome,
-    cidade: chaveObj.cidade,
-    valor,
-    descricao
-  });
-
-  ultimaCobrancaGerada = { codigo, valor, descricao };
-
-  document.getElementById('pixChargeCodigo').value = codigo;
-  document.getElementById('pixChargeResult').style.display = 'block';
 }
 
 function copiarCodigoPix() {
