@@ -1,5 +1,16 @@
 // MODAL
 // ═══════════════════════════════════════════════
+const MODAL_STEP_COUNT = 3;
+let _modalStep = 0;
+let _modalSaveLabel = '✅ Adicionar Despesa';
+
+function setModalSaveLabel(text) {
+  _modalSaveLabel = text;
+  if (_modalStep === MODAL_STEP_COUNT - 1) {
+    document.getElementById('btnSave').textContent = text;
+  }
+}
+
 function openModal(reset = false) {
   if (!editingId || reset) {
     editingId   = null;
@@ -8,7 +19,7 @@ function openModal(reset = false) {
     selectedCat = 'outros';
     _catUserPicked = false;
     document.getElementById('modalTitle').textContent = 'Nova Despesa';
-    document.getElementById('btnSave').textContent = '✅ Adicionar Despesa';
+    setModalSaveLabel('✅ Adicionar Despesa');
     document.getElementById('fDesc').value  = '';
     document.getElementById('fValor').value = '';
     document.getElementById('fData').value  = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05`;
@@ -30,7 +41,7 @@ function openModal(reset = false) {
   // do handle/título ao reabrir o modal).
   const modalScrollEl = document.getElementById('modalScroll');
   modalScrollEl.scrollTop = 0;
-  updateStepDots();
+  goToModalStep(0);
   // Em mobile, abrir o teclado imediatamente some com o campo por trás dele;
   // focamos só depois da animação, sem forçar rolagem do fundo da página.
   setTimeout(() => {
@@ -39,18 +50,76 @@ function openModal(reset = false) {
   }, 400);
 }
 
-// ── INDICADOR DE PASSOS (dots): acompanha o scroll do formulário ──
-function updateStepDots() {
-  const el = document.getElementById('modalScroll');
-  const dots = document.querySelectorAll('#modalSteps .step-dot');
-  const max = el.scrollHeight - el.clientHeight;
-  const frac = max > 0 ? el.scrollTop / max : 0;
-  let step = 0;
-  if (frac > 0.66) step = 2;
-  else if (frac > 0.2) step = 1;
-  dots.forEach((d, i) => d.classList.toggle('active', i === step));
+// ── PASSOS FIXOS: cada tela cabe inteira, sem precisar rolar ──
+// (as bolinhas do topo agora navegam de verdade, em vez de só
+// acompanhar o scroll de um formulário único e comprido)
+function validateModalStep0() {
+  const desc  = document.getElementById('fDesc').value.trim();
+  const valor = parseBRL(document.getElementById('fValor').value);
+  const data  = document.getElementById('fData').value;
+  if (!desc) {
+    const el = document.getElementById('fDesc');
+    el.classList.add('error'); el.focus();
+    showToast('⚠️ Informe a descrição');
+    return false;
+  }
+  if (!valor || valor <= 0) {
+    const el = document.getElementById('fValor');
+    el.classList.add('error'); el.focus();
+    showToast('⚠️ Informe um valor válido');
+    return false;
+  }
+  if (!data) {
+    const el = document.getElementById('fData');
+    el.classList.add('error'); el.focus();
+    showToast('⚠️ Informe a data');
+    return false;
+  }
+  ['fDesc','fValor','fData'].forEach(id => document.getElementById(id).classList.remove('error'));
+  return true;
 }
-document.getElementById('modalScroll').addEventListener('scroll', updateStepDots, { passive: true });
+
+function goToModalStep(idx) {
+  idx = Math.max(0, Math.min(MODAL_STEP_COUNT - 1, idx));
+  _modalStep = idx;
+
+  document.querySelectorAll('.modal-step').forEach(el => {
+    el.classList.toggle('active', Number(el.dataset.step) === idx);
+  });
+  document.querySelectorAll('#modalSteps .step-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
+  });
+  document.getElementById('btnModalBack').style.display = idx === 0 ? 'none' : '';
+
+  const btnSave = document.getElementById('btnSave');
+  if (idx === MODAL_STEP_COUNT - 1) {
+    const cleanLabel = _modalSaveLabel.replace('✅ ', '').replace('💾 ', '');
+    btnSave.innerHTML = `<svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> ${cleanLabel}`;
+  } else {
+    btnSave.innerHTML = `Próximo <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron-right"></use></svg>`;
+  }
+
+  const modalScrollEl = document.getElementById('modalScroll');
+  if (modalScrollEl) modalScrollEl.scrollTop = 0;
+}
+
+function modalNextStep() {
+  if (_modalStep === 0 && !validateModalStep0()) return;
+  if (_modalStep < MODAL_STEP_COUNT - 1) {
+    goToModalStep(_modalStep + 1);
+  } else {
+    saveExpense();
+  }
+}
+
+function modalPrevStep() {
+  goToModalStep(_modalStep - 1);
+}
+
+function goToModalStepByDot(idx) {
+  if (idx > _modalStep && _modalStep === 0 && !validateModalStep0()) return;
+  goToModalStep(idx);
+}
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');

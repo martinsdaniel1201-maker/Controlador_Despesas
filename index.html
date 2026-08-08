@@ -90,6 +90,8 @@
 <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 19.5 6v6c0 5-3.5 8-7.5 9-4-1-7.5-4-7.5-9V6L12 3Z"/><path d="M8.7 12 11 14.3 15.5 9.5"/></symbol>
 <symbol id="i-car" viewBox="0 0 24 24"><path d="M4 16.5v-3.8l1.7-4.2A2 2 0 0 1 7.6 7.2h8.8a2 2 0 0 1 1.9 1.3l1.7 4.2v3.8"/><path d="M4 16.5h16M6 16.5v2M18 16.5v2"/><circle cx="7.5" cy="16.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16.5" r="1.5" fill="currentColor" stroke="none"/></symbol>
 <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5"/><path d="M4.5 9.5h15V20h-15V9.5Z"/><path d="M8 12.5v4M12 12.5v4M16 12.5v4"/><path d="M3 20h18"/></symbol>
+<symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
 </defs>
 </svg>
 
@@ -499,73 +501,87 @@
     <div class="modal-scroll" id="modalScroll">
       <div class="modal-handle"></div>
       <div class="modal-steps" id="modalSteps" aria-hidden="true">
-        <span class="step-dot active" data-step="0"></span>
-        <span class="step-dot" data-step="1"></span>
-        <span class="step-dot" data-step="2"></span>
+        <span class="step-dot active" data-step="0" onclick="goToModalStepByDot(0)"></span>
+        <span class="step-dot" data-step="1" onclick="goToModalStepByDot(1)"></span>
+        <span class="step-dot" data-step="2" onclick="goToModalStepByDot(2)"></span>
       </div>
       <div class="modal-title" id="modalTitle">Nova Despesa</div>
 
-      <div class="form-group">
-        <label class="form-label" for="fDesc">Descrição</label>
-        <input type="text" class="form-input" id="fDesc"
-               placeholder="Ex: Aluguel, Netflix..." autocomplete="off" enterkeyhint="next"
-               oninput="suggestCategoryFromDescription()">
-      </div>
-
-      <div class="form-group valor-group">
-        <label class="form-label" for="fValor">Valor</label>
-        <div class="valor-input-wrap">
-          <span class="valor-prefix">R$</span>
-          <input type="text" class="form-input valor-input" id="fValor" placeholder="0,00" inputmode="decimal" enterkeyhint="next">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="fData">Data de vencimento</label>
-        <input type="date" class="form-input" id="fData">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Categoria</label>
-        <div class="category-row" id="catRow" role="group" aria-label="Escolha a categoria"></div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="fNota">Observação (opcional)</label>
-        <input type="text" class="form-input" id="fNota"
-               placeholder="Ex: pagar no app do banco, boleto dia 10..." autocomplete="off" enterkeyhint="done">
-      </div>
-
-      <div class="repeat-card">
-        <div class="toggle-row" onclick="toggleRepetir()" role="button" tabindex="0"
-             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleRepetir();}">
-          <span class="toggle-label" id="labelRepetir">Repetir</span>
-          <button class="toggle" id="toggleRepetir" onclick="event.stopPropagation();toggleRepetir()"
-                  aria-labelledby="labelRepetir" role="switch" aria-checked="false" tabindex="-1"></button>
+      <!-- PASSO 1: ESSENCIAL -->
+      <div class="modal-step active" data-step="0">
+        <div class="form-group">
+          <label class="form-label" for="fDesc">Descrição</label>
+          <input type="text" class="form-input" id="fDesc"
+                 placeholder="Ex: Aluguel, Netflix..." autocomplete="off" enterkeyhint="next"
+                 oninput="suggestCategoryFromDescription()">
         </div>
 
-        <div id="repeatOptions" style="display:none">
-          <div class="radio-group" id="radioGroup" role="radiogroup" aria-label="Tipo de repetição">
-            <label class="radio-option" onclick="selectType('fixo')">
-              <div class="radio-circle selected" id="radioFixo" role="radio" aria-checked="true"></div>
-              <span class="radio-text">Fixo (todo mês)</span>
-            </label>
-            <label class="radio-option" onclick="selectType('parcelado')">
-              <div class="radio-circle" id="radioParcela" role="radio" aria-checked="false"></div>
-              <span class="radio-text">Parcelado</span>
-            </label>
+        <div class="form-group valor-group">
+          <label class="form-label" for="fValor">Valor</label>
+          <div class="valor-input-wrap">
+            <span class="valor-prefix">R$</span>
+            <input type="text" class="form-input valor-input" id="fValor" placeholder="0,00" inputmode="decimal" enterkeyhint="next">
           </div>
-          <div class="parcelas-input" id="parcelasRow" style="display:none">
-            <label for="fParcelas">Número de parcelas:</label>
-            <input type="number" id="fParcelas" min="2" max="60" value="2" aria-label="Número de parcelas">
-            <span id="parcelaAtual" style="font-size:12px;color:var(--text-muted);font-weight:700;"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fData">Data de vencimento</label>
+          <input type="date" class="form-input" id="fData">
+        </div>
+      </div>
+
+      <!-- PASSO 2: CATEGORIA -->
+      <div class="modal-step" data-step="1">
+        <div class="form-group">
+          <label class="form-label">Categoria</label>
+          <div class="category-row" id="catRow" role="group" aria-label="Escolha a categoria"></div>
+        </div>
+      </div>
+
+      <!-- PASSO 3: DETALHES E REPETIÇÃO -->
+      <div class="modal-step" data-step="2">
+        <div class="form-group">
+          <label class="form-label" for="fNota">Observação (opcional)</label>
+          <input type="text" class="form-input" id="fNota"
+                 placeholder="Ex: pagar no app do banco, boleto dia 10..." autocomplete="off" enterkeyhint="done">
+        </div>
+
+        <div class="repeat-card">
+          <div class="toggle-row" onclick="toggleRepetir()" role="button" tabindex="0"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleRepetir();}">
+            <span class="toggle-label" id="labelRepetir">Repetir</span>
+            <button class="toggle" id="toggleRepetir" onclick="event.stopPropagation();toggleRepetir()"
+                    aria-labelledby="labelRepetir" role="switch" aria-checked="false" tabindex="-1"></button>
+          </div>
+
+          <div id="repeatOptions" style="display:none">
+            <div class="radio-group" id="radioGroup" role="radiogroup" aria-label="Tipo de repetição">
+              <label class="radio-option" onclick="selectType('fixo')">
+                <div class="radio-circle selected" id="radioFixo" role="radio" aria-checked="true"></div>
+                <span class="radio-text">Fixo (todo mês)</span>
+              </label>
+              <label class="radio-option" onclick="selectType('parcelado')">
+                <div class="radio-circle" id="radioParcela" role="radio" aria-checked="false"></div>
+                <span class="radio-text">Parcelado</span>
+              </label>
+            </div>
+            <div class="parcelas-input" id="parcelasRow" style="display:none">
+              <label for="fParcelas">Número de parcelas:</label>
+              <input type="number" id="fParcelas" min="2" max="60" value="2" aria-label="Número de parcelas">
+              <span id="parcelaAtual" style="font-size:12px;color:var(--text-muted);font-weight:700;"></span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="modal-actions">
-      <button class="btn-save" onclick="saveExpense()" id="btnSave"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> Adicionar Despesa</button>
+      <div class="modal-actions-row">
+        <button class="btn-back" id="btnModalBack" onclick="modalPrevStep()" style="display:none">
+          <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron-left"></use></svg> Voltar
+        </button>
+        <button class="btn-save" onclick="modalNextStep()" id="btnSave"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> Adicionar Despesa</button>
+      </div>
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
     </div>
   </div>

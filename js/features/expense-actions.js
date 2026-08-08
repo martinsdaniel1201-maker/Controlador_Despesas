@@ -142,7 +142,7 @@ function editExpense(id) {
   if (!exp) return;
   editingId = id;
   document.getElementById('modalTitle').textContent = 'Editar Despesa';
-  document.getElementById('btnSave').textContent = '💾 Salvar Alterações';
+  setModalSaveLabel('💾 Salvar Alterações');
   document.getElementById('fDesc').value            = exp.descricao;
   // Aplica formato de máscara corretamente (ex: 1.234,56)
   const valorFormatado = exp.valor.toFixed(2)

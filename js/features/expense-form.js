@@ -9,6 +9,7 @@ async function saveExpense() {
   const nota     = document.getElementById('fNota').value.trim();
 
   if (!desc) {
+    if (typeof goToModalStep === 'function') goToModalStep(0);
     const el = document.getElementById('fDesc');
     el.classList.add('error');
     el.focus();
@@ -16,6 +17,7 @@ async function saveExpense() {
     return;
   }
   if (!valor || valor <= 0) {
+    if (typeof goToModalStep === 'function') goToModalStep(0);
     const el = document.getElementById('fValor');
     el.classList.add('error');
     el.focus();
@@ -23,6 +25,7 @@ async function saveExpense() {
     return;
   }
   if (!data) {
+    if (typeof goToModalStep === 'function') goToModalStep(0);
     const el = document.getElementById('fData');
     el.classList.add('error');
     el.focus();
