@@ -191,27 +191,28 @@ function renderItem(e) {
           <div class="expense-amount" ondblclick="openInlineEdit(event,'${safeId}')" style="cursor:pointer" title="Duplo toque para editar valor">${safeAmount}</div>
           ${e.paid ? '<div class="paid-tag" aria-label="Pago"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> PAGO</div>' : ''}
         </div>
+        <button class="item-menu-btn"
+                onclick="event.stopPropagation();toggleItemMenu(event,'${safeId}')"
+                aria-label="Mais ações para ${safeName}" aria-haspopup="true">
+          <svg class="icon icon-sm"><use href="#i-more"></use></svg>
+        </button>
       </div>
-      <div class="item-actions-bar">
-        <button class="action-bar-btn pay-btn"
-                onclick="togglePay('${safeId}','${safeKey}')"
-                aria-label="${e.paid ? 'Marcar como pendente' : 'Marcar como pago'}">
-          <span aria-hidden="true"><svg class="icon icon-sm"><use href="#i-${e.paid ? 'undo' : 'check'}"></use></svg></span>${e.paid ? 'Pendente' : 'Pagar'}
+      <div class="item-menu" id="menu-${safeId}" role="menu">
+        <button class="item-menu-option" role="menuitem"
+                onclick="event.stopPropagation();closeItemMenus();togglePay('${safeId}','${safeKey}')">
+          <svg class="icon icon-sm"><use href="#i-${e.paid ? 'undo' : 'check'}"></use></svg>${e.paid ? 'Marcar como pendente' : 'Marcar como pago'}
         </button>
-        <button class="action-bar-btn edit-btn"
-                onclick="event.stopPropagation();editExpense('${safeId}')"
-                aria-label="Editar despesa ${safeName}">
-          <span aria-hidden="true"><svg class="icon icon-sm"><use href="#i-edit"></use></svg></span>Editar
+        <button class="item-menu-option" role="menuitem"
+                onclick="event.stopPropagation();closeItemMenus();editExpense('${safeId}')">
+          <svg class="icon icon-sm"><use href="#i-edit"></use></svg>Editar
         </button>
-        <button class="action-bar-btn dup-btn"
-                onclick="event.stopPropagation();duplicateExpense('${safeId}')"
-                aria-label="Duplicar despesa ${safeName}">
-          <span aria-hidden="true"><svg class="icon icon-sm"><use href="#i-copy"></use></svg></span>Duplicar
+        <button class="item-menu-option" role="menuitem"
+                onclick="event.stopPropagation();closeItemMenus();duplicateExpense('${safeId}')">
+          <svg class="icon icon-sm"><use href="#i-copy"></use></svg>Duplicar
         </button>
-        <button class="action-bar-btn del-btn"
-                onclick="event.stopPropagation();deleteExpense('${safeId}')"
-                aria-label="Excluir despesa ${safeName}">
-          <span aria-hidden="true"><svg class="icon icon-sm"><use href="#i-trash"></use></svg></span>Excluir
+        <button class="item-menu-option danger" role="menuitem"
+                onclick="event.stopPropagation();closeItemMenus();deleteExpense('${safeId}')">
+          <svg class="icon icon-sm"><use href="#i-trash"></use></svg>Excluir
         </button>
       </div>
     </div>
