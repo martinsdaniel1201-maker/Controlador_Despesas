@@ -5,17 +5,23 @@
 function closeItemMenus() {
   document.querySelectorAll('.item-menu.open').forEach(m => m.classList.remove('open'));
   document.querySelectorAll('.item-menu-btn.open').forEach(b => b.classList.remove('open'));
+  // O card (.swipe-wrapper) usa overflow:hidden pra manter as bordas
+  // arredondadas — sem tirar isso durante a abertura, o popover fica
+  // recortado e parece que "não aparece".
+  document.querySelectorAll('.swipe-wrapper.menu-open').forEach(w => w.classList.remove('menu-open'));
 }
 
 function toggleItemMenu(event, id) {
   event.preventDefault();
   const menu = document.getElementById(`menu-${id}`);
   const btn  = event.currentTarget;
+  const wrapper = menu.closest('.swipe-wrapper');
   const wasOpen = menu.classList.contains('open');
   closeItemMenus();
   if (!wasOpen) {
     menu.classList.add('open');
     btn.classList.add('open');
+    if (wrapper) wrapper.classList.add('menu-open');
   }
 }
 
