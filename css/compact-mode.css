@@ -1,5 +1,5 @@
   /* ── MODO COMPACTO — sempre ativo ── */
-  .expense-item { padding: 9px 14px; }
+  .expense-item { padding: 9px 44px 9px 14px; } /* 44px à direita: espaço reservado pro botão de menu (⋮) */
   .expense-icon { width: 36px; height: 36px; font-size: 16px; border-radius: 10px; }
   .expense-name { font-size: 14px; }
   .expense-amount { font-size: 14px; }

@@ -26,7 +26,7 @@
   /* Enquanto o menu de ações deste card está aberto, o popover
      precisa "vazar" pra fora do card — sem isso ele fica cortado
      pelo overflow:hidden acima e some visualmente. */
-  .swipe-wrapper.menu-open { overflow: visible; z-index: 30; }
+  .swipe-wrapper.menu-open { overflow: visible; z-index: 300; }
 
   .expense-item {
     padding: 14px 16px;
