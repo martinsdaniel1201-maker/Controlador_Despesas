@@ -68,29 +68,58 @@
     to   { transform: translateX(0); }
   }
 
-  .item-actions-bar {
-    display: flex;
-    border-top: 1px solid var(--border);
-    background: var(--actions-bg);
-    border-radius: 0 0 var(--radius) var(--radius);
-    overflow: hidden;
-  }
-  .action-bar-btn {
-    flex: 1; padding: 10px;
+  /* ── MENU DE AÇÕES (kebab) ──────────────────────
+     Substitui a barra de 4 botões sempre visível por
+     um botão discreto + popover, no espírito Pierre:
+     só o essencial aparece por padrão. */
+  .expense-item { padding-right: 44px; } /* espaço pro botão de menu */
+  .item-menu-btn {
+    position: absolute;
+    top: 10px; right: 6px;
+    width: 32px; height: 32px;
     border: none; background: transparent;
-    font-family: 'Nunito', sans-serif;
-    font-size: 12px; font-weight: 800;
+    border-radius: 50%;
     color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
     cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    transition: all 0.2s;
+    transition: background 0.15s, color 0.15s;
     touch-action: manipulation;
   }
-  .action-bar-btn:not(:last-child) { border-right: 1px solid var(--border); }
-  .action-bar-btn.pay-btn  { color: var(--green-dark); }
-  .action-bar-btn.edit-btn { color: var(--orange-dark); }
-  .action-bar-btn.del-btn  { color: var(--red); }
-  .action-bar-btn:hover { background: rgba(0,0,0,0.04); }
+  .item-menu-btn:hover, .item-menu-btn.open { background: var(--drawer-hover); color: var(--text); }
+
+  .item-menu {
+    display: none;
+    position: absolute;
+    top: 42px; right: 8px;
+    z-index: 20;
+    min-width: 180px;
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: 0 8px 28px rgba(15,23,42,0.16);
+    border: 1px solid var(--border);
+    padding: 6px;
+    animation: menuPop 0.14s ease;
+  }
+  .item-menu.open { display: block; }
+  @keyframes menuPop {
+    from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .item-menu-option {
+    width: 100%;
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px;
+    border: none; background: transparent;
+    border-radius: 9px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px; font-weight: 700;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .item-menu-option:hover { background: var(--drawer-hover); }
+  .item-menu-option.danger { color: var(--red); }
 
   /* ── FOOTER ── */
   .footer {
