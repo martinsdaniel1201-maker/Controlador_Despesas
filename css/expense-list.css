@@ -23,6 +23,10 @@
     border: 1px solid rgba(0,0,0,0.02);
     overflow: hidden;
   }
+  /* Enquanto o menu de ações deste card está aberto, o popover
+     precisa "vazar" pra fora do card — sem isso ele fica cortado
+     pelo overflow:hidden acima e some visualmente. */
+  .swipe-wrapper.menu-open { overflow: visible; z-index: 30; }
 
   .expense-item {
     padding: 14px 16px;
