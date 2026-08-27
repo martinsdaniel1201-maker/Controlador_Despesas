@@ -1,3 +1,32 @@
+// MENU DE AÇÕES DO ITEM (kebab) — abre/fecha o popover com
+// Editar/Duplicar/Excluir/Marcar como pago, no lugar da barra
+// de 4 botões que ficava sempre visível.
+// ═══════════════════════════════════════════════
+function closeItemMenus() {
+  document.querySelectorAll('.item-menu.open').forEach(m => m.classList.remove('open'));
+  document.querySelectorAll('.item-menu-btn.open').forEach(b => b.classList.remove('open'));
+}
+
+function toggleItemMenu(event, id) {
+  event.preventDefault();
+  const menu = document.getElementById(`menu-${id}`);
+  const btn  = event.currentTarget;
+  const wasOpen = menu.classList.contains('open');
+  closeItemMenus();
+  if (!wasOpen) {
+    menu.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+
+// Fecha qualquer menu aberto ao tocar fora dele
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.item-menu') && !e.target.closest('.item-menu-btn')) {
+    closeItemMenus();
+  }
+});
+
+// ═══════════════════════════════════════════════
 // DUPLICAR DESPESA (#6)
 // ═══════════════════════════════════════════════
 function duplicateExpense(id) {
