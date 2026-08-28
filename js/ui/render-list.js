@@ -169,6 +169,11 @@ function renderItem(e) {
   const safeKey    = sanitize(e.monthKey);
   const dueBadge   = getDueBadge(e.dateStr, e.paid);
   const noteHtml   = e.nota ? `<div class="expense-note">💬 ${sanitize(e.nota)}</div>` : '';
+  const brandLogo  = getBrandLogoUrl(e.label);
+  const iconInnerHtml = brandLogo
+    ? `<img src="${brandLogo}" alt="" class="expense-brand-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+       <span class="expense-icon-fallback" style="display:none">${cat.emoji}</span>`
+    : `<span>${cat.emoji}</span>`;
 
   return `
     <div class="swipe-wrapper" data-expid="${safeId}">
@@ -179,7 +184,7 @@ function renderItem(e) {
            aria-label="${safeName} — ${safeAmount}${e.paid ? ' (pago)' : ' (pendente)'}">
         <div class="left">
           <div class="expense-icon" style="background:${color}15;color:${color}" aria-hidden="true">
-            <span>${cat.emoji}</span>
+            ${iconInnerHtml}
           </div>
           <div class="expense-info">
             <div class="expense-name">${safeName}${dueBadge}</div>

@@ -16,9 +16,13 @@ function getGreetingWord() {
 
 function getDashUserName() {
   try {
-    if (typeof currentUser !== 'undefined' && currentUser && currentUser.email) {
-      const raw = currentUser.email.split('@')[0].replace(/[._-]+/g, ' ').trim();
-      if (raw) return raw.split(' ')[0].replace(/^\w/, c => c.toUpperCase());
+    if (typeof currentUser !== 'undefined' && currentUser) {
+      const custom = currentUser.user_metadata?.display_name?.trim();
+      if (custom) return custom.split(' ')[0];
+      if (currentUser.email) {
+        const raw = currentUser.email.split('@')[0].replace(/[._-]+/g, ' ').trim();
+        if (raw) return raw.split(' ')[0].replace(/^\w/, c => c.toUpperCase());
+      }
     }
   } catch (e) {}
   return '';
