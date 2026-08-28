@@ -255,18 +255,6 @@
   </nav>
 </header>
 
-<!-- ABAS -->
-<div class="tabs" role="tablist" aria-label="Seções do app">
-  <button class="tab active" onclick="switchTab('inicio', this)" role="tab" aria-selected="true" aria-controls="tabInicio"><span><svg class="icon" aria-hidden="true"><use href="#i-sparkle"></use></svg></span>Início</button>
-  <div class="tab-wrapper">
-    <button class="tab" onclick="switchTab('despesas', this)" role="tab" aria-selected="false" aria-controls="tabDespesas"><span><svg class="icon" aria-hidden="true"><use href="#i-list"></use></svg></span>Despesas</button>
-    <span class="tab-alert-dot" id="tabAlertDot"></span>
-  </div>
-  <button class="tab" onclick="switchTab('stats', this)" role="tab" aria-selected="false" aria-controls="tabStats"><span><svg class="icon" aria-hidden="true"><use href="#i-bar-chart"></use></svg></span>Relatório</button>
-  <button class="tab" onclick="switchTab('simulacao', this)" role="tab" aria-selected="false" aria-controls="tabSimulacao"><span><svg class="icon" aria-hidden="true"><use href="#i-sliders"></use></svg></span>Ferramentas</button>
-  <button class="tab" onclick="switchTab('historico', this)" role="tab" aria-selected="false" aria-controls="tabHistorico"><span><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg></span>Histórico</button>
-</div>
-
 <!-- ABA: INÍCIO (DASHBOARD) -->
 <div id="tabInicio" role="tabpanel">
   <div class="dash-container" id="dashContainer"></div>
@@ -475,6 +463,18 @@
 <!-- ABA: HISTÓRICO -->
 <div id="tabHistorico" style="display:none" role="tabpanel">
   <div class="stats-container" id="historicoContainer"></div>
+</div>
+
+<!-- BARRA DE NAVEGAÇÃO FIXA (estilo WhatsApp/Instagram) -->
+<div class="tabs" role="tablist" aria-label="Seções do app">
+  <button class="tab active" onclick="switchTab('inicio', this)" role="tab" aria-selected="true" aria-controls="tabInicio"><span><svg class="icon" aria-hidden="true"><use href="#i-sparkle"></use></svg></span>Início</button>
+  <div class="tab-wrapper">
+    <button class="tab" onclick="switchTab('despesas', this)" role="tab" aria-selected="false" aria-controls="tabDespesas"><span><svg class="icon" aria-hidden="true"><use href="#i-list"></use></svg></span>Despesas</button>
+    <span class="tab-alert-dot" id="tabAlertDot"></span>
+  </div>
+  <button class="tab" onclick="switchTab('stats', this)" role="tab" aria-selected="false" aria-controls="tabStats"><span><svg class="icon" aria-hidden="true"><use href="#i-bar-chart"></use></svg></span>Relatório</button>
+  <button class="tab" onclick="switchTab('simulacao', this)" role="tab" aria-selected="false" aria-controls="tabSimulacao"><span><svg class="icon" aria-hidden="true"><use href="#i-sliders"></use></svg></span>Ferramentas</button>
+  <button class="tab" onclick="switchTab('historico', this)" role="tab" aria-selected="false" aria-controls="tabHistorico"><span><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg></span>Histórico</button>
 </div>
 
 <!-- RODAPÉ FIXO -->
