@@ -45,6 +45,13 @@ function setFilter(f, el) {
 }
 
 function switchTab(tab, btn) {
+  // Histórico simples de navegação — alimenta o gesto de "voltar"
+  // (arrastar da borda esquerda pra direita), pra imitar o back-swipe
+  // do iOS/Android em vez de só trocar de aba sem guardar de onde veio.
+  if (tab !== currentTab) {
+    _tabHistory.push(currentTab);
+    if (_tabHistory.length > 20) _tabHistory.shift();
+  }
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(t => {
     t.classList.remove('active');
@@ -65,6 +72,23 @@ function switchTab(tab, btn) {
   if (tab === 'stats')     renderStats();
   if (tab === 'simulacao') { loadSimInputs(); calcularSimulacao(); }
   if (tab === 'historico') renderHistorico();
+}
+
+// Ordem real dos botões de aba no DOM — usada por goBackTab() pra
+// encontrar o <button> certo e reaproveitar o switchTab() de cima.
+const _TAB_ORDER = ['inicio', 'despesas', 'stats', 'simulacao', 'historico'];
+let _tabHistory = [];
+
+function goBackTab() {
+  if (!_tabHistory.length) return false;
+  const prevTab = _tabHistory.pop();
+  const idx = _TAB_ORDER.indexOf(prevTab);
+  const btn = document.querySelectorAll('.tab')[idx];
+  if (!btn) return false;
+  const before = _tabHistory; // switchTab vai empurrar currentTab de volta pro histórico
+  switchTab(prevTab, btn);
+  _tabHistory = before; // desfaz esse empurrão: voltar não deve "esquecer pra frente"
+  return true;
 }
 
 function showToast(msg) {
