@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function onLoginSuccess(user) {
   currentUser = user;
   hideAuthScreen();
-  updateDrawerUser(user.email);
+  updateDrawerUser(user);
 
   // Carregar dados do Supabase
   await loadFromSupabase();
@@ -210,13 +210,40 @@ async function handleLogout() {
 }
 
 // ── DRAWER: INFO DO USUÁRIO ───────────────────
-function updateDrawerUser(email) {
+function updateDrawerUser(user) {
   const info  = document.getElementById('drawer-user-info');
   const emailEl = document.getElementById('drawer-user-email');
   if (info && emailEl) {
     info.style.display = 'flex';
-    emailEl.textContent = email || '';
+    const displayName = user?.user_metadata?.display_name;
+    emailEl.textContent = displayName ? `${displayName} · ${user.email}` : (user?.email || '');
   }
+}
+
+// ── PERFIL: NOME DE EXIBIÇÃO ──────────────────
+// Guardado em user_metadata do próprio Supabase Auth (sem tabela nova,
+// sem custo extra de storage) — usado na saudação da Home.
+function openProfileEditor() {
+  const input = document.getElementById('profileName');
+  input.value = currentUser?.user_metadata?.display_name || '';
+  document.getElementById('profileOverlay').classList.add('open');
+  setTimeout(() => input.focus(), 150);
+}
+
+function closeProfileEditor() {
+  document.getElementById('profileOverlay').classList.remove('open');
+}
+
+async function saveProfileName() {
+  const nome = document.getElementById('profileName').value.trim();
+  if (!supabaseClient || !currentUser) { closeProfileEditor(); return; }
+  const { data, error } = await supabaseClient.auth.updateUser({ data: { display_name: nome } });
+  if (error) { showToast('Não foi possível salvar o nome agora.'); return; }
+  currentUser = data.user;
+  updateDrawerUser(currentUser);
+  closeProfileEditor();
+  showToast('Perfil atualizado!');
+  if (currentTab === 'inicio') renderHome();
 }
 
 // ── INDICADOR DE SINCRONIZAÇÃO ────────────────
