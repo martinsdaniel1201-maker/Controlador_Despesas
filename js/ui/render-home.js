@@ -69,8 +69,9 @@ function getMonthTotals(y, m) {
 function buildInsightsSectionHtml() {
   const list = generateInsights(currentYear, currentMonth);
   if (!list.length) return '';
+  const VISIBLE = 3;
   const cards = list.map((ins, idx) => `
-    <div class="insight-card tone-${ins.tone}" style="animation-delay:${Math.min(idx * 0.06, 0.6).toFixed(2)}s">
+    <div class="insight-card tone-${ins.tone} ${idx >= VISIBLE ? 'insight-extra' : ''}" style="animation-delay:${Math.min(idx * 0.06, 0.6).toFixed(2)}s">
       <span class="insight-icon"><svg class="icon icon-sm" aria-hidden="true"><use href="#${ins.icon}"></use></svg></span>
       <div class="insight-body">
         <div class="insight-title">${sanitize(ins.title)}</div>
@@ -79,6 +80,10 @@ function buildInsightsSectionHtml() {
     </div>
   `).join('');
 
+  const toggleBtn = list.length > VISIBLE
+    ? `<button type="button" class="insights-toggle" onclick="toggleAllInsights(this)">Ver mais ${list.length - VISIBLE} insight${list.length - VISIBLE > 1 ? 's' : ''}</button>`
+    : '';
+
   return `
     <div class="insights-section">
       <div class="insights-header">
@@ -86,8 +91,19 @@ function buildInsightsSectionHtml() {
         <span class="insights-count">${list.length}</span>
       </div>
       <div class="insights-list">${cards}</div>
+      ${toggleBtn}
     </div>
   `;
+}
+
+// Expande/recolhe os insights além dos 3 primeiros — evita que a Home
+// vire uma parede de cards quando o motor de regras dispara muitos ao
+// mesmo tempo.
+function toggleAllInsights(btn) {
+  const section = btn.closest('.insights-section');
+  const hidden = section.querySelectorAll('.insight-extra');
+  const nowOpen = section.classList.toggle('insights-expanded');
+  btn.textContent = nowOpen ? 'Ver menos' : `Ver mais ${hidden.length} insight${hidden.length > 1 ? 's' : ''}`;
 }
 
 function buildScoreCardHtml() {
@@ -294,22 +310,13 @@ function renderHome() {
         ${deltaChip}
         ${salario === 0 ? '<span class="dash-hint">Informe sua renda em Ferramentas para ver o saldo completo</span>' : ''}
       </div>
+      <p class="dash-hero-summary">${resumoTxt}</p>
+      <button type="button" class="dash-share-btn" onclick="shareMonthCard()">
+        <svg class="icon icon-sm" aria-hidden="true"><use href="#i-send"></use></svg> Compartilhar resumo do mês
+      </button>
     </div>
 
     ${scoreCard.html}
-
-    <div class="dash-grid-2">
-      <div class="dash-mini-card income">
-        <div class="dash-mini-icon"><svg class="icon" aria-hidden="true"><use href="#i-wallet"></use></svg></div>
-        <div class="dash-mini-label">Receitas</div>
-        <div class="dash-mini-value" id="dashReceitaValue">R$ 0,00</div>
-      </div>
-      <div class="dash-mini-card expense">
-        <div class="dash-mini-icon"><svg class="icon" aria-hidden="true"><use href="#i-credit-card"></use></svg></div>
-        <div class="dash-mini-label">Despesas</div>
-        <div class="dash-mini-value" id="dashDespesaValue">R$ 0,00</div>
-      </div>
-    </div>
 
     <div class="dash-card economy-card">
       <div class="dash-card-head">
@@ -326,16 +333,13 @@ function renderHome() {
             ? `Você ainda não gastou ${formatBRL(economiaMes)} da sua renda — ${economiaPct}% preservados até agora.`
             : 'Toda a renda informada já foi comprometida com despesas este mês.'}
       </div>
-    </div>
-
-    <div class="dash-card goal-card">
-      <div class="dash-card-head">
-        <span class="dash-card-icon goal"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-target"></use></svg></span>
-        <span class="dash-card-title">Meta mensal</span>
-        <span class="dash-card-badge">${metaPct > 0 ? metaPct + '%' : 'sem meta'}</span>
-      </div>
       ${metaPct > 0 ? `
-        <div class="dash-card-value">${formatBRL(valorMeta)} <span class="dash-card-value-sub">objetivo</span></div>
+        <hr class="dash-card-divider">
+        <div class="dash-card-head">
+          <span class="dash-card-icon goal"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-target"></use></svg></span>
+          <span class="dash-card-title">Meta mensal</span>
+          <span class="dash-card-badge">${metaPct}%</span>
+        </div>
         <div class="dash-bar-bg"><div class="dash-bar-fill goal-fill" style="width:${metaProgress}%"></div></div>
         <div class="dash-card-explain">
           ${metaProgress >= 100
@@ -343,40 +347,9 @@ function renderHome() {
             : `Você já guardou ${formatBRL(economiaMes)} de ${formatBRL(valorMeta)} (${metaProgress}% da meta).`}
         </div>
       ` : `
+        <hr class="dash-card-divider">
         <div class="dash-card-explain">Defina uma meta de economia (% do salário) na aba Ferramentas para acompanhar seu progresso aqui.</div>
       `}
-    </div>
-
-    <div class="dash-grid-2 insights">
-      <div class="dash-insight-card">
-        <span class="dash-card-icon alert"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-zap"></use></svg></span>
-        <div class="dash-insight-label">Maior gasto</div>
-        ${maiorGasto ? `
-          <div class="dash-insight-name">${maiorGastoCat.emoji} ${sanitize(maiorGasto.label)}</div>
-          <div class="dash-insight-value">${formatBRL(maiorGasto.valor)}</div>
-          <div class="dash-insight-sub">${maiorGastoPct}% do total do mês</div>
-        ` : `<div class="dash-insight-empty">Sem despesas ainda</div>`}
-      </div>
-      <div class="dash-insight-card">
-        <span class="dash-card-icon good"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-trend-down"></use></svg></span>
-        <div class="dash-insight-label">Maior economia</div>
-        ${maiorEconomia ? `
-          <div class="dash-insight-name">${maiorEconomiaCat.emoji} ${sanitize(maiorEconomiaCat.label)}</div>
-          <div class="dash-insight-value good">-${formatBRL(maiorEconomia.diff)}</div>
-          <div class="dash-insight-sub">vs ${sanitize(monthShortLabel(prevYear, prevMonth))}</div>
-        ` : `<div class="dash-insight-empty">Nenhuma categoria reduziu ainda</div>`}
-      </div>
-    </div>
-
-    <div class="dash-card summary-card">
-      <div class="dash-card-head">
-        <span class="dash-card-icon summary"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-bar-chart"></use></svg></span>
-        <span class="dash-card-title">Resumo financeiro</span>
-      </div>
-      <p class="dash-summary-text">${resumoTxt}</p>
-      <button type="button" class="dash-share-btn" onclick="shareMonthCard()">
-        <svg class="icon icon-sm" aria-hidden="true"><use href="#i-send"></use></svg> Compartilhar resumo do mês
-      </button>
     </div>
 
     ${buildInsightsSectionHtml()}
@@ -384,8 +357,6 @@ function renderHome() {
 
   // ── ANIMAÇÕES: números "vivos" + entrada escalonada ──
   animateDashValue(document.getElementById('dashSaldoValue'), saldoAtual);
-  animateDashValue(document.getElementById('dashReceitaValue'), salario);
-  animateDashValue(document.getElementById('dashDespesaValue'), cur.total);
   animateDashValue(document.getElementById('dashEconomiaValue'), economiaMes);
   animateScoreCard(scoreCard);
 
