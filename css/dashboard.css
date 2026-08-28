@@ -3,7 +3,7 @@
 ══════════════════════════════════════════════════ */
 
 .dash-container {
-  padding: 14px 14px 184px;
+  padding: 14px 14px 260px;
 }
 
 /* ── ENTRADA ESCALONADA ── */
@@ -225,9 +225,17 @@
   font-size: 12px; font-weight: 700; color: var(--text-muted); margin-top: 4px;
 }
 
-/* ── RESUMO FINANCEIRO (NARRATIVA) ── */
+/* ── RESUMO FINANCEIRO (NARRATIVA) — agora dentro do hero ── */
 .dash-summary-text {
   font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.6;
+}
+.dash-hero-summary {
+  position: relative; z-index: 1;
+  font-size: 13px; font-weight: 600; line-height: 1.55;
+  color: rgba(255,255,255,0.88);
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.16);
 }
 
 .dash-share-btn {
@@ -240,6 +248,20 @@
 }
 .dash-share-btn:hover  { background: rgba(67,56,202,0.12); }
 .dash-share-btn:active { transform: scale(0.97); }
+/* Dentro do hero (fundo roxo escuro) o botão tracejado precisa de contraste claro */
+.dash-hero .dash-share-btn {
+  position: relative; z-index: 1;
+  border-color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+.dash-hero .dash-share-btn:hover { background: rgba(255,255,255,0.16); }
+
+/* ── Divisor usado quando Economia + Meta ficam no mesmo card ── */
+.dash-card-divider {
+  border: none; border-top: 1px solid var(--border);
+  margin: 16px 0 14px;
+}
 
 @media (min-width: 380px) {
   .dash-balance { font-size: 38px; }
@@ -265,6 +287,16 @@
 }
 
 .insights-list { display: flex; flex-direction: column; gap: 10px; }
+.insight-extra { display: none; }
+.insights-section.insights-expanded .insight-extra { display: flex; }
+.insights-toggle {
+  width: 100%; margin-top: 10px; padding: 11px;
+  border-radius: 12px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--brand-dark);
+  font-size: 12.5px; font-weight: 900; font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+}
+.insights-toggle:hover { background: var(--drawer-hover); }
 
 .insight-card {
   display: flex; gap: 12px; align-items: flex-start;

@@ -94,23 +94,27 @@
   }
   .btn-nav:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
 
-  /* ── TABS: barra de navegação fixa no rodapé
-     (estilo WhatsApp/Instagram/Facebook) ── */
+  /* ── TABS: barra de navegação flutuante no rodapé
+     (dock com respiro nas bordas, cantos arredondados —
+     como os apps atuais vêm adotando em vez da barra
+     colada de ponta a ponta) ── */
   .tabs {
     position: fixed;
-    bottom: 0; left: 50%;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
     transform: translate3d(-50%, 0, 0);
     will-change: transform;
-    width: 100%; max-width: 480px;
+    width: calc(100% - 28px); max-width: 452px;
     display: flex;
     background: var(--card);
-    border-top: 1px solid var(--border);
-    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 6px;
     justify-content: space-between;
     align-items: center;
     gap: 2px;
     z-index: 150;
-    box-shadow: 0 -2px 16px rgba(15,23,42,0.07);
+    box-shadow: 0 10px 28px rgba(15,23,42,0.14);
   }
   .tab {
     flex: 1;

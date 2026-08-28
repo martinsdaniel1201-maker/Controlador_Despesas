@@ -1,5 +1,5 @@
   /* ── EXPENSE LIST ── */
-  .list-container { padding: 6px 14px 184px; }
+  .list-container { padding: 6px 14px 260px; }
   .fade-in-up { animation: fadeInUp 0.4s ease forwards; }
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(8px); }
@@ -128,7 +128,7 @@
   /* ── FOOTER ── */
   .footer {
     position: fixed;
-    bottom: 62px; left: 50%;
+    bottom: 80px; left: 50%;
     transform: translate3d(-50%, 0, 0);
     will-change: transform;
     backface-visibility: hidden;
@@ -136,8 +136,8 @@
     background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid));
     padding: 14px 20px 20px;
     z-index: 100;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-    border-radius: 24px 24px 0 0;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+    border-radius: 22px;
   }
   .footer-row { display: flex; justify-content: space-between; align-items: center; }
   .footer-label, .footer-main-label { color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 700; }
@@ -147,7 +147,7 @@
   /* ── FAB: FIX — posicionamento responsivo e seguro ── */
   .fab {
     position: fixed;
-    bottom: 158px;
+    bottom: 184px;
     right: 16px;              /* âncora simples, sem risco de overflow */
     z-index: 160;
     width: 56px; height: 56px;
