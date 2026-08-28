@@ -45,6 +45,14 @@
     font-size: 20px;
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .expense-brand-logo {
+    width: 24px; height: 24px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: #fff;
+    padding: 3px;
   }
   .expense-info { flex: 1; min-width: 0; }
   .expense-name {
