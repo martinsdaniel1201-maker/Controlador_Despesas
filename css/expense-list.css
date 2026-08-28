@@ -1,5 +1,5 @@
   /* ── EXPENSE LIST ── */
-  .list-container { padding: 6px 14px 120px; }
+  .list-container { padding: 6px 14px 184px; }
   .fade-in-up { animation: fadeInUp 0.4s ease forwards; }
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(8px); }
@@ -128,7 +128,7 @@
   /* ── FOOTER ── */
   .footer {
     position: fixed;
-    bottom: 0; left: 50%;
+    bottom: 62px; left: 50%;
     transform: translate3d(-50%, 0, 0);
     will-change: transform;
     backface-visibility: hidden;
@@ -147,9 +147,9 @@
   /* ── FAB: FIX — posicionamento responsivo e seguro ── */
   .fab {
     position: fixed;
-    bottom: 96px;
+    bottom: 158px;
     right: 16px;              /* âncora simples, sem risco de overflow */
-    z-index: 200;
+    z-index: 160;
     width: 56px; height: 56px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--brand-mid), var(--brand-dark));

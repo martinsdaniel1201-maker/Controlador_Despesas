@@ -1,5 +1,5 @@
   /* ── STATS & HISTÓRICO ── */
-  .stats-container { padding: 10px 14px 120px; }
+  .stats-container { padding: 10px 14px 184px; }
   .stats-card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow); }
   .stats-card h3 { font-size: 14px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
   .cat-stat-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
