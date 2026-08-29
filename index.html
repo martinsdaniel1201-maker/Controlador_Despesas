@@ -34,6 +34,7 @@
 <link rel="stylesheet" href="css/inline-edit.css">
 <link rel="stylesheet" href="css/accessibility.css">
 <link rel="stylesheet" href="css/icons.css">
+<link rel="stylesheet" href="css/desktop.css">
 </head>
 <body>
 <!-- ══════════════════════════════════════════════════
@@ -495,8 +496,9 @@
   <div class="stats-container" id="historicoContainer"></div>
 </div>
 
-<!-- BARRA DE NAVEGAÇÃO FIXA (estilo WhatsApp/Instagram) -->
+<!-- BARRA DE NAVEGAÇÃO FIXA (estilo WhatsApp/Instagram no celular; vira sidebar no PC) -->
 <div class="tabs" role="tablist" aria-label="Seções do app">
+  <div class="sidebar-brand"><img src="./icone-192.png" alt="" class="sidebar-brand-img"><span>Meu Bolso</span></div>
   <button class="tab active" onclick="switchTab('inicio', this)" role="tab" aria-selected="true" aria-controls="tabInicio"><span><svg class="icon" aria-hidden="true"><use href="#i-sparkle"></use></svg></span>Início</button>
   <div class="tab-wrapper">
     <button class="tab" onclick="switchTab('despesas', this)" role="tab" aria-selected="false" aria-controls="tabDespesas"><span><svg class="icon" aria-hidden="true"><use href="#i-list"></use></svg></span>Despesas</button>
@@ -652,7 +654,7 @@
 <!-- TELA DE LOGIN/CADASTRO -->
 <div id="auth-screen" role="dialog" aria-label="Login ou Cadastro">
   <div class="auth-card">
-    <div class="auth-logo"><svg class="icon icon-xl" aria-hidden="true"><use href="#i-wallet"></use></svg></div>
+    <div class="auth-logo"><img src="./icone-192.png" alt="Logo" class="auth-logo-img"></div>
     <div class="auth-title">Minhas Despesas</div>
     <div class="auth-subtitle">Controle financeiro pessoal</div>
     <div class="auth-tabs">
