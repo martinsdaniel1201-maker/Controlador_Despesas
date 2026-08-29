@@ -1,0 +1,94 @@
+/* ══════════════════════════════════════════════════
+   DESKTOP (telas de verdade — PC/notebook/monitor)
+   Tudo aqui só entra em vigor a partir de 900px de
+   largura. Abaixo disso (celular e tablet) nada muda —
+   o app continua exatamente como já estava.
+══════════════════════════════════════════════════ */
+
+/* Elemento novo (logo da sidebar) — escondido por padrão,
+   só aparece dentro do media query do PC lá embaixo. */
+.sidebar-brand { display: none; }
+
+@media (min-width: 900px) {
+
+  /* ── Tela toda usada de verdade: sem "celular flutuando
+       no vazio escuro", sem rolagem travada ── */
+  html {
+    padding: 0;
+    background: var(--bg);
+  }
+  body {
+    max-width: none;
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+    padding-left: 232px; /* respiro pra sidebar fixa */
+  }
+
+  /* ── A barra de abas do celular vira sidebar fixa ── */
+  .tabs {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 232px; height: 100vh;
+    max-width: none;
+    transform: none;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    border-radius: 0;
+    border: none;
+    border-right: 1px solid var(--border);
+    box-shadow: none;
+    padding: 22px 14px;
+    gap: 3px;
+    z-index: 50;
+  }
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 10px 22px;
+    font-size: 15px; font-weight: 900; color: var(--text);
+  }
+  .sidebar-brand-img { width: 32px; height: 32px; border-radius: 9px; }
+  .tab {
+    flex: none;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-size: 13.5px;
+  }
+  .tab .icon { width: 20px; height: 20px; }
+  .tab-wrapper { flex: none; }
+
+  /* ── Conteúdo: legível e centralizado no espaço livre,
+       em vez de esticado de ponta a ponta do monitor ── */
+  .header-top, .month-nav,
+  .list-container, .dash-container, .stats-container, .sim-container {
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Sem a barra de baixo do celular disputando espaço, o
+     respiro enorme no fim de cada aba fica desnecessário. */
+  .list-container, .dash-container, .stats-container { padding-bottom: 48px; }
+  .sim-container { padding-bottom: 40px; }
+
+  /* ── Rodapé de totais e botão "+": ficam no canto,
+       sem precisar centralizar sobre uma coluna de 480px ── */
+  .footer {
+    left: auto; right: 32px;
+    transform: none;
+    width: 300px;
+    bottom: 28px;
+    border-radius: 20px;
+  }
+  .fab {
+    right: 32px;
+    bottom: 150px;
+  }
+}

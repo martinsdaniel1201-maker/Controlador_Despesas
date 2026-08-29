@@ -149,9 +149,14 @@
   @media (min-width: 520px) {
     html { padding: 28px 0; }
     body {
-      min-height: calc(100vh - 56px);
+      /* FIX: "overflow: hidden" aqui travava a rolagem inteira da página
+         no PC (bug reportado) — o certo é a rolagem acontecer DENTRO
+         do "cartão" com cantos arredondados, não travar tudo. */
+      height: calc(100vh - 56px);
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
       border-radius: 28px;
-      overflow: hidden;
       box-shadow: 0 30px 70px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06);
     }
   }

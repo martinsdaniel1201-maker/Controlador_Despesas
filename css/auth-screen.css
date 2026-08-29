@@ -25,8 +25,12 @@
   }
   .auth-logo {
     text-align: center;
-    font-size: 48px;
     margin-bottom: 8px;
+  }
+  .auth-logo-img {
+    width: 72px; height: 72px;
+    border-radius: 18px;
+    box-shadow: 0 6px 20px rgba(67,56,202,0.25);
   }
   .auth-title {
     text-align: center;
