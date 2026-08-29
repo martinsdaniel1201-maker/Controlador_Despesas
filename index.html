@@ -113,6 +113,17 @@
       <div class="modal-handle"></div>
       <div class="modal-title" id="profileTitle" style="display:flex;align-items:center;gap:8px;"><svg class="icon" aria-hidden="true"><use href="#i-user"></use></svg> Meu Perfil</div>
 
+      <div class="profile-avatar-picker">
+        <div class="profile-avatar-preview" id="profileAvatarPreview">
+          <span id="profileAvatarInitial">?</span>
+        </div>
+        <input type="file" id="profileAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarFileChosen(event)">
+        <button type="button" class="profile-avatar-btn" onclick="document.getElementById('profileAvatarInput').click()">
+          <svg class="icon icon-sm" aria-hidden="true"><use href="#i-edit"></use></svg> Trocar foto
+        </button>
+        <span class="profile-avatar-status" id="profileAvatarStatus"></span>
+      </div>
+
       <div class="form-group">
         <label class="form-label" for="profileName">Como você quer ser chamado?</label>
         <input type="text" class="form-input" id="profileName" maxlength="30" placeholder="Ex: Daniel" autocomplete="off">
