@@ -177,6 +177,7 @@ async function onLoginSuccess(user) {
   currentUser = user;
   hideAuthScreen();
   updateDrawerUser(user);
+  applyUserAvatarEverywhere();
 
   // Carregar dados do Supabase
   await loadFromSupabase();
@@ -227,6 +228,7 @@ function openProfileEditor() {
   const input = document.getElementById('profileName');
   input.value = currentUser?.user_metadata?.display_name || '';
   document.getElementById('profileOverlay').classList.add('open');
+  renderProfileAvatarPreview();
   setTimeout(() => input.focus(), 150);
 }
 
@@ -244,6 +246,123 @@ async function saveProfileName() {
   closeProfileEditor();
   showToast('Perfil atualizado!');
   if (currentTab === 'inicio') renderHome();
+}
+
+// ── PERFIL: FOTO DE AVATAR ────────────────────
+// Guardada no Supabase Storage (bucket "avatars", precisa existir —
+// veja instruções). A imagem é redimensionada no navegador antes do
+// upload pra ficar leve (poucos KB), então o custo de storage é
+// desprezível mesmo com vários usuários.
+function _getInitials() {
+  const name = currentUser?.user_metadata?.display_name || currentUser?.email || '?';
+  return name.trim().charAt(0).toUpperCase();
+}
+
+function renderProfileAvatarPreview() {
+  const box = document.getElementById('profileAvatarPreview');
+  const url = currentUser?.user_metadata?.avatar_url;
+  box.innerHTML = url
+    ? `<img src="${url}" alt="">`
+    : `<span>${_getInitials()}</span>`;
+}
+
+function _resizeImageToBlob(file, maxSize = 256, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = () => { img.src = reader.result; };
+    reader.onerror = reject;
+    img.onload = () => {
+      // Recorte quadrado central (pra caber redondo depois) + redimensiona
+      const side = Math.min(img.width, img.height);
+      const sx = (img.width - side) / 2;
+      const sy = (img.height - side) / 2;
+      const outSide = Math.min(maxSize, side);
+      const canvas = document.createElement('canvas');
+      canvas.width = outSide; canvas.height = outSide;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, outSide, outSide);
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Falha ao gerar imagem')), 'image/jpeg', quality);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleAvatarFileChosen(event) {
+  const file = event.target.files?.[0];
+  event.target.value = ''; // permite escolher o mesmo arquivo de novo depois
+  if (!file || !currentUser || !supabaseClient) return;
+  const statusEl = document.getElementById('profileAvatarStatus');
+  statusEl.textContent = 'Enviando...';
+  try {
+    const blob = await _resizeImageToBlob(file);
+    const path = `${currentUser.id}.jpg`;
+    const { error: uploadError } = await supabaseClient.storage
+      .from('avatars')
+      .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+    if (uploadError) throw uploadError;
+
+    const { data: pub } = supabaseClient.storage.from('avatars').getPublicUrl(path);
+    const avatarUrl = `${pub.publicUrl}?t=${Date.now()}`; // cache-bust pra atualizar na hora
+
+    const { data, error } = await supabaseClient.auth.updateUser({ data: { avatar_url: avatarUrl } });
+    if (error) throw error;
+
+    currentUser = data.user;
+    renderProfileAvatarPreview();
+    applyUserAvatarEverywhere();
+    statusEl.textContent = 'Foto atualizada!';
+    setTimeout(() => { statusEl.textContent = ''; }, 2500);
+  } catch (err) {
+    console.error('Erro ao enviar avatar:', err);
+    const msg = /bucket/i.test(err?.message || '')
+      ? 'O bucket "avatars" ainda não existe no Supabase — veja as instruções de configuração.'
+      : 'Não foi possível enviar a foto agora.';
+    statusEl.textContent = msg;
+  }
+}
+
+// Espalha o avatar (ou some com ele) nos lugares que representam o
+// usuário no app: o botão de menu (⋮) do cabeçalho e o ícone no drawer.
+function applyUserAvatarEverywhere() {
+  const url = currentUser?.user_metadata?.avatar_url;
+  const btnMenu = document.querySelector('.btn-menu');
+  if (btnMenu) {
+    let img = btnMenu.querySelector('.btn-menu-avatar');
+    const dotsIcon = btnMenu.querySelector('svg');
+    if (url) {
+      if (!img) {
+        img = document.createElement('img');
+        img.className = 'btn-menu-avatar';
+        img.alt = '';
+        btnMenu.insertBefore(img, btnMenu.firstChild);
+      }
+      img.src = url;
+      if (dotsIcon) dotsIcon.style.display = 'none';
+    } else {
+      if (img) img.remove();
+      if (dotsIcon) dotsIcon.style.display = '';
+    }
+  }
+  const drawerIcon = document.querySelector('#drawer-user-info svg');
+  const drawerBtn  = document.querySelector('#drawer-user-info button[onclick="openProfileEditor()"]');
+  if (drawerBtn) {
+    let img = drawerBtn.querySelector('.drawer-avatar-img');
+    if (url) {
+      if (!img) {
+        img = document.createElement('img');
+        img.className = 'drawer-avatar-img';
+        img.alt = '';
+        drawerBtn.insertBefore(img, drawerBtn.firstChild);
+      }
+      img.src = url;
+      if (drawerIcon) drawerIcon.style.display = 'none';
+    } else {
+      if (img) img.remove();
+      if (drawerIcon) drawerIcon.style.display = '';
+    }
+  }
 }
 
 // ── INDICADOR DE SINCRONIZAÇÃO ────────────────
