@@ -186,6 +186,7 @@ function editExpense(id) {
   document.getElementById('fValor').value           = valorFormatado;
   document.getElementById('fData').value            = exp.dataOriginal;
   document.getElementById('fNota').value            = exp.nota || '';
+  loadRateioIntoForm(exp.rateio || null);
   selectedCat = exp.categoria || 'outros';
   _catUserPicked = true;
   repeatOn    = exp.tipo !== 'unico';
