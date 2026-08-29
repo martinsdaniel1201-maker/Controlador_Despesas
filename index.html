@@ -566,6 +566,25 @@
                  placeholder="Ex: pagar no app do banco, boleto dia 10..." autocomplete="off" enterkeyhint="done">
         </div>
 
+        <div class="repeat-card" style="margin-bottom:14px;">
+          <div class="toggle-row" onclick="toggleRateio()" role="button" tabindex="0"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleRateio();}">
+            <span class="toggle-label" id="labelRateio">Dividir com alguém</span>
+            <button class="toggle" id="toggleRateio" onclick="event.stopPropagation();toggleRateio()"
+                    aria-labelledby="labelRateio" role="switch" aria-checked="false" tabindex="-1"></button>
+          </div>
+          <div id="rateioOptions" style="display:none">
+            <div class="form-group" style="margin-top:12px;">
+              <label class="form-label" for="fRateioNome">Dividido com quem?</label>
+              <input type="text" class="form-input" id="fRateioNome" placeholder="Ex: João" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="fRateioPct">Sua parte (%)</label>
+              <input type="number" class="form-input" id="fRateioPct" min="1" max="99" value="50" inputmode="numeric" placeholder="Ex: 50">
+            </div>
+          </div>
+        </div>
+
         <div class="repeat-card">
           <div class="toggle-row" onclick="toggleRepetir()" role="button" tabindex="0"
                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleRepetir();}">
@@ -792,6 +811,7 @@
 <script src="js/data/persistence.js"></script>
 <script src="js/ui/popup.js"></script>
 <script src="js/ui/render-list.js"></script>
+<script src="js/ui/swipe-actions.js"></script>
 <script src="js/ui/charts.js"></script>
 <script src="js/ui/confetti.js"></script>
 <script src="js/ui/render-stats.js"></script>
