@@ -28,12 +28,30 @@
      pelo overflow:hidden acima e some visualmente. */
   .swipe-wrapper.menu-open { overflow: visible; z-index: 300; }
 
+  /* ── SWIPE NO ITEM: arrastar pra pagar/excluir ──
+     Camada estática atrás do item — não muda com o gesto,
+     só é revelada conforme o item desliza por cima dela. */
+  .swipe-bg {
+    position: absolute; inset: 0;
+    z-index: 1;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 22px;
+    border-radius: var(--radius);
+    background: linear-gradient(to right, var(--green) 0%, var(--green) 50%, var(--red) 50%, var(--red) 100%);
+  }
+  .swipe-bg-action {
+    display: flex; align-items: center; gap: 6px;
+    color: #fff; font-size: 12.5px; font-weight: 900;
+  }
+
   .expense-item {
     padding: 14px 16px;
     display: flex; align-items: center; justify-content: space-between;
     cursor: pointer;
     transition: background 0.2s;
     position: relative;
+    z-index: 2;
+    background: var(--card);
   }
   .expense-item.paid { background: var(--paid-bg); border-radius: var(--radius) var(--radius) 0 0; }
   .expense-item .left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }

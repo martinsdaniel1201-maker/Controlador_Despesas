@@ -37,6 +37,13 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
+  /* ── RATEIO: dividir despesa com alguém ── */
+  .expense-rateio {
+    font-size: 11px; color: var(--brand-dark); font-weight: 700;
+    margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
   /* ── BOTÃO DUPLICAR NA ACTION BAR (#6) ── */
   .action-bar-btn.dup-btn { color: #8e44ad; }
 
