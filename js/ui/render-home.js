@@ -306,7 +306,10 @@ function renderHome() {
     <div class="dash-hero">
       <div class="dash-hero-glow"></div>
       <div class="dash-hero-top">
-        <span class="dash-greeting">${saudacao} <svg class="icon icon-sm" aria-hidden="true"><use href="#i-sparkle"></use></svg></span>
+        <span class="dash-greeting">
+          ${currentUser?.user_metadata?.avatar_url ? `<img src="${currentUser.user_metadata.avatar_url}" alt="" class="dash-greeting-avatar">` : ''}
+          ${saudacao} <svg class="icon icon-sm" aria-hidden="true"><use href="#i-sparkle"></use></svg>
+        </span>
       </div>
       <div class="dash-hero-label">Saldo do mês</div>
       <div class="dash-balance ${saldoAtual < 0 ? 'negative' : ''}" id="dashSaldoValue">R$ 0,00</div>
