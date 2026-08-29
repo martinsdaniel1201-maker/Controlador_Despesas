@@ -51,6 +51,12 @@
     backdrop-filter: blur(5px);
   }
   .btn-menu:hover { background: rgba(255,255,255,0.3); }
+  .btn-menu-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid rgba(255,255,255,0.6);
+  }
   /* NOVO: indicador de que há verificação de atualização pendente */
   .btn-menu-badge {
     display: none;

@@ -325,3 +325,32 @@
     background: none; border: none; color: var(--text-muted); font-weight: 800;
     font-size: 13px; font-family: 'Nunito', sans-serif; cursor: pointer; padding: 10px;
   }
+
+/* ── PERFIL: seletor de foto de avatar ── */
+.profile-avatar-picker {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px; margin-bottom: 20px;
+}
+.profile-avatar-preview {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-mid), var(--brand-dark));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 32px; font-weight: 900;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(67,56,202,0.25);
+  position: relative;
+}
+.profile-avatar-preview img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.profile-avatar-btn {
+  border: 1.5px solid var(--border); background: var(--card);
+  color: var(--brand-dark); font-family: 'Nunito', sans-serif;
+  font-size: 12.5px; font-weight: 800;
+  padding: 8px 14px; border-radius: 999px;
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer;
+}
+.profile-avatar-btn:hover { background: var(--drawer-hover); }
+.profile-avatar-status { font-size: 11.5px; color: var(--text-muted); font-weight: 700; min-height: 14px; }

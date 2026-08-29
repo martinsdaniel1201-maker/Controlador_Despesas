@@ -192,6 +192,11 @@
     transition: opacity 0.2s;
   }
   .drawer-logout-btn:hover { opacity: 0.8; }
+  .drawer-avatar-img {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 
   /* INDICADOR DE SINCRONIZAÇÃO */
   .sync-indicator {
