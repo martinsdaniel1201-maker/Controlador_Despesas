@@ -169,6 +169,9 @@ function renderItem(e) {
   const safeKey    = sanitize(e.monthKey);
   const dueBadge   = getDueBadge(e.dateStr, e.paid);
   const noteHtml   = e.nota ? `<div class="expense-note">💬 ${sanitize(e.nota)}</div>` : '';
+  const rateioHtml = e.rateio
+    ? `<div class="expense-rateio">🤝 Dividido com ${sanitize(e.rateio.com)} · sua parte ${sanitize(formatBRL(e.valor * e.rateio.percentual / 100))}</div>`
+    : '';
   const brandLogo  = getBrandLogoUrl(e.label);
   const iconInnerHtml = brandLogo
     ? `<img src="${brandLogo}" alt="" class="expense-brand-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
@@ -177,6 +180,10 @@ function renderItem(e) {
 
   return `
     <div class="swipe-wrapper" data-expid="${safeId}">
+      <div class="swipe-bg" aria-hidden="true">
+        <span class="swipe-bg-action pay"><svg class="icon icon-sm"><use href="#i-${e.paid ? 'undo' : 'check'}"></use></svg> ${e.paid ? 'Pendente' : 'Pagar'}</span>
+        <span class="swipe-bg-action delete">Excluir <svg class="icon icon-sm"><use href="#i-trash"></use></svg></span>
+      </div>
       <div class="expense-item${paidClass}"
            onclick="togglePay('${safeId}','${safeKey}')"
            oncontextmenu="openInlineEdit(event,'${safeId}')"
@@ -190,6 +197,7 @@ function renderItem(e) {
             <div class="expense-name">${safeName}${dueBadge}</div>
             <div class="expense-meta">${safeDate}${safeExtra}</div>
             ${noteHtml}
+            ${rateioHtml}
           </div>
         </div>
         <div class="expense-right">

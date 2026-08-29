@@ -24,6 +24,7 @@ function openModal(reset = false) {
     document.getElementById('fValor').value = '';
     document.getElementById('fData').value  = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05`;
     document.getElementById('fNota').value  = '';
+    loadRateioIntoForm(null);
     const toggle = document.getElementById('toggleRepetir');
     toggle.className = 'toggle';
     toggle.setAttribute('aria-checked', 'false');
@@ -174,6 +175,37 @@ function toggleRepetir() {
   t.className = 'toggle' + (repeatOn ? ' on' : '');
   t.setAttribute('aria-checked', String(repeatOn));
   document.getElementById('repeatOptions').style.display = repeatOn ? 'block' : 'none';
+}
+
+// ── RATEIO: dividir a despesa com outra pessoa ──
+// Fica só informativo — o valor total continua contando normal
+// nos totais/relatórios, sem mexer nos cálculos que já existem.
+let rateioOn = false;
+
+function toggleRateio() {
+  rateioOn = !rateioOn;
+  const t = document.getElementById('toggleRateio');
+  t.className = 'toggle' + (rateioOn ? ' on' : '');
+  t.setAttribute('aria-checked', String(rateioOn));
+  document.getElementById('rateioOptions').style.display = rateioOn ? 'block' : 'none';
+}
+
+function readRateioFromForm() {
+  if (!rateioOn) return null;
+  const nome = document.getElementById('fRateioNome').value.trim();
+  const pct  = parseInt(document.getElementById('fRateioPct').value) || 50;
+  if (!nome) return null;
+  return { com: nome, percentual: Math.min(99, Math.max(1, pct)) };
+}
+
+function loadRateioIntoForm(rateio) {
+  rateioOn = !!rateio;
+  const t = document.getElementById('toggleRateio');
+  t.className = 'toggle' + (rateioOn ? ' on' : '');
+  t.setAttribute('aria-checked', String(rateioOn));
+  document.getElementById('rateioOptions').style.display = rateioOn ? 'block' : 'none';
+  document.getElementById('fRateioNome').value = rateio?.com || '';
+  document.getElementById('fRateioPct').value  = rateio?.percentual || 50;
 }
 
 function selectType(type) {
