@@ -245,6 +245,7 @@ async function saveProfileName() {
   updateDrawerUser(currentUser);
   closeProfileEditor();
   showToast('Perfil atualizado!');
+  _upsertPerfilPublico();
   if (currentTab === 'inicio') renderHome();
 }
 
@@ -312,6 +313,7 @@ async function handleAvatarFileChosen(event) {
     currentUser = data.user;
     renderProfileAvatarPreview();
     applyUserAvatarEverywhere();
+    _upsertPerfilPublico();
     statusEl.textContent = 'Foto atualizada!';
     setTimeout(() => { statusEl.textContent = ''; }, 2500);
   } catch (err) {
