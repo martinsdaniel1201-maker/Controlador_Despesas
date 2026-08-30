@@ -168,9 +168,9 @@ async function savePixKeysToSupabase() {
   if (!supabaseClient || !currentUser) return; // modo local/offline: fica só no localStorage
   try {
     const { error } = await supabaseClient
-      .from('expenses')
+      .from('user_settings')
       .upsert(
-        { user_id: currentUser.id, data: expenses, categories: getCustomCategoriesList(), pix_keys: pixKeys, updated_at: new Date().toISOString() },
+        { user_id: currentUser.id, categories: getCustomCategoriesList(), pix_keys: pixKeys, updated_at: new Date().toISOString() },
         { onConflict: 'user_id' }
       );
     if (error) throw error;
