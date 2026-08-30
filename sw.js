@@ -1,5 +1,5 @@
 // 1. TODA VEZ que você mudar algo no HTML/CSS, mude essa versão (ex: v2, v3, v4...)
-const CACHE_NAME = 'controlador-despesas-v21';
+const CACHE_NAME = 'controlador-despesas-v22';
 
 const ASSETS = [
   './',
@@ -45,6 +45,7 @@ const ASSETS = [
   './js/config/supabase-client.js',
   './js/features/budgets.js',
   './js/features/brand-icons.js',
+  './js/features/grupo.js',
   './js/features/categories.js',
   './js/features/darkmode.js',
   './js/features/data-cleanup.js',
