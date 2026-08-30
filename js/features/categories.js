@@ -66,9 +66,9 @@ async function syncCategoriesToSupabase() {
   try {
     const list = getCustomCategoriesList();
     const { error } = await supabaseClient
-      .from('expenses')
+      .from('user_settings')
       .upsert(
-        { user_id: currentUser.id, data: expenses, categories: list, updated_at: new Date().toISOString() },
+        { user_id: currentUser.id, categories: list, updated_at: new Date().toISOString() },
         { onConflict: 'user_id' }
       );
     if (error) throw error;
