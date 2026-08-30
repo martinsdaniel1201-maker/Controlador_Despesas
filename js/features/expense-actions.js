@@ -156,6 +156,7 @@ async function deleteExpense(id) {
   const finish = () => {
     expenses = expenses.filter(e => e.id !== id);
     save();
+    deleteFromSupabase(id);
     renderAll();
     showToast('🗑 Despesa excluída');
   };
