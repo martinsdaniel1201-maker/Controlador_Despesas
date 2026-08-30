@@ -1,5 +1,5 @@
 // 1. TODA VEZ que você mudar algo no HTML/CSS, mude essa versão (ex: v2, v3, v4...)
-const CACHE_NAME = 'controlador-despesas-v20';
+const CACHE_NAME = 'controlador-despesas-v21';
 
 const ASSETS = [
   './',
@@ -113,10 +113,16 @@ self.addEventListener('activate', (e) => {
 // de velocidade quando a conexão está ruim, mas num app que sincroniza
 // dinheiro, estar sempre atualizado importa mais do que ser rápido.
 self.addEventListener('fetch', (e) => {
+  // FIX: só faz sentido cachear GET (ex: as chamadas de leitura/escrita do
+  // Supabase são POST/PATCH/DELETE, e a Cache API do navegador rejeita
+  // guardar qualquer coisa que não seja GET — foi isso que gerou o erro
+  // "Request method 'POST' is unsupported" no console.
+  if (e.request.method !== 'GET') {
+    return; // deixa passar direto pra rede, sem mexer no cache
+  }
   e.respondWith(
     fetch(e.request)
       .then((networkResponse) => {
-        // Atualiza o cache com a versão fresca, pra servir de fallback offline depois
         const clone = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
         return networkResponse;
