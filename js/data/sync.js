@@ -96,8 +96,14 @@ async function _saveUserSettings() {
   if (error) throw error;
 }
 
-// Salva o array expenses no Supabase — upsert de cada linha + remove no banco
-// o que não existe mais localmente (cobre as exclusões).
+// Salva o array expenses no Supabase — upsert de cada linha.
+// FIX DE SEGURANÇA: isso aqui só ADICIONA/ATUALIZA, nunca apaga por
+// dedução. Antes, essa função comparava o que estava salvo no banco com
+// o array local e apagava a "diferença" — se o carregamento inicial
+// viesse incompleto por qualquer motivo, o salvamento seguinte podia
+// apagar despesas de verdade. Agora exclusão só acontece de um jeito:
+// explicitamente, no momento em que o usuário exclui algo (veja
+// deleteFromSupabase, chamada direto em deleteExpense).
 async function saveToSupabase() {
   if (!supabaseClient || !currentUser) return;
   setSyncStatus('syncing', '⏳ Salvando...');
@@ -107,13 +113,6 @@ async function saveToSupabase() {
       const { error } = await supabaseClient.from('despesas').upsert(rows, { onConflict: 'id' });
       if (error) throw error;
     }
-
-    const currentIds = expenses.map(e => String(e.id));
-    const delQuery = supabaseClient.from('despesas').delete().eq('user_id', currentUser.id);
-    const { error: delError } = currentIds.length > 0
-      ? await delQuery.not('id', 'in', `(${currentIds.join(',')})`)
-      : await delQuery;
-    if (delError) throw delError;
 
     await _saveUserSettings();
 
@@ -125,5 +124,22 @@ async function saveToSupabase() {
     setSyncStatus('error', '⚠️ Erro ao salvar');
     // Fallback: salva local
     try { localStorage.setItem('despesas_v2', JSON.stringify(expenses)); } catch {}
+  }
+}
+
+// Exclusão explícita de UMA despesa — chamada direto no momento em que
+// o usuário exclui, em vez de "deduzida" num salvamento genérico depois.
+async function deleteFromSupabase(id) {
+  if (!supabaseClient || !currentUser) return;
+  try {
+    const { error } = await supabaseClient
+      .from('despesas')
+      .delete()
+      .eq('id', String(id))
+      .eq('user_id', currentUser.id);
+    if (error) throw error;
+  } catch (e) {
+    console.error('Erro ao excluir no Supabase:', e);
+    showToast('⚠️ Não foi possível excluir na nuvem agora — tente sincronizar de novo depois.');
   }
 }
