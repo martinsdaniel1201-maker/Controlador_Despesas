@@ -1,22 +1,74 @@
 // SUPABASE — PERSISTÊNCIA
 // ═══════════════════════════════════════════════
+// A partir da migração pro "grupo compartilhado": os dados deixaram de
+// ficar num blob único por usuário e passaram a morar na tabela relacional
+// `despesas` (uma linha por despesa) + `user_settings` (categorias/pix).
+// Por baixo dos panos mudou tudo; pro resto do app (formulário, exclusão,
+// swipe etc.) nada muda, porque todo mundo só mexe no array `expenses`
+// local e chama save()/persistExpenses() — só essas duas funções abaixo
+// sabem como isso vira linhas no banco.
+
+// Converte um item do array local `expenses` pro formato de linha da tabela `despesas`
+function _toDbRow(e, userId) {
+  return {
+    id: String(e.id),
+    user_id: userId,
+    grupo_id: e.grupoId || null,
+    descricao: e.descricao,
+    valor: e.valor,
+    data_original: e.dataOriginal,
+    categoria: e.categoria,
+    tipo: e.tipo,
+    total_parcelas: e.totalParcelas ?? null,
+    month_key: e.monthKey,
+    pagamentos: e.pagamentos || {},
+    nota: e.nota || null,
+    rateio: e.rateio || null,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+// Converte uma linha vinda do banco de volta pro formato que o resto do
+// app já espera (mesmos nomes de campo de sempre: dataOriginal, monthKey...)
+function _fromDbRow(row) {
+  return {
+    id: row.id,
+    descricao: row.descricao,
+    valor: Number(row.valor),
+    dataOriginal: row.data_original,
+    categoria: row.categoria,
+    tipo: row.tipo,
+    totalParcelas: row.total_parcelas,
+    monthKey: row.month_key,
+    pagamentos: row.pagamentos || {},
+    nota: row.nota || '',
+    rateio: row.rateio || null,
+    grupoId: row.grupo_id || null,
+  };
+}
 
 // Carrega o array de despesas do Supabase para a variável global expenses
 async function loadFromSupabase() {
   if (!supabaseClient || !currentUser) return;
   try {
-    const { data, error } = await supabaseClient
-      .from('expenses')
-      .select('data, categories, pix_keys')
+    const { data: rows, error } = await supabaseClient
+      .from('despesas')
+      .select('*')
+      .eq('user_id', currentUser.id);
+    if (error) throw error;
+    expenses = (rows || []).map(_fromDbRow);
+
+    const { data: settings, error: settingsError } = await supabaseClient
+      .from('user_settings')
+      .select('categories, pix_keys')
       .eq('user_id', currentUser.id)
       .maybeSingle();
+    if (settingsError) throw settingsError;
 
-    if (error) throw error;
-    expenses = Array.isArray(data?.data) ? data.data : [];
-    if (Array.isArray(data?.categories) && data.categories.length > 0) {
-      applyCategoriesFromCloud(data.categories);
+    if (Array.isArray(settings?.categories) && settings.categories.length > 0) {
+      applyCategoriesFromCloud(settings.categories);
     }
-    pixKeys = Array.isArray(data?.pix_keys) ? data.pix_keys : [];
+    pixKeys = Array.isArray(settings?.pix_keys) ? settings.pix_keys : [];
     try { localStorage.setItem('pix_keys_v1', JSON.stringify(pixKeys)); } catch {}
     renderPixKeysList();
   } catch (e) {
@@ -32,18 +84,39 @@ async function loadFromSupabase() {
   renderAll();
 }
 
-// Salva o array expenses no Supabase via upsert (uma linha por usuário)
+// Salva categorias/chaves Pix (não são despesa, ficam numa tabela à parte)
+async function _saveUserSettings() {
+  if (!supabaseClient || !currentUser) return;
+  const { error } = await supabaseClient
+    .from('user_settings')
+    .upsert(
+      { user_id: currentUser.id, categories: getCustomCategoriesList(), pix_keys: pixKeys, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    );
+  if (error) throw error;
+}
+
+// Salva o array expenses no Supabase — upsert de cada linha + remove no banco
+// o que não existe mais localmente (cobre as exclusões).
 async function saveToSupabase() {
   if (!supabaseClient || !currentUser) return;
   setSyncStatus('syncing', '⏳ Salvando...');
   try {
-    const { error } = await supabaseClient
-      .from('expenses')
-      .upsert(
-        { user_id: currentUser.id, data: expenses, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id' }
-      );
-    if (error) throw error;
+    const rows = expenses.map(e => _toDbRow(e, currentUser.id));
+    if (rows.length > 0) {
+      const { error } = await supabaseClient.from('despesas').upsert(rows, { onConflict: 'id' });
+      if (error) throw error;
+    }
+
+    const currentIds = expenses.map(e => String(e.id));
+    const delQuery = supabaseClient.from('despesas').delete().eq('user_id', currentUser.id);
+    const { error: delError } = currentIds.length > 0
+      ? await delQuery.not('id', 'in', `(${currentIds.join(',')})`)
+      : await delQuery;
+    if (delError) throw delError;
+
+    await _saveUserSettings();
+
     setSyncStatus('synced', '☁️ Salvo na nuvem');
     try { localStorage.setItem('lastSyncTime', String(Date.now())); } catch {}
     updateLastSyncDisplay();
@@ -54,5 +127,3 @@ async function saveToSupabase() {
     try { localStorage.setItem('despesas_v2', JSON.stringify(expenses)); } catch {}
   }
 }
-
-// ═══════════════════════════════════════════════
