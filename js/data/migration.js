@@ -48,13 +48,11 @@ async function runMigration(localExpenses) {
   showToast('⏳ Migrando ' + localExpenses.length + ' despesa(s)...');
 
   try {
-    const { error } = await supabaseClient
-      .from('expenses')
-      .upsert(
-        { user_id: currentUser.id, data: localExpenses, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id' }
-      );
-    if (error) throw error;
+    const rows = localExpenses.map(e => _toDbRow(e, currentUser.id));
+    if (rows.length > 0) {
+      const { error } = await supabaseClient.from('despesas').upsert(rows, { onConflict: 'id' });
+      if (error) throw error;
+    }
 
     expenses = localExpenses;
     localStorage.setItem('supabase_migrated', 'true');
