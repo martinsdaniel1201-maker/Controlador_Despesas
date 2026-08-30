@@ -1,5 +1,5 @@
 // 1. TODA VEZ que você mudar algo no HTML/CSS, mude essa versão (ex: v2, v3, v4...)
-const CACHE_NAME = 'controlador-despesas-v2.1'; 
+const CACHE_NAME = 'controlador-despesas-v20';
 
 const ASSETS = [
   './',
@@ -13,6 +13,7 @@ const ASSETS = [
   './css/auth-screen.css',
   './css/badges-misc.css',
   './css/compact-mode.css',
+  './css/desktop.css',
   './css/drawer.css',
   './css/expense-list.css',
   './css/icons.css',
@@ -28,6 +29,8 @@ const ASSETS = [
   './js/main.js',
   './js/ui/modal.js',
   './js/ui/navigation.js',
+  './js/ui/gestures.js',
+  './js/ui/swipe-actions.js',
   './js/ui/popup.js',
   './js/ui/render-historico.js',
   './js/ui/render-home.js',
@@ -41,6 +44,7 @@ const ASSETS = [
   './js/config/state.js',
   './js/config/supabase-client.js',
   './js/features/budgets.js',
+  './js/features/brand-icons.js',
   './js/features/categories.js',
   './js/features/darkmode.js',
   './js/features/data-cleanup.js',
@@ -101,12 +105,22 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// Intercepta as requisições para fazer o app funcionar offline
+// Intercepta as requisições para fazer o app funcionar offline.
+// FIX: era "cache primeiro" — uma vez guardado, o navegador nunca mais
+// buscava a versão nova de um arquivo (foi exatamente isso que te
+// mordeu). Agora é "rede primeiro": sempre tenta buscar a versão mais
+// recente; só usa o cache se estiver de fato offline. Custa um pouco
+// de velocidade quando a conexão está ruim, mas num app que sincroniza
+// dinheiro, estar sempre atualizado importa mais do que ser rápido.
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      // Retorna o cache se existir, senão busca na rede
-      return cachedResponse || fetch(e.request);
-    })
+    fetch(e.request)
+      .then((networkResponse) => {
+        // Atualiza o cache com a versão fresca, pra servir de fallback offline depois
+        const clone = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+        return networkResponse;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
