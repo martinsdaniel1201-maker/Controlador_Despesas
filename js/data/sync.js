@@ -12,7 +12,7 @@
 function _toDbRow(e, userId) {
   return {
     id: String(e.id),
-    user_id: userId,
+    user_id: e.user_id || userId, // preserva o dono original — nunca "rouba" a posse de uma despesa do grupo
     grupo_id: e.grupoId || null,
     descricao: e.descricao,
     valor: e.valor,
@@ -33,6 +33,7 @@ function _toDbRow(e, userId) {
 function _fromDbRow(row) {
   return {
     id: row.id,
+    user_id: row.user_id,
     descricao: row.descricao,
     valor: Number(row.valor),
     dataOriginal: row.data_original,
@@ -51,13 +52,30 @@ function _fromDbRow(row) {
 async function loadFromSupabase() {
   if (!supabaseClient || !currentUser) return;
   try {
+    // Sem filtro de user_id: o RLS já devolve as minhas despesas +
+    // as que forem de um grupo do qual eu participo — é a mesma
+    // consulta pra "só eu" ou "eu + grupo", o banco decide o que
+    // é visível.
     const { data: rows, error } = await supabaseClient
       .from('despesas')
-      .select('*')
-      .eq('user_id', currentUser.id);
+      .select('*');
     if (error) throw error;
     expenses = (rows || []).map(_fromDbRow);
+  } catch (e) {
+    console.error('Erro ao carregar despesas do Supabase:', e);
+    // Fallback: mantém o que está no localStorage — mas isso NÃO deve
+    // acontecer por causa de uma falha em categorias/Pix (ver abaixo),
+    // só se a própria busca de despesas falhar.
+    try {
+      const stored = localStorage.getItem('despesas_v2');
+      expenses = JSON.parse(stored || '[]');
+    } catch { expenses = []; }
+  }
 
+  // FIX: categorias/Pix são secundários — uma falha aqui não pode apagar
+  // as despesas que acabaram de carregar certinho acima. Por isso ficam
+  // num try/catch totalmente separado.
+  try {
     const { data: settings, error: settingsError } = await supabaseClient
       .from('user_settings')
       .select('categories, pix_keys')
@@ -72,14 +90,10 @@ async function loadFromSupabase() {
     try { localStorage.setItem('pix_keys_v1', JSON.stringify(pixKeys)); } catch {}
     renderPixKeysList();
   } catch (e) {
-    console.error('Erro ao carregar do Supabase:', e);
-    // Fallback: mantém o que está no localStorage
-    try {
-      const stored = localStorage.getItem('despesas_v2');
-      expenses = JSON.parse(stored || '[]');
-    } catch { expenses = []; }
+    console.error('Erro ao carregar categorias/Pix do Supabase:', e);
   }
   if (typeof invalidateMonthTotalsCache === 'function') invalidateMonthTotalsCache();
+  if (typeof carregarMeuGrupoCache === 'function') carregarMeuGrupoCache();
   pickSmartMonthOnLaunch();
   renderAll();
 }
@@ -108,7 +122,13 @@ async function saveToSupabase() {
   if (!supabaseClient || !currentUser) return;
   setSyncStatus('syncing', '⏳ Salvando...');
   try {
-    const rows = expenses.map(e => _toDbRow(e, currentUser.id));
+    // Importante: só envio despesas que são MINHAS (ou novas, sem dono
+    // ainda). Uma despesa do grupo criada por outra pessoa pode estar
+    // no meu array local (pra eu conseguir ver ela), mas eu nunca devo
+    // regravar ela — isso poderia sobrescrever campos que só o dono
+    // deveria controlar.
+    const minhas = expenses.filter(e => !e.user_id || e.user_id === currentUser.id);
+    const rows = minhas.map(e => _toDbRow(e, currentUser.id));
     if (rows.length > 0) {
       const { error } = await supabaseClient.from('despesas').upsert(rows, { onConflict: 'id' });
       if (error) throw error;
