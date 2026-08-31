@@ -25,6 +25,8 @@ function openModal(reset = false) {
     document.getElementById('fData').value  = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05`;
     document.getElementById('fNota').value  = '';
     loadRateioIntoForm(null);
+    loadGrupoIdIntoForm(null);
+    atualizarSeletorDeGrupoNoFormulario();
     const toggle = document.getElementById('toggleRepetir');
     toggle.className = 'toggle';
     toggle.setAttribute('aria-checked', 'false');
@@ -175,6 +177,42 @@ function toggleRepetir() {
   t.className = 'toggle' + (repeatOn ? ' on' : '');
   t.setAttribute('aria-checked', String(repeatOn));
   document.getElementById('repeatOptions').style.display = repeatOn ? 'block' : 'none';
+}
+
+// ── GRUPO: marcar despesa como pertencente ao grupo compartilhado ──
+let grupoDespesaOn = false;
+
+function toggleGrupoDespesa() {
+  grupoDespesaOn = !grupoDespesaOn;
+  const t = document.getElementById('toggleGrupoDespesa');
+  t.className = 'toggle' + (grupoDespesaOn ? ' on' : '');
+  t.setAttribute('aria-checked', String(grupoDespesaOn));
+}
+
+function readGrupoIdFromForm() {
+  return grupoDespesaOn && window.meuGrupo ? window.meuGrupo.id : null;
+}
+
+function loadGrupoIdIntoForm(grupoId) {
+  grupoDespesaOn = !!grupoId;
+  const t = document.getElementById('toggleGrupoDespesa');
+  t.className = 'toggle' + (grupoDespesaOn ? ' on' : '');
+  t.setAttribute('aria-checked', String(grupoDespesaOn));
+}
+
+// Mostra o toggle só pra quem realmente tem um grupo — sem grupo, a
+// opção nem aparece (não faz sentido oferecer o que não existe ainda)
+function atualizarSeletorDeGrupoNoFormulario() {
+  const card = document.getElementById('grupoDespesaCard');
+  const label = document.getElementById('nomeMeuGrupoLabel');
+  if (!card) return;
+  if (window.meuGrupo) {
+    card.style.display = 'block';
+    if (label) label.textContent = `"${window.meuGrupo.nome}"`;
+  } else {
+    card.style.display = 'none';
+    grupoDespesaOn = false;
+  }
 }
 
 // ── RATEIO: dividir a despesa com outra pessoa ──

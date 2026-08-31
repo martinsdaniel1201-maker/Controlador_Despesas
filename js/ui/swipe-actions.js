@@ -36,6 +36,7 @@
     if (e.target.closest('.item-menu-btn') || e.target.closest('.item-menu')) return;
     const item = wrapper.querySelector('.expense-item');
     if (!item) return;
+    if (item.classList.contains('readonly-grupo')) return; // despesa de outro membro — sem swipe
     const t = e.touches[0];
     dragging = true; locked = false;
     startX = t.clientX; startY = t.clientY;
