@@ -188,6 +188,8 @@ function editExpense(id) {
   document.getElementById('fData').value            = exp.dataOriginal;
   document.getElementById('fNota').value            = exp.nota || '';
   loadRateioIntoForm(exp.rateio || null);
+  loadGrupoIdIntoForm(exp.grupoId || null);
+  atualizarSeletorDeGrupoNoFormulario();
   selectedCat = exp.categoria || 'outros';
   _catUserPicked = true;
   repeatOn    = exp.tipo !== 'unico';

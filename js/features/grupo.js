@@ -5,6 +5,34 @@
 // não está aqui — por enquanto isso só cuida de montar o grupo em si.
 // ═══════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════
+// GRUPO COMPARTILHADO — Fase B + C
+// Criar grupo, entrar por código de convite, ver membros, sair,
+// e marcar despesas como pertencentes ao grupo.
+// ═══════════════════════════════════════════════
+
+// Cache simples em memória — evita ficar consultando o banco toda hora
+// só pra saber "esse usuário tem grupo? quem são os membros?"
+window.meuGrupo = null;            // { id, nome, codigo_convite, criado_por }
+window.meuGrupoMembrosMap = {};    // { userId: nomeDeExibição }
+
+async function carregarMeuGrupoCache() {
+  if (!supabaseClient || !currentUser) return;
+  window.meuGrupo = await _getMeuGrupo();
+  window.meuGrupoMembrosMap = {};
+  if (window.meuGrupo) {
+    const membros = await _getMembrosDoGrupo(window.meuGrupo.id);
+    membros.forEach(m => { window.meuGrupoMembrosMap[m.id] = m.nome; });
+  }
+  atualizarSeletorDeGrupoNoFormulario();
+  renderAll();
+}
+
+function getNomeDoMembro(userId) {
+  if (userId === currentUser?.id) return 'você';
+  return window.meuGrupoMembrosMap[userId] || 'um membro do grupo';
+}
+
 function openGrupoModal() {
   document.getElementById('grupoOverlay').classList.add('open');
   renderGrupoModal();
@@ -144,6 +172,7 @@ async function criarGrupo() {
     if (error) throw error;
     await _upsertPerfilPublico();
     showToast('✅ Grupo criado!');
+    carregarMeuGrupoCache();
     renderGrupoModal();
   } catch (e) {
     console.error('Erro ao criar grupo:', e);
@@ -161,6 +190,7 @@ async function entrarComCodigo() {
     if (error) throw error;
     await _upsertPerfilPublico();
     showToast('✅ Você entrou no grupo!');
+    carregarMeuGrupoCache();
     renderGrupoModal();
   } catch (e) {
     console.error('Erro ao entrar no grupo:', e);
@@ -187,6 +217,7 @@ async function sairDoGrupo(grupoId) {
       .eq('user_id', currentUser.id);
     if (error) throw error;
     showToast('Você saiu do grupo');
+    carregarMeuGrupoCache();
     renderGrupoModal();
   } catch (e) {
     console.error('Erro ao sair do grupo:', e);

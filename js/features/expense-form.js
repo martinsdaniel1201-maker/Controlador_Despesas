@@ -8,6 +8,7 @@ async function saveExpense() {
   const data     = document.getElementById('fData').value;
   const nota     = document.getElementById('fNota').value.trim();
   const rateio   = readRateioFromForm();
+  const grupoId  = readGrupoIdFromForm();
 
   if (!desc) {
     if (typeof goToModalStep === 'function') goToModalStep(0);
@@ -82,7 +83,7 @@ async function saveExpense() {
             id: String(Date.now()) + Math.random().toString(36).slice(2,7),
             descricao: desc, valor, dataOriginal: dataNoMesAtual,
             categoria: selectedCat, tipo: 'unico', totalParcelas: null,
-            monthKey: currentKey, pagamentos: {}, nota, rateio
+            monthKey: currentKey, pagamentos: {}, nota, rateio, grupoId, user_id: currentUser?.id
           };
           if (expAntiga.pagamentos?.[currentKey]) {
             novaUnica.pagamentos[currentKey] = expAntiga.pagamentos[currentKey];
@@ -94,11 +95,11 @@ async function saveExpense() {
           expenses.push(novaUnica);
           showToast('✏️ Alterado apenas para este mês!');
         } else {
-          expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey, nota, rateio };
+          expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey, nota, rateio, grupoId };
           showToast('✏️ Despesa global atualizada!');
         }
       } else {
-        expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey, nota, rateio };
+        expenses[idx] = { ...expenses[idx], descricao: desc, valor, dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey, nota, rateio, grupoId };
         showToast('✏️ Despesa atualizada!');
       }
     }
@@ -107,7 +108,7 @@ async function saveExpense() {
       id: String(Date.now()) + Math.random().toString(36).slice(2,7),
       descricao: desc, valor,
       dataOriginal: data, categoria: selectedCat, tipo, totalParcelas, monthKey,
-      pagamentos: {}, nota, rateio
+      pagamentos: {}, nota, rateio, grupoId, user_id: currentUser?.id
     });
     // FIX: emoji estava faltando (era apenas um espaço em branco)
     showToast('✅ Despesa adicionada!');
