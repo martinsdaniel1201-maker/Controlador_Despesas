@@ -592,6 +592,15 @@
                  placeholder="Ex: pagar no app do banco, boleto dia 10..." autocomplete="off" enterkeyhint="done">
         </div>
 
+        <div class="repeat-card" style="margin-bottom:14px;" id="grupoDespesaCard">
+          <div class="toggle-row" onclick="toggleGrupoDespesa()" role="button" tabindex="0"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleGrupoDespesa();}">
+            <span class="toggle-label" id="labelGrupoDespesa">Despesa do grupo <span id="nomeMeuGrupoLabel"></span></span>
+            <button class="toggle" id="toggleGrupoDespesa" onclick="event.stopPropagation();toggleGrupoDespesa()"
+                    aria-labelledby="labelGrupoDespesa" role="switch" aria-checked="false" tabindex="-1"></button>
+          </div>
+        </div>
+
         <div class="repeat-card" style="margin-bottom:14px;">
           <div class="toggle-row" onclick="toggleRateio()" role="button" tabindex="0"
                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleRateio();}">
