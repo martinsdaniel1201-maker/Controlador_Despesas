@@ -44,6 +44,15 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
+  /* ── GRUPO: despesa compartilhada ── */
+  .expense-grupo-tag {
+    font-size: 11px; color: #0f766e; font-weight: 800;
+    margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .expense-item.readonly-grupo { cursor: default; }
+  .expense-item.readonly-grupo .expense-amount { cursor: default; }
+
   /* ── BOTÃO DUPLICAR NA ACTION BAR (#6) ── */
   .action-bar-btn.dup-btn { color: #8e44ad; }
 
