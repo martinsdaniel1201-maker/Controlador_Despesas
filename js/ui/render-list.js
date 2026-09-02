@@ -173,9 +173,9 @@ function renderItem(e) {
     ? `<div class="expense-rateio">🤝 Dividido com ${sanitize(e.rateio.com)} · sua parte ${sanitize(formatBRL(e.valor * e.rateio.percentual / 100))}</div>`
     : '';
   const souDono = !e.user_id || e.user_id === currentUser?.id;
-  const grupoTagHtml = e.grupoId
-    ? `<div class="expense-grupo-tag">🏠 ${sanitize(window.meuGrupo?.nome || 'Grupo')}${!souDono ? ' · lançado por ' + sanitize(getNomeDoMembro(e.user_id)) : ''}</div>`
-    : '';
+  const podeEditar = souDono || (e.grupoId && window.meuGrupo?.id === e.grupoId && window.meuGrupo?.permite_membros_editar);
+  const podeExcluir = souDono;
+  const grupoTagHtml = e.grupoId ? `<span class="grupo-badge">GRUPO</span>` : '';
   const brandLogo  = getBrandLogoUrl(e.label);
   const iconInnerHtml = brandLogo
     ? `<img src="${brandLogo}" alt="" class="expense-brand-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
@@ -188,35 +188,35 @@ function renderItem(e) {
         <span class="swipe-bg-action pay"><svg class="icon icon-sm"><use href="#i-${e.paid ? 'undo' : 'check'}"></use></svg> ${e.paid ? 'Pendente' : 'Pagar'}</span>
         <span class="swipe-bg-action delete">Excluir <svg class="icon icon-sm"><use href="#i-trash"></use></svg></span>
       </div>
-      <div class="expense-item${paidClass}${!souDono ? ' readonly-grupo' : ''}"
-           onclick="${souDono ? `togglePay('${safeId}','${safeKey}')` : ''}"
-           oncontextmenu="${souDono ? `openInlineEdit(event,'${safeId}')` : 'event.preventDefault()'}"
+      <div class="expense-item${paidClass}${!podeEditar ? ' readonly-grupo' : ''}"
+           onclick="${podeEditar ? `togglePay('${safeId}','${safeKey}')` : ''}"
+           oncontextmenu="${podeEditar ? `openInlineEdit(event,'${safeId}')` : 'event.preventDefault()'}"
+           data-can-delete="${podeExcluir}"
            role="button" tabindex="0"
-           aria-label="${safeName} — ${safeAmount}${e.paid ? ' (pago)' : ' (pendente)'}${!souDono ? ' (despesa do grupo, somente leitura)' : ''}">
+           aria-label="${safeName} — ${safeAmount}${e.paid ? ' (pago)' : ' (pendente)'}${!podeEditar ? ' (despesa do grupo, somente leitura)' : ''}">
         <div class="left">
           <div class="expense-icon" style="background:${color}15;color:${color}" aria-hidden="true">
             ${iconInnerHtml}
           </div>
           <div class="expense-info">
-            <div class="expense-name">${safeName}${dueBadge}</div>
+            <div class="expense-name">${safeName}${grupoTagHtml}${dueBadge}</div>
             <div class="expense-meta">${safeDate}${safeExtra}</div>
             ${noteHtml}
             ${rateioHtml}
-            ${grupoTagHtml}
           </div>
         </div>
         <div class="expense-right">
-          <div class="expense-amount" ${souDono ? `ondblclick="openInlineEdit(event,'${safeId}')" style="cursor:pointer" title="Duplo toque para editar valor"` : ''}>${safeAmount}</div>
+          <div class="expense-amount" ${podeEditar ? `ondblclick="openInlineEdit(event,'${safeId}')" style="cursor:pointer" title="Duplo toque para editar valor"` : ''}>${safeAmount}</div>
           ${e.paid ? '<div class="paid-tag" aria-label="Pago"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> PAGO</div>' : ''}
         </div>
-        ${souDono ? `
+        ${podeEditar ? `
         <button class="item-menu-btn"
                 onclick="event.stopPropagation();toggleItemMenu(event,'${safeId}')"
                 aria-label="Mais ações para ${safeName}" aria-haspopup="true">
           <svg class="icon icon-sm"><use href="#i-more"></use></svg>
         </button>` : ''}
       </div>
-      ${souDono ? `
+      ${podeEditar ? `
       <div class="item-menu" id="menu-${safeId}" role="menu">
         <button class="item-menu-option" role="menuitem"
                 onclick="event.stopPropagation();closeItemMenus();togglePay('${safeId}','${safeKey}')">
@@ -230,10 +230,11 @@ function renderItem(e) {
                 onclick="event.stopPropagation();closeItemMenus();duplicateExpense('${safeId}')">
           <svg class="icon icon-sm"><use href="#i-copy"></use></svg>Duplicar
         </button>
+        ${podeExcluir ? `
         <button class="item-menu-option danger" role="menuitem"
                 onclick="event.stopPropagation();closeItemMenus();deleteExpense('${safeId}')">
           <svg class="icon icon-sm"><use href="#i-trash"></use></svg>Excluir
-        </button>
+        </button>` : ''}
       </div>` : ''}
     </div>
   `;
