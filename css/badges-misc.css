@@ -44,11 +44,14 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  /* ── GRUPO: despesa compartilhada ── */
-  .expense-grupo-tag {
-    font-size: 11px; color: #0f766e; font-weight: 800;
-    margin-top: 3px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  /* ── GRUPO: tag inline no nome da despesa ── */
+  .grupo-badge {
+    display: inline-block;
+    font-size: 9.5px; font-weight: 900; letter-spacing: 0.3px;
+    color: #0f766e; background: #ccfbf1;
+    padding: 2px 6px; border-radius: 6px;
+    margin-left: 6px;
+    vertical-align: middle;
   }
   .expense-item.readonly-grupo { cursor: default; }
   .expense-item.readonly-grupo .expense-amount { cursor: default; }
