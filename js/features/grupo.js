@@ -70,7 +70,7 @@ async function _getMeuGrupo() {
 
   const { data: grupo, error: grupoError } = await supabaseClient
     .from('grupos')
-    .select('id, nome, codigo_convite, criado_por')
+    .select('id, nome, codigo_convite, criado_por, permite_membros_editar')
     .eq('id', membro.grupo_id)
     .maybeSingle();
   if (grupoError || !grupo) return null;
@@ -107,8 +107,7 @@ async function renderGrupoModal() {
 
   const grupo = await _getMeuGrupo();
 
-  if (!grupo) {
-    box.innerHTML = `
+  if (!grupo) {    box.innerHTML = `
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
         Crie um grupo pra dividir despesas com quem mora com você, ou entre num grupo existente com um código de convite.
       </p>
@@ -158,10 +157,59 @@ async function renderGrupoModal() {
       </div>
     </div>
 
+    ${souCriador ? `
+      <hr class="dash-card-divider">
+      <div class="form-group">
+        <label class="form-label" for="renomearGrupoInput">Nome do grupo</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" class="form-input" id="renomearGrupoInput" value="${sanitize(grupo.nome)}" autocomplete="off">
+          <button class="btn-cancel" style="margin:0;white-space:nowrap;" onclick="renomearGrupo('${grupo.id}')">Salvar</button>
+        </div>
+      </div>
+
+      <div class="repeat-card" style="margin-bottom:14px;">
+        <div class="toggle-row" onclick="togglePermiteMembrosEditar('${grupo.id}', ${!grupo.permite_membros_editar})" role="button" tabindex="0">
+          <span class="toggle-label">Membros podem editar/marcar como pago</span>
+          <button class="toggle${grupo.permite_membros_editar ? ' on' : ''}" aria-checked="${!!grupo.permite_membros_editar}" role="switch" tabindex="-1"></button>
+        </div>
+        <p style="font-size:11.5px;color:var(--text-muted);margin-top:8px;">
+          Excluir uma despesa continua sendo possível só por quem lançou ela, mesmo com isso ligado.
+        </p>
+      </div>
+    ` : ''}
+
     <button class="btn-cancel" style="border-color:var(--red);color:var(--red);margin-top:8px;" onclick="sairDoGrupo('${grupo.id}')">
       ${souCriador ? 'Excluir grupo' : 'Sair do grupo'}
     </button>
   `;
+}
+
+async function renomearGrupo(grupoId) {
+  const novoNome = document.getElementById('renomearGrupoInput').value.trim();
+  if (!novoNome) { showToast('O nome não pode ficar vazio'); return; }
+  try {
+    const { error } = await supabaseClient.from('grupos').update({ nome: novoNome }).eq('id', grupoId);
+    if (error) throw error;
+    showToast('✅ Nome atualizado!');
+    carregarMeuGrupoCache();
+    renderGrupoModal();
+  } catch (e) {
+    console.error('Erro ao renomear grupo:', e);
+    showToast('❌ Não foi possível renomear agora');
+  }
+}
+
+async function togglePermiteMembrosEditar(grupoId, novoValor) {
+  try {
+    const { error } = await supabaseClient.from('grupos').update({ permite_membros_editar: novoValor }).eq('id', grupoId);
+    if (error) throw error;
+    showToast(novoValor ? '✅ Membros já podem editar despesas do grupo' : 'Edição pelos membros desativada');
+    carregarMeuGrupoCache();
+    renderGrupoModal();
+  } catch (e) {
+    console.error('Erro ao atualizar permissão do grupo:', e);
+    showToast('❌ Não foi possível atualizar agora');
+  }
 }
 
 async function criarGrupo() {
