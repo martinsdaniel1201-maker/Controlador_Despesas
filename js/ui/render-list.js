@@ -78,7 +78,7 @@ function renderList() {
   document.getElementById('rscTotal').textContent    = formatBRL(total);
   document.getElementById('rscPaid').textContent     = formatBRL(paid);
   document.getElementById('rscCount').textContent    = countPending + (countPending === 1 ? ' pend.' : ' pend.');
-  document.getElementById('rscMotivation').textContent = getMotivation(pct, pending, disp.length);
+  document.getElementById('rscMotivation').textContent = getMotivation(pct, countPending, disp.length);
   const chip = document.getElementById('rscPendingChip');
   chip.textContent = pending > 0 ? formatBRL(pending) + ' a pagar' : '✓ Tudo pago';
   chip.className   = 'rsc-pending-chip' + (pending === 0 ? ' clear' : '');
