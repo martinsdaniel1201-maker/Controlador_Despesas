@@ -24,6 +24,7 @@ function _toDbRow(e, userId) {
     pagamentos: e.pagamentos || {},
     nota: e.nota || null,
     rateio: e.rateio || null,
+    ignorar_meses: Array.isArray(e.ignorarMeses) ? e.ignorarMeses : [],
     updated_at: new Date().toISOString(),
   };
 }
@@ -45,6 +46,7 @@ function _fromDbRow(row) {
     nota: row.nota || '',
     rateio: row.rateio || null,
     grupoId: row.grupo_id || null,
+    ignorarMeses: Array.isArray(row.ignorar_meses) ? row.ignorar_meses : [],
   };
 }
 
