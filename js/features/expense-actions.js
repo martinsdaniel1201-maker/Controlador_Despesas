@@ -142,23 +142,59 @@ async function payAll() {
 }
 
 async function deleteExpense(id) {
-  const confirmar = await mostrarPopup({
-    emoji:  '🗑️',
-    titulo: 'Excluir despesa?',
-    texto:  'Tem certeza de que deseja apagar permanentemente este registro?',
-    botoes: [
-      { texto: 'Sim, Excluir', classe: 'confirm-btn-danger',    valor: true  },
-      { texto: 'Cancelar',     classe: 'confirm-btn-secondary', valor: false }
-    ]
-  });
-  if (!confirmar) return;
+  const exp = expenses.find(e => e.id === id);
+  if (!exp) return;
+
+  const recorrente = exp.tipo === 'fixo' || exp.tipo === 'parcelado';
+  let escopo = 'todos'; // 'mes' = só o mês exibido | 'todos' = remove o registro inteiro
+
+  if (recorrente) {
+    const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const mesLabel   = `${nomesMeses[currentMonth]}/${currentYear}`;
+    const ehParcelado = exp.tipo === 'parcelado';
+    escopo = await mostrarPopup({
+      emoji:  '🗑️',
+      titulo: 'Como deseja excluir?',
+      texto:  ehParcelado
+        ? `Esta despesa é parcelada. Você pode excluir apenas a parcela de ${mesLabel} ou todas as parcelas.`
+        : `Esta despesa é fixa. Você pode excluir apenas em ${mesLabel} ou em todos os meses.`,
+      botoes: [
+        { texto: '📌 Só este mês',                                   classe: 'confirm-btn-primary',   valor: 'mes'   },
+        { texto: ehParcelado ? '🗑 Todas as parcelas' : '🗑 Todos os meses', classe: 'confirm-btn-danger', valor: 'todos' },
+        { texto: 'Cancelar',                                         classe: 'confirm-btn-secondary', valor: false   }
+      ]
+    });
+    if (!escopo) return;
+  } else {
+    const confirmar = await mostrarPopup({
+      emoji:  '🗑️',
+      titulo: 'Excluir despesa?',
+      texto:  'Tem certeza de que deseja apagar permanentemente este registro?',
+      botoes: [
+        { texto: 'Sim, Excluir', classe: 'confirm-btn-danger',    valor: true  },
+        { texto: 'Cancelar',     classe: 'confirm-btn-secondary', valor: false }
+      ]
+    });
+    if (!confirmar) return;
+  }
 
   const finish = () => {
-    expenses = expenses.filter(e => e.id !== id);
-    save();
-    deleteFromSupabase(id);
-    renderAll();
-    showToast('🗑 Despesa excluída');
+    if (escopo === 'mes') {
+      // Exclusão só deste mês: o registro continua existindo nos outros meses,
+      // apenas marca o mês atual como ignorado (persistido no Supabase).
+      const key = getMonthKey(currentYear, currentMonth);
+      if (!exp.ignorarMeses) exp.ignorarMeses = [];
+      if (!exp.ignorarMeses.includes(key)) exp.ignorarMeses.push(key);
+      save();
+      renderAll();
+      showToast('🗑 Excluída apenas neste mês');
+    } else {
+      expenses = expenses.filter(e => e.id !== id);
+      save();
+      deleteFromSupabase(id);
+      renderAll();
+      showToast('🗑 Despesa excluída');
+    }
   };
 
   const el = document.querySelector(`.swipe-wrapper[data-expid="${id}"]`);
