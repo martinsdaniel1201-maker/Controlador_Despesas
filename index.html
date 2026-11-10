@@ -337,7 +337,11 @@
         <div class="rsc-stat-lbl">Pendentes</div>
       </div>
     </div>
+    <div class="rsc-sub" id="rscSub" style="display:none"></div>
   </div>
+
+  <!-- ACERTO DO MÊS (contas divididas) -->
+  <div class="acerto-card" id="acertoCard" style="display:none"></div>
 
   <!-- Cards ocultos mantidos para compatibilidade com renderList -->
   <div style="display:none">
@@ -365,7 +369,7 @@
     <span class="subtotal-value" id="subtotalValue" aria-live="polite">R$ 0,00</span>
   </div>
 
-  <div class="list-container fade-in-up" id="expenseList" aria-live="polite" aria-label="Lista de despesas"></div>
+  <div class="list-container" id="expenseList" aria-live="polite" aria-label="Lista de despesas"></div>
 </div>
 
 <!-- ABA: RELATÓRIO -->
@@ -566,7 +570,7 @@
           <label class="form-label" for="fValor">Valor</label>
           <div class="valor-input-wrap">
             <span class="valor-prefix">R$</span>
-            <input type="text" class="form-input valor-input" id="fValor" placeholder="0,00" inputmode="decimal" enterkeyhint="next">
+            <input type="text" class="form-input valor-input" id="fValor" placeholder="0,00" inputmode="decimal" enterkeyhint="next" oninput="updateRateioPreview();updateParcelaPreview()">
           </div>
         </div>
 
@@ -604,19 +608,34 @@
         <div class="repeat-card" style="margin-bottom:14px;">
           <div class="toggle-row" onclick="toggleRateio()" role="button" tabindex="0"
                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleRateio();}">
-            <span class="toggle-label" id="labelRateio">Dividir com alguém</span>
+            <span class="toggle-label" id="labelRateio">Dividir a conta com alguém</span>
             <button class="toggle" id="toggleRateio" onclick="event.stopPropagation();toggleRateio()"
                     aria-labelledby="labelRateio" role="switch" aria-checked="false" tabindex="-1"></button>
           </div>
           <div id="rateioOptions" style="display:none">
             <div class="form-group" style="margin-top:12px;">
               <label class="form-label" for="fRateioNome">Dividido com quem?</label>
-              <input type="text" class="form-input" id="fRateioNome" placeholder="Ex: João" autocomplete="off">
+              <input type="text" class="form-input" id="fRateioNome" placeholder="Ex: Maria" autocomplete="off" oninput="updateRateioPreview()">
+              <div class="chip-row" id="rateioMembros"></div>
             </div>
             <div class="form-group">
               <label class="form-label" for="fRateioPct">Sua parte (%)</label>
-              <input type="number" class="form-input" id="fRateioPct" min="1" max="99" value="50" inputmode="numeric" placeholder="Ex: 50">
+              <input type="number" class="form-input" id="fRateioPct" min="1" max="99" value="50" inputmode="numeric" placeholder="Ex: 50" oninput="updateRateioPreview()">
+              <div class="chip-row" id="rateioPresets">
+                <button type="button" onclick="setRateioPct(50)">50 / 50</button>
+                <button type="button" onclick="setRateioPct(60)">60 / 40</button>
+                <button type="button" onclick="setRateioPct(70)">70 / 30</button>
+                <button type="button" onclick="setRateioPct(30)">30 / 70</button>
+              </div>
             </div>
+            <div class="form-group">
+              <label class="form-label">Quem paga a conta pro fornecedor?</label>
+              <div class="seg" role="group">
+                <button type="button" id="segPagoEu" class="active" onclick="setRateioPagoPor(true)">Eu pago</button>
+                <button type="button" id="segPagoOutro" onclick="setRateioPagoPor(false)">A outra pessoa paga</button>
+              </div>
+            </div>
+            <div class="form-preview" id="rateioPreview"></div>
           </div>
         </div>
 
@@ -641,8 +660,15 @@
             </div>
             <div class="parcelas-input" id="parcelasRow" style="display:none">
               <label for="fParcelas">Número de parcelas:</label>
-              <input type="number" id="fParcelas" min="2" max="60" value="2" aria-label="Número de parcelas">
+              <input type="number" id="fParcelas" min="2" max="60" value="2" aria-label="Número de parcelas" oninput="updateParcelaPreview()">
               <span id="parcelaAtual" style="font-size:12px;color:var(--text-muted);font-weight:700;"></span>
+            </div>
+            <div id="parcelaModoRow" style="display:none">
+              <div class="seg" role="group" aria-label="O valor informado é">
+                <button type="button" id="segParcela" class="active" onclick="setParcelaModo('parcela')">Valor informado é da parcela</button>
+                <button type="button" id="segTotal" onclick="setParcelaModo('total')">Valor informado é o total</button>
+              </div>
+              <div class="form-preview" id="parcelaPreview"></div>
             </div>
           </div>
         </div>
