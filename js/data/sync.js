@@ -26,6 +26,10 @@ function _toDbRow(e, userId) {
     rateio: e.rateio || null,
     ignorar_meses: Array.isArray(e.ignorarMeses) ? e.ignorarMeses : [],
     updated_at: new Date().toISOString(),
+    // Colunas novas (exigem supabase/migracao_v2.sql): só viajam quando têm conteúdo,
+    // assim quem ainda não rodou a migração continua salvando normalmente.
+    ...(e.overrides && Object.keys(e.overrides).length ? { overrides: e.overrides } : {}),
+    ...(e.valorTotal != null ? { valor_total: e.valorTotal } : {}),
   };
 }
 
@@ -47,6 +51,8 @@ function _fromDbRow(row) {
     rateio: row.rateio || null,
     grupoId: row.grupo_id || null,
     ignorarMeses: Array.isArray(row.ignorar_meses) ? row.ignorar_meses : [],
+    overrides: (row.overrides && typeof row.overrides === 'object') ? row.overrides : {},
+    valorTotal: row.valor_total != null ? Number(row.valor_total) : null,
   };
 }
 
@@ -144,6 +150,9 @@ async function saveToSupabase() {
   } catch (e) {
     console.error('Erro ao salvar no Supabase:', e);
     setSyncStatus('error', '⚠️ Erro ao salvar');
+    if (/overrides|valor_total/i.test(e?.message || '')) {
+      showToast('⚠️ Falta rodar a migração SQL no Supabase (supabase/migracao_v2.sql)');
+    }
     // Fallback: salva local
     try { localStorage.setItem('despesas_v2', JSON.stringify(expenses)); } catch {}
   }
