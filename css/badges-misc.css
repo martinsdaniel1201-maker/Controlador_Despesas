@@ -59,3 +59,59 @@
   /* ── BOTÃO DUPLICAR NA ACTION BAR (#6) ── */
   .action-bar-btn.dup-btn { color: #8e44ad; }
 
+
+
+  /* ── DIVISÃO DE CONTAS / PARCELAS NA LISTA ── */
+  .expense-amount-sub {
+    font-size: 10.5px; font-weight: 800; color: var(--text-muted);
+    margin-top: 2px; white-space: nowrap;
+  }
+  .expense-conta {
+    display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 5px;
+  }
+  .conta-chip {
+    font-size: 10.5px; font-weight: 800; line-height: 1;
+    padding: 4px 7px; border-radius: 7px;
+    background: var(--brand-light); color: var(--brand-dark);
+    white-space: nowrap;
+  }
+  .conta-chip.eu { background: var(--green-light); color: var(--green-dark); }
+  .conta-chip.neutro { background: var(--input-bg); color: var(--text-muted); }
+  .parcela-bar {
+    height: 4px; border-radius: 4px; background: var(--input-bg);
+    margin-top: 6px; overflow: hidden;
+  }
+  .parcela-bar > span { display: block; height: 100%; background: var(--brand); border-radius: 4px; }
+
+  /* ── ACERTO DO MÊS ── */
+  .acerto-card {
+    margin: 10px 14px 0; padding: 12px 14px; border-radius: 14px;
+    background: var(--card); box-shadow: var(--shadow);
+    border: 1px solid var(--brand-light);
+  }
+  .acerto-title { font-size: 11px; font-weight: 900; letter-spacing: .6px; text-transform: uppercase; color: var(--text-muted); }
+  .acerto-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; font-size: 13.5px; font-weight: 800; color: var(--text); }
+  .acerto-row .val { font-weight: 900; }
+  .acerto-row .val.recebe { color: var(--green-dark); }
+  .acerto-row .val.paga { color: var(--red); }
+
+  /* ── FORM: seletor segmentado, chips e prévias ── */
+  .seg { display: flex; gap: 6px; margin-top: 10px; }
+  .seg button {
+    flex: 1; padding: 10px 8px; border-radius: 10px; border: 2px solid var(--border);
+    background: var(--input-bg); color: var(--text-muted);
+    font: 800 12.5px 'Nunito', sans-serif; cursor: pointer;
+  }
+  .seg button.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand-dark); }
+  .form-preview {
+    margin-top: 10px; padding: 9px 12px; border-radius: 10px;
+    background: var(--brand-light); color: var(--brand-dark);
+    font-size: 12.5px; font-weight: 800; line-height: 1.4;
+  }
+  .form-preview:empty { display: none; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip-row button {
+    padding: 7px 12px; border-radius: 999px; border: 1.5px solid var(--border);
+    background: var(--card); color: var(--text); font: 800 12px 'Nunito', sans-serif; cursor: pointer;
+  }
+  .chip-row button.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand-dark); }

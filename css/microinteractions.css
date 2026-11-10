@@ -12,9 +12,11 @@
 .filter-chip:active { transform: scale(0.94); }
 .btn-nav, .tab, .filter-chip { transition: transform 0.12s ease, background 0.2s ease, color 0.2s ease; }
 
-/* ── LISTA DE DESPESAS: cada card entra deslizando (add / excluir / trocar mês / filtrar) ── */
+/* ── LISTA DE DESPESAS ──
+   Os cards só animam quando a lista MUDA de verdade (trocar mês, filtrar,
+   adicionar). Antes a animação ficava presa em todo card e reiniciava toda
+   vez que a aba voltava de display:none — era a "piscada" ao voltar. */
 .swipe-wrapper {
-  animation: itemSlideIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.28s ease,
               transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
@@ -24,14 +26,16 @@
   from { opacity: 0; transform: translateY(12px) scale(0.98); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-.swipe-wrapper:nth-child(1)  { animation-delay: 0.01s; }
-.swipe-wrapper:nth-child(2)  { animation-delay: 0.05s; }
-.swipe-wrapper:nth-child(3)  { animation-delay: 0.09s; }
-.swipe-wrapper:nth-child(4)  { animation-delay: 0.13s; }
-.swipe-wrapper:nth-child(5)  { animation-delay: 0.17s; }
-.swipe-wrapper:nth-child(6)  { animation-delay: 0.21s; }
-.swipe-wrapper:nth-child(7)  { animation-delay: 0.25s; }
-.swipe-wrapper:nth-child(n+8) { animation-delay: 0.28s; }
+.items-animate .swipe-wrapper,
+.swipe-wrapper.item-enter { animation: itemSlideIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.items-animate .swipe-wrapper:nth-child(1)  { animation-delay: 0.01s; }
+.items-animate .swipe-wrapper:nth-child(2)  { animation-delay: 0.05s; }
+.items-animate .swipe-wrapper:nth-child(3)  { animation-delay: 0.09s; }
+.items-animate .swipe-wrapper:nth-child(4)  { animation-delay: 0.13s; }
+.items-animate .swipe-wrapper:nth-child(5)  { animation-delay: 0.17s; }
+.items-animate .swipe-wrapper:nth-child(6)  { animation-delay: 0.21s; }
+.items-animate .swipe-wrapper:nth-child(7)  { animation-delay: 0.25s; }
+.items-animate .swipe-wrapper:nth-child(n+8) { animation-delay: 0.28s; }
 
 /* saída elegante ao excluir: o próprio JS define max-height antes de somar esta classe */
 .swipe-wrapper.item-removing {
@@ -55,8 +59,8 @@
 .month-label-pulse { animation: monthLabelPulse 0.35s ease; }
 
 /* ── TROCA DE ABA: fade suave em vez de "piscar" ── */
-@keyframes tabFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.tab-fade-in { animation: tabFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes tabFadeIn { from { opacity: 0.75; } to { opacity: 1; } }
+.tab-fade-in { animation: tabFadeIn 0.16s ease-out; }
 
 /* ── CONFETES (conclusão de meta / mês 100% quitado) ── */
 .confetti-overlay {
