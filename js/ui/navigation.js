@@ -34,6 +34,9 @@ function animateContentSwitch(dir) {
   el.classList.remove('content-slide-in-l', 'content-slide-in-r');
   void el.offsetWidth;
   el.classList.add(dir > 0 ? 'content-slide-in-l' : 'content-slide-in-r');
+  // não deixa a classe presa (reiniciaria a animação ao voltar pra aba)
+  clearTimeout(el._slideTimer);
+  el._slideTimer = setTimeout(() => el.classList.remove('content-slide-in-l', 'content-slide-in-r'), 450);
 }
 
 function setFilter(f, el) {

@@ -32,6 +32,8 @@ function openModal(reset = false) {
     toggle.setAttribute('aria-checked', 'false');
     document.getElementById('repeatOptions').style.display = 'none';
     document.getElementById('parcelasRow').style.display   = 'none';
+    document.getElementById('parcelaModoRow').style.display = 'none';
+    setParcelaModo('parcela');
     document.getElementById('fParcelas').value = '2';
     ['fDesc','fValor','fData','fParcelas'].forEach(id => document.getElementById(id).classList.remove('error'));
     updateRadios();
@@ -177,6 +179,8 @@ function toggleRepetir() {
   t.className = 'toggle' + (repeatOn ? ' on' : '');
   t.setAttribute('aria-checked', String(repeatOn));
   document.getElementById('repeatOptions').style.display = repeatOn ? 'block' : 'none';
+  document.getElementById('parcelaModoRow').style.display = (repeatOn && repeatType === 'parcelado') ? 'block' : 'none';
+  updateParcelaPreview();
 }
 
 // ── GRUPO: marcar despesa como pertencente ao grupo compartilhado ──
@@ -215,10 +219,11 @@ function atualizarSeletorDeGrupoNoFormulario() {
   }
 }
 
-// ── RATEIO: dividir a despesa com outra pessoa ──
-// Fica só informativo — o valor total continua contando normal
-// nos totais/relatórios, sem mexer nos cálculos que já existem.
+// ── RATEIO: dividir a conta com outra pessoa ──
+// O valor da despesa é o da conta CHEIA. A "sua parte" (%) é o que entra nos
+// totais; a lista mostra a conta inteira e a parte de cada um.
 let rateioOn = false;
+let rateioPagoPorMim = true;
 
 function toggleRateio() {
   rateioOn = !rateioOn;
@@ -226,14 +231,54 @@ function toggleRateio() {
   t.className = 'toggle' + (rateioOn ? ' on' : '');
   t.setAttribute('aria-checked', String(rateioOn));
   document.getElementById('rateioOptions').style.display = rateioOn ? 'block' : 'none';
+  if (rateioOn) { renderRateioMembros(); updateRateioPreview(); }
+}
+
+function setRateioPct(p) {
+  document.getElementById('fRateioPct').value = p;
+  updateRateioPreview();
+}
+
+function setRateioPagoPor(euPago) {
+  rateioPagoPorMim = !!euPago;
+  document.getElementById('segPagoEu').classList.toggle('active', rateioPagoPorMim);
+  document.getElementById('segPagoOutro').classList.toggle('active', !rateioPagoPorMim);
+}
+
+// Atalho: membros do grupo viram botões pra preencher o nome
+function renderRateioMembros() {
+  const box = document.getElementById('rateioMembros');
+  if (!box) return;
+  const map = window.meuGrupoMembrosMap || {};
+  const outros = Object.entries(map).filter(([id]) => id !== currentUser?.id).map(([, nome]) => nome);
+  box.innerHTML = outros.map(n =>
+    `<button type="button" onclick="document.getElementById('fRateioNome').value=this.textContent;updateRateioPreview()">${sanitize(n)}</button>`
+  ).join('');
+}
+
+function updateRateioPreview() {
+  const el = document.getElementById('rateioPreview');
+  if (!el) return;
+  if (!rateioOn) { el.textContent = ''; return; }
+  const valor = parseBRL(document.getElementById('fValor').value);
+  const pct   = Math.min(99, Math.max(1, parseInt(document.getElementById('fRateioPct').value) || 50));
+  const nome  = document.getElementById('fRateioNome').value.trim() || 'A outra pessoa';
+  if (!valor) { el.textContent = `Você fica com ${pct}% · ${nome} com ${100 - pct}%`; return; }
+  const eu = round2(valor * pct / 100);
+  el.textContent = `Conta ${formatBRL(valor)} → você ${formatBRL(eu)} · ${nome} ${formatBRL(round2(valor - eu))}. Só a sua parte entra nos seus totais.`;
 }
 
 function readRateioFromForm() {
   if (!rateioOn) return null;
-  const nome = document.getElementById('fRateioNome').value.trim();
+  let nome = document.getElementById('fRateioNome').value.trim();
   const pct  = parseInt(document.getElementById('fRateioPct').value) || 50;
+  if (!nome) {
+    // grupo de duas pessoas: assume o outro membro
+    const outros = Object.entries(window.meuGrupoMembrosMap || {}).filter(([id]) => id !== currentUser?.id);
+    if (outros.length === 1) nome = outros[0][1];
+  }
   if (!nome) return null;
-  return { com: nome, percentual: Math.min(99, Math.max(1, pct)) };
+  return { com: nome, percentual: Math.min(99, Math.max(1, pct)), pagoPorMim: rateioPagoPorMim };
 }
 
 function loadRateioIntoForm(rateio) {
@@ -244,12 +289,39 @@ function loadRateioIntoForm(rateio) {
   document.getElementById('rateioOptions').style.display = rateioOn ? 'block' : 'none';
   document.getElementById('fRateioNome').value = rateio?.com || '';
   document.getElementById('fRateioPct').value  = rateio?.percentual || 50;
+  setRateioPagoPor(rateio ? rateio.pagoPorMim !== false : true);
+  renderRateioMembros();
+  updateRateioPreview();
+}
+
+// ── PARCELADO: o valor digitado é da parcela ou do total da compra? ──
+let parcelaModo = 'parcela';
+
+function setParcelaModo(m) {
+  parcelaModo = m;
+  document.getElementById('segParcela').classList.toggle('active', m === 'parcela');
+  document.getElementById('segTotal').classList.toggle('active', m === 'total');
+  updateParcelaPreview();
+}
+
+function updateParcelaPreview() {
+  const el = document.getElementById('parcelaPreview');
+  if (!el) return;
+  if (!(repeatOn && repeatType === 'parcelado')) { el.textContent = ''; return; }
+  const valor = parseBRL(document.getElementById('fValor').value);
+  const n = parseInt(document.getElementById('fParcelas').value) || 0;
+  if (!valor || n < 2) { el.textContent = ''; return; }
+  const parcela = parcelaModo === 'total' ? round2(valor / n) : valor;
+  const total   = parcelaModo === 'total' ? valor : round2(valor * n);
+  el.textContent = `${n}x de ${formatBRL(parcela)} = ${formatBRL(total)}. No mês só a parcela entra no total de dívidas.`;
 }
 
 function selectType(type) {
   repeatType = type;
   updateRadios();
   document.getElementById('parcelasRow').style.display = type === 'parcelado' ? 'flex' : 'none';
+  document.getElementById('parcelaModoRow').style.display = type === 'parcelado' ? 'block' : 'none';
+  updateParcelaPreview();
 }
 
 function updateRadios() {

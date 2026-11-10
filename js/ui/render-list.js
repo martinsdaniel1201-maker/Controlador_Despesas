@@ -24,16 +24,23 @@ function updateMonthLabel() {
   document.getElementById('monthLabel').textContent = `${months[currentMonth]} / ${currentYear}`;
 }
 
+let _listAnimTimer;
 function triggerListAnimation(dir) {
   const c = document.getElementById('expenseList');
   if (!c) return;
-  c.classList.remove('fade-in-up', 'content-slide-in-l', 'content-slide-in-r');
+  const cls = ['fade-in-up', 'content-slide-in-l', 'content-slide-in-r', 'items-animate'];
+  c.classList.remove(...cls);
   void c.offsetWidth;
+  c.classList.add('items-animate');
   if (dir === 1 || dir === -1) {
     c.classList.add(dir > 0 ? 'content-slide-in-l' : 'content-slide-in-r');
   } else {
     c.classList.add('fade-in-up');
   }
+  // Remove tudo ao terminar: classe de animação "presa" reinicia quando a
+  // aba volta de display:none e causa a piscada.
+  clearTimeout(_listAnimTimer);
+  _listAnimTimer = setTimeout(() => c.classList.remove(...cls), 800);
 }
 
 function renderList() {
@@ -82,6 +89,19 @@ function renderList() {
   const chip = document.getElementById('rscPendingChip');
   chip.textContent = pending > 0 ? formatBRL(pending) + ' a pagar' : '✓ Tudo pago';
   chip.className   = 'rsc-pending-chip' + (pending === 0 ? ' clear' : '');
+
+  // Quando há contas divididas, mostra a conta cheia ao lado da sua parte
+  const totalCheio = disp.reduce((s, e) => s + e.valorBruto, 0);
+  const subEl = document.getElementById('rscSub');
+  if (subEl) {
+    if (disp.some(e => e.dividido) && Math.abs(totalCheio - total) > 0.004) {
+      subEl.textContent = `Contas cheias ${formatBRL(totalCheio)} · sua parte ${formatBRL(total)}`;
+      subEl.style.display = 'block';
+    } else {
+      subEl.style.display = 'none';
+    }
+  }
+  renderAcertoCard(disp);
 
   document.getElementById('footTotal').textContent   = formatBRL(total);
   document.getElementById('footPending').textContent = formatBRL(pending);
@@ -164,14 +184,33 @@ function renderItem(e) {
   const safeName   = sanitize(e.label);
   const safeDate   = sanitize(e.dateStr);
   const safeExtra  = e.extra ? ' · ' + sanitize(e.extra) : '';
-  const safeAmount = sanitize(formatBRL(e.valor));
+  const safeAmount = sanitize(formatBRL(e.valor));  // valor = minha parte
   const safeId     = sanitize(e.id);
   const safeKey    = sanitize(e.monthKey);
   const dueBadge   = getDueBadge(e.dateStr, e.paid);
   const noteHtml   = e.nota ? `<div class="expense-note">💬 ${sanitize(e.nota)}</div>` : '';
-  const rateioHtml = e.rateio
-    ? `<div class="expense-rateio">🤝 Dividido com ${sanitize(e.rateio.com)} · sua parte ${sanitize(formatBRL(e.valor * e.rateio.percentual / 100))}</div>`
-    : '';
+  // Conta cheia x minha parte (divisão) e total da compra (parcelado)
+  const chips = [];
+  if (e.dividido) {
+    const outro = round2(e.valorBruto - e.valor);
+    const nomeOutro = souDonoDaDespesa(e) ? (e.rateio.com || 'outro') : getNomeDoMembro(e.user_id);
+    chips.push(`<span class="conta-chip neutro">Conta ${sanitize(formatBRL(e.valorBruto))}</span>`);
+    chips.push(`<span class="conta-chip eu">Você ${sanitize(formatBRL(e.valor))}</span>`);
+    chips.push(`<span class="conta-chip">${sanitize(nomeOutro)} ${sanitize(formatBRL(outro))}</span>`);
+  }
+  let parcelaHtml = '';
+  if (e.parcela) {
+    const p = e.parcela;
+    const totalShow  = e.dividido ? p.valorTotalContaMinha : p.valorTotalConta;
+    const restaShow  = e.dividido ? p.valorRestanteMinha   : p.valorRestante;
+    const pctPago    = p.total > 0 ? Math.round((p.atual / p.total) * 100) : 0;
+    chips.push(`<span class="conta-chip neutro">Compra ${sanitize(formatBRL(totalShow))}${e.dividido ? ' (sua parte)' : ''}</span>`);
+    chips.push(p.restantes > 0
+      ? `<span class="conta-chip neutro">Faltam ${p.restantes}x · ${sanitize(formatBRL(restaShow))}</span>`
+      : `<span class="conta-chip eu">Última parcela</span>`);
+    parcelaHtml = `<div class="parcela-bar" aria-hidden="true"><span style="width:${pctPago}%"></span></div>`;
+  }
+  const rateioHtml = chips.length ? `<div class="expense-conta">${chips.join('')}</div>${parcelaHtml}` : '';
   const souDono = !e.user_id || e.user_id === currentUser?.id;
   const podeEditar = souDono || (e.grupoId && window.meuGrupo?.id === e.grupoId && window.meuGrupo?.permite_membros_editar);
   const podeExcluir = souDono;
@@ -182,8 +221,9 @@ function renderItem(e) {
        <span class="expense-icon-fallback" style="display:none">${cat.emoji}</span>`
     : `<span>${cat.emoji}</span>`;
 
+  const enterClass = (window._novaDespesaId && window._novaDespesaId === e.id) ? ' item-enter' : '';
   return `
-    <div class="swipe-wrapper" data-expid="${safeId}">
+    <div class="swipe-wrapper${enterClass}" data-expid="${safeId}">
       <div class="swipe-bg" aria-hidden="true">
         <span class="swipe-bg-action pay"><svg class="icon icon-sm"><use href="#i-${e.paid ? 'undo' : 'check'}"></use></svg> ${e.paid ? 'Pendente' : 'Pagar'}</span>
         <span class="swipe-bg-action delete">Excluir <svg class="icon icon-sm"><use href="#i-trash"></use></svg></span>
@@ -207,6 +247,7 @@ function renderItem(e) {
         </div>
         <div class="expense-right">
           <div class="expense-amount" ${podeEditar ? `ondblclick="openInlineEdit(event,'${safeId}')" style="cursor:pointer" title="Duplo toque para editar valor"` : ''}>${safeAmount}</div>
+          ${e.dividido ? '<div class="expense-amount-sub">sua parte</div>' : (e.parcela ? '<div class="expense-amount-sub">parcela</div>' : '')}
           ${e.paid ? '<div class="paid-tag" aria-label="Pago"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> PAGO</div>' : ''}
         </div>
         ${podeEditar ? `
@@ -241,3 +282,36 @@ function renderItem(e) {
 }
 
 // ═══════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════
+// ACERTO DO MÊS — quem deve quanto a quem nas contas divididas
+// (informativo: considera só a divisão, não controla quem já acertou)
+// ═══════════════════════════════════════════════
+function calcularAcertos(disp) {
+  const saldo = {}; // nome -> positivo: essa pessoa me deve | negativo: eu devo
+  disp.forEach(e => {
+    if (!e.dividido) return;
+    const dono   = souDonoDaDespesa(e);
+    const nome   = dono ? (e.rateio.com || 'Outra pessoa') : getNomeDoMembro(e.user_id);
+    const euPaguei = dono ? e.rateio.pagoPorMim !== false : e.rateio.pagoPorMim === false;
+    saldo[nome] = round2((saldo[nome] || 0) + (euPaguei ? round2(e.valorBruto - e.valor) : -e.valor));
+  });
+  return Object.entries(saldo).filter(([, v]) => Math.abs(v) >= 0.01);
+}
+
+function buildAcertoRowsHtml(acertos) {
+  return acertos.map(([nome, v]) => v > 0
+    ? `<div class="acerto-row"><span>${sanitize(nome)} te deve</span><span class="val recebe">${sanitize(formatBRL(v))}</span></div>`
+    : `<div class="acerto-row"><span>Você deve a ${sanitize(nome)}</span><span class="val paga">${sanitize(formatBRL(-v))}</span></div>`
+  ).join('');
+}
+
+function renderAcertoCard(disp) {
+  const card = document.getElementById('acertoCard');
+  if (!card) return;
+  const acertos = calcularAcertos(disp);
+  if (!acertos.length) { card.style.display = 'none'; card.innerHTML = ''; return; }
+  card.innerHTML = `<div class="acerto-title">Acerto do mês</div>${buildAcertoRowsHtml(acertos)}`;
+  card.style.display = 'block';
+}
