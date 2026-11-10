@@ -300,7 +300,7 @@ function ruleInstallmentBurden(y, m) {
   expenses.forEach(exp => {
     if (exp.tipo !== 'parcelado') return;
     const { restante } = getParcelaInfo(exp, y, m);
-    if (restante > 0) { total += restante * exp.valor; count++; }
+    if (restante > 0) { total += restante * minhaParte(exp.valor, exp); count++; }
   });
   if (count === 0 || total <= 0) return null;
   return insight('installment-burden', 'neutral', 'i-layers', 17, 'Compromissos futuros em parcelas',
@@ -313,7 +313,7 @@ function ruleInstallmentsEnding(y, m) {
   expenses.forEach(exp => {
     if (exp.tipo !== 'parcelado') return;
     const { parcAtual } = getParcelaInfo(exp, y, m);
-    if (parcAtual === exp.totalParcelas) { sumVal += exp.valor; count++; }
+    if (parcAtual === exp.totalParcelas) { sumVal += minhaParte(exp.valor, exp); count++; }
   });
   if (count === 0) return null;
   return insight('installments-ending', 'good', 'i-party', 4, 'Parcelamentos terminando',

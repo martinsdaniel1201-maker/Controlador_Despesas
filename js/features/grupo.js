@@ -138,6 +138,21 @@ async function renderGrupoModal() {
       <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${membros.length} membro${membros.length > 1 ? 's' : ''}</div>
     </div>
 
+    ${(() => {
+      const disp = getMonthExpenses(currentYear, currentMonth).map(e => getDisplayExpense(e, currentYear, currentMonth));
+      const ac = calcularAcertos(disp);
+      const totalGrupo = disp.filter(e => e.grupoId === grupo.id);
+      const somaCheia = totalGrupo.reduce((s, e) => s + e.valorBruto, 0);
+      const somaMinha = totalGrupo.reduce((s, e) => s + e.valor, 0);
+      if (!totalGrupo.length && !ac.length) return '';
+      return `<div class="acerto-card" style="margin:0 0 16px;">
+        <div class="acerto-title">Este mês no grupo</div>
+        <div class="acerto-row"><span>Contas do grupo</span><span class="val">${sanitize(formatBRL(somaCheia))}</span></div>
+        <div class="acerto-row"><span>Sua parte</span><span class="val">${sanitize(formatBRL(somaMinha))}</span></div>
+        ${ac.length ? buildAcertoRowsHtml(ac) : ''}
+      </div>`;
+    })()}
+
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
       ${membros.map(m => `
         <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border-radius:12px;">

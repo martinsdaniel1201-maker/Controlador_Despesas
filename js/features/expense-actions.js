@@ -38,27 +38,48 @@ document.addEventListener('click', (e) => {
 function duplicateExpense(id) {
   const orig = expenses.find(e => e.id === id);
   if (!orig) return;
+  const d = getDisplayExpense(orig, currentYear, currentMonth); // valores do mês exibido (com exceções)
   // Avança para o próximo mês
   let nm = currentMonth + 1, ny = currentYear;
   if (nm > 11) { nm = 0; ny++; }
   const nextMonthStr = `${ny}-${String(nm+1).padStart(2,'0')}`;
   const novaData = `${ny}-${String(nm+1).padStart(2,'0')}-${orig.dataOriginal.split('-')[2]}`;
   const nova = {
-    id: Date.now().toString(),
-    descricao: orig.descricao,
-    valor: orig.valor,
+    id: String(Date.now()) + Math.random().toString(36).slice(2,7),
+    descricao: d.descricao,
+    valor: d.valorBruto,
     dataOriginal: novaData,
-    categoria: orig.categoria || 'outros',
+    categoria: d.categoria || 'outros',
     tipo: 'unico',
     totalParcelas: null,
     monthKey: nextMonthStr,
     pagamentos: {},
-    nota: orig.nota || ''
+    nota: d.nota || '',
+    rateio: d.rateio || null,
+    grupoId: orig.grupoId || null,
+    user_id: currentUser?.id
   };
   expenses.push(nova);
   save();
   renderAll();
   showToast(`📋 Duplicado para ${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][nm]}/${ny}!`);
+}
+
+// Pergunta se a alteração vale pra todos os meses ou só pro mês exibido.
+// Retorna 'todos' | 'mes' | false (cancelou). Nunca cria despesa nova.
+async function perguntarEscopoEdicao(textoExtra) {
+  const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const mesLabel = `${nomesMeses[currentMonth]}/${currentYear}`;
+  return mostrarPopup({
+    emoji:  '🔄',
+    titulo: 'Onde aplicar a alteração?',
+    texto:  textoExtra || 'Esta despesa se repete em vários meses.',
+    botoes: [
+      { texto: '🔁 Todos os meses',        classe: 'confirm-btn-primary',   valor: 'todos' },
+      { texto: `📌 Só ${mesLabel}`,        classe: 'confirm-btn-secondary', valor: 'mes'   },
+      { texto: 'Cancelar',                 classe: 'confirm-btn-secondary', valor: false   }
+    ]
+  });
 }
 
 // ═══════════════════════════════════════════════
@@ -70,9 +91,10 @@ function openInlineEdit(event, id) {
   const exp = expenses.find(e => e.id === id);
   if (!exp) return;
   inlineEditId = id;
+  const d = getDisplayExpense(exp, currentYear, currentMonth);
   const overlay = document.getElementById('inlineEditOverlay');
   const input   = document.getElementById('inlineEditInput');
-  input.value   = exp.valor.toFixed(2).replace('.', ',');
+  input.value   = d.valorBruto.toFixed(2).replace('.', ',');
   overlay.classList.add('open');
   setTimeout(() => { input.focus(); input.select(); }, 100);
 }
@@ -88,15 +110,34 @@ function cancelInlineEdit() {
   inlineEditId = null;
 }
 
-function confirmInlineEdit() {
+async function confirmInlineEdit() {
   if (!inlineEditId) return;
   const raw   = document.getElementById('inlineEditInput').value;
   const valor = parseBRL(raw);
   if (!valor || valor <= 0) { showToast('⚠️ Valor inválido'); return; }
   const exp = expenses.find(e => e.id === inlineEditId);
-  if (exp) { exp.valor = valor; save(); renderAll(); showToast('✏️ Valor atualizado!'); }
+  const idEdit = inlineEditId;
   document.getElementById('inlineEditOverlay').classList.remove('open');
   inlineEditId = null;
+  if (!exp) return;
+
+  let escopo = 'todos';
+  if (exp.tipo === 'fixo' || exp.tipo === 'parcelado') {
+    escopo = await perguntarEscopoEdicao('Você alterou o valor de uma despesa recorrente.');
+    if (!escopo) return;
+  }
+  if (escopo === 'mes') {
+    const key = getMonthKey(currentYear, currentMonth);
+    exp.overrides = { ...(exp.overrides || {}), [key]: { ...((exp.overrides || {})[key] || {}), valor } };
+  } else {
+    exp.valor = valor;
+    if (exp.tipo === 'parcelado') exp.valorTotal = round2(valor * (exp.totalParcelas || 0));
+    const key = getMonthKey(currentYear, currentMonth);
+    if (exp.overrides?.[key]) delete exp.overrides[key].valor;
+  }
+  await persistExpenses();
+  renderAll();
+  showToast('✏️ Valor atualizado!');
 }
 
 // ═══════════════════════════════════════════════
@@ -209,24 +250,32 @@ async function deleteExpense(id) {
   }
 }
 
+// Foto do que foi carregado no formulário — usada pra saber o que o usuário
+// REALMENTE mudou (e só aplicar isso), em vez de regravar tudo.
+let _editSnapshot = null;
+
 function editExpense(id) {
   const exp = expenses.find(e => e.id === id);
   if (!exp) return;
   editingId = id;
+  // O formulário abre com os valores do mês que está na tela (com exceções)
+  const d = getDisplayExpense(exp, currentYear, currentMonth);
+  const ov = getOverride(exp, getMonthKey(currentYear, currentMonth)) || {};
   document.getElementById('modalTitle').textContent = 'Editar Despesa';
   setModalSaveLabel('💾 Salvar Alterações');
-  document.getElementById('fDesc').value            = exp.descricao;
-  // Aplica formato de máscara corretamente (ex: 1.234,56)
-  const valorFormatado = exp.valor.toFixed(2)
+  document.getElementById('fDesc').value            = d.descricao;
+  const valorFormatado = d.valorBruto.toFixed(2)
     .replace('.', ',')
     .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   document.getElementById('fValor').value           = valorFormatado;
-  document.getElementById('fData').value            = exp.dataOriginal;
-  document.getElementById('fNota').value            = exp.nota || '';
-  loadRateioIntoForm(exp.rateio || null);
+  let dataForm = exp.dataOriginal;
+  if (ov.dia) { const p = exp.dataOriginal.split('-'); dataForm = `${p[0]}-${p[1]}-${String(ov.dia).padStart(2,'0')}`; }
+  document.getElementById('fData').value            = dataForm;
+  document.getElementById('fNota').value            = d.nota || '';
+  loadRateioIntoForm(d.rateio || null);
   loadGrupoIdIntoForm(exp.grupoId || null);
   atualizarSeletorDeGrupoNoFormulario();
-  selectedCat = exp.categoria || 'outros';
+  selectedCat = d.categoria || 'outros';
   _catUserPicked = true;
   repeatOn    = exp.tipo !== 'unico';
   repeatType  = exp.tipo === 'parcelado' ? 'parcelado' : 'fixo';
@@ -239,10 +288,18 @@ function editExpense(id) {
   updateRadios();
   renderCatChips();
   document.getElementById('parcelasRow').style.display = repeatType === 'parcelado' ? 'flex' : 'none';
+  document.getElementById('parcelaModoRow').style.display = (repeatOn && repeatType === 'parcelado') ? 'block' : 'none';
+  setParcelaModo('parcela');
   if (exp.totalParcelas) document.getElementById('fParcelas').value = exp.totalParcelas;
   ['fDesc','fValor','fData','fParcelas'].forEach(id => document.getElementById(id).classList.remove('error'));
 
+  _editSnapshot = {
+    descricao: d.descricao, valor: d.valorBruto, categoria: d.categoria || 'outros',
+    nota: d.nota || '', rateio: JSON.stringify(d.rateio || null),
+    data: dataForm, grupoId: exp.grupoId || null
+  };
+
+  updateParcelaPreview();
   openModal();
 }
 
-// ═══════════════════════════════════════════════

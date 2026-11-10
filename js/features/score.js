@@ -34,7 +34,7 @@ function computeInstallmentBurdenValue(y, m) {
   expenses.forEach(exp => {
     if (exp.tipo !== 'parcelado') return;
     const { restante } = getParcelaInfo(exp, y, m);
-    if (restante > 0) total += restante * exp.valor;
+    if (restante > 0) total += restante * minhaParte(exp.valor, exp);
   });
   return total;
 }

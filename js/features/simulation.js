@@ -25,10 +25,11 @@ function saveSimInputs() {
 // FIX: "=Platform =" removido; lógica de cores alinhada com a progress bar
 // ═══════════════════════════════════════════════
 function calcularSimulacao() {
-  const raw           = getMonthExpenses(currentYear, currentMonth);
+  const keyMes        = getMonthKey(currentYear, currentMonth);
+  const raw           = getMonthExpenses(currentYear, currentMonth)
+                          .map(e => getDisplayExpense(e, currentYear, currentMonth)); // valor = minha parte
   const totalDespesas = raw.reduce((s, e) => s + e.valor, 0);
-  const paidDespesas  = raw.filter(e => (e.pagamentos || {})[getMonthKey(currentYear, currentMonth)])
-                           .reduce((s, e) => s + e.valor, 0);
+  const paidDespesas  = raw.filter(e => e.paid).reduce((s, e) => s + e.valor, 0);
   const saldoAPagar   = totalDespesas - paidDespesas;
 
   const salario  = parseBRL(document.getElementById('simSalario').value);
