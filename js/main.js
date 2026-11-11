@@ -1,6 +1,6 @@
 // INICIALIZAÇÃO
 // ═══════════════════════════════════════════════
-function renderAll() { renderList(); calcularSimulacao(); renderHome(); if (typeof updateAppBadge === 'function') updateAppBadge(); }
+function renderAll() { renderList(); calcularSimulacao(); renderHome(); if (typeof updateAppBadge === 'function') updateAppBadge(); if (typeof refreshQuickChips === 'function') refreshQuickChips(); if (currentTab === 'stats') renderStats(); if (currentTab === 'historico') renderHistorico(); }
 
 updateMonthLabel();
 renderCatChips();
