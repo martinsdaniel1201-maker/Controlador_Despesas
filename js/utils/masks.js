@@ -15,7 +15,10 @@ function aplicarMascaraDinheiro(elemento, onAfter) {
   });
 }
 
-aplicarMascaraDinheiro(document.getElementById('fValor'));
+aplicarMascaraDinheiro(document.getElementById('fValor'), () => {
+  if (typeof updateRateioPreview === 'function') updateRateioPreview();
+  if (typeof updateParcelaPreview === 'function') updateParcelaPreview();
+});
 aplicarMascaraDinheiro(document.getElementById('simSalario'), () => {
   saveSimInputs();
   calcularSimulacao();
