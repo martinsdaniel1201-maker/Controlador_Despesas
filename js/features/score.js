@@ -188,13 +188,13 @@ function buildScoreTips(data) {
   if (a && a.frac < 0.7) tips.push({ frac: a.frac, text: `Regularize ${a.meta.overdueCount > 1 ? 'as ' + a.meta.overdueCount + ' contas vencidas' : 'a conta vencida'} o quanto antes para evitar juros e multas.` });
 
   const e = byKey.economia;
-  if (e && e.frac < 0.7) tips.push({ frac: e.frac, text: e.meta.salario > 0 ? 'Tente guardar pelo menos 20% da sua renda por mês — hoje você está guardando menos que isso.' : 'Cadastre sua renda na aba Ferramentas para acompanhar sua economia real.' });
+  if (e && e.frac < 0.7) tips.push({ frac: e.frac, text: e.meta.salario > 0 ? 'Tente guardar pelo menos 20% da sua renda por mês — hoje você está guardando menos que isso.' : 'Informe sua renda (botão no topo do Início) para acompanhar sua economia real.' });
 
   const s = byKey.saldo;
   if (s && s.frac < 0.6) tips.push({ frac: s.frac, text: 'Suas despesas estão consumindo boa parte (ou mais) da sua renda — revise gastos variáveis para reequilibrar o saldo.' });
 
   const g = byKey.metas;
-  if (g && g.frac < 0.7) tips.push({ frac: g.frac, text: data.metaPct > 0 ? 'Você ainda está longe de bater sua meta de economia deste mês — reduzir gastos supérfluos ajuda a se aproximar dela.' : 'Defina uma meta de economia (% da renda) na aba Ferramentas para ter um alvo claro.' });
+  if (g && g.frac < 0.7) tips.push({ frac: g.frac, text: data.metaPct > 0 ? 'Você ainda está longe de bater sua meta de economia deste mês — reduzir gastos supérfluos ajuda a se aproximar dela.' : 'Defina uma meta de economia (% da renda), tocando em "Renda" no topo do Início, para ter um alvo claro.' });
 
   const f = byKey.frequencia;
   if (f && f.frac < 0.7 && f.meta.avgCount) tips.push({ frac: f.frac, text: `Você fez ${data.cur.count} lançamentos este mês, bem mais que sua média de ~${Math.round(f.meta.avgCount)} — fique atento a compras por impulso.` });

@@ -18,6 +18,7 @@ function saveSimInputs() {
     localStorage.setItem('sim_salario',  document.getElementById('simSalario').value);
     localStorage.setItem('sim_meta_pct', document.getElementById('simMetaPct').value);
   } catch (e) {}
+  if (typeof syncRendaToCloud === 'function') syncRendaToCloud();
 }
 
 // ═══════════════════════════════════════════════
