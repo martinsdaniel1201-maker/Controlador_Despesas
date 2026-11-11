@@ -58,7 +58,7 @@ function buildReceitasDespesasHtml(hist, salario) {
       <div class="stats-card">
         <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-dollar"></use></svg> Receitas x Despesas</h3>
         ${buildBarChart(values, labels, { color: '#4338ca', highlightIndex: values.length - 1, highlightColor: '#7c3aed' })}
-        <p class="stats-chart-hint">Informe sua renda na aba Ferramentas para comparar com suas despesas mês a mês.</p>
+        <p class="stats-chart-hint"><button type="button" class="resumo-link" onclick="openRendaModal()">Informe sua renda</button> para comparar com suas despesas mês a mês.</p>
       </div>`;
   }
   return `
@@ -78,7 +78,7 @@ function buildEvolucaoSaldoHtml(hist, salario) {
     <div class="stats-card">
       <h3><svg class="icon icon-sm" aria-hidden="true"><use href="#i-bar-chart"></use></svg> Evolução do Saldo</h3>
       ${buildLineAreaChart(values, labels, { dualColor: true, showZeroLine: true, highlightLast: true })}
-      ${salario === 0 ? '<p class="stats-chart-hint">Sem renda informada, o saldo aqui é apenas o total de despesas invertido — cadastre sua renda em Ferramentas para um saldo real.</p>' : ''}
+      ${salario === 0 ? '<p class="stats-chart-hint">Sem renda informada, o saldo aqui é apenas o total de despesas invertido — <button type="button" class="resumo-link" onclick="openRendaModal()">cadastre sua renda</button> para um saldo real.</p>' : ''}
     </div>`;
 }
 
@@ -231,6 +231,7 @@ function renderStats() {
   const categoriaCardHtml = `
     <div class="stats-card">
       <h3>Por Categoria</h3>
+      ${sortedCats.length ? '<p class="stats-tip">Toque numa categoria para ver as despesas dela.</p>' : ''}
       ${sortedCats.length === 0
         ? '<div class="empty-state"><div class="emoji"><svg class="icon icon-xl" aria-hidden="true"><use href="#i-bar-chart"></use></svg></div><h3>Sem dados este mês</h3><p>Adicione despesas para ver o gráfico por categoria.</p></div>'
         : `<div class="chart-reveal-wrap">${buildDonutSVG(sortedCats, total)}</div>` + sortedCats.map(([catId, val]) => {
@@ -246,18 +247,18 @@ function renderStats() {
               ? `<div class="budget-bar-row" style="margin-top:6px;">
                    <div class="budget-bar-label">
                      <span>${overBudget ? '<svg class="icon icon-sm" aria-hidden="true"><use href="#i-alert"></use></svg> ' : ''}Meta: ${formatBRL(limit)}</span>
-                     <span onclick="openCategoryBudgetEditor('${catId}')" role="button" tabindex="0"
+                     <span onclick="event.stopPropagation();openCategoryBudgetEditor('${catId}')" role="button" tabindex="0"
                            style="cursor:pointer;text-decoration:underline;color:var(--text-muted);">editar</span>
                    </div>
                    <div class="budget-bar-bg"><div class="budget-bar-fill" style="width:${limitPct}%;background:${limitColor}"></div></div>
                  </div>`
               : `<div style="margin-top:4px;">
-                   <span onclick="openCategoryBudgetEditor('${catId}')" role="button" tabindex="0"
+                   <span onclick="event.stopPropagation();openCategoryBudgetEditor('${catId}')" role="button" tabindex="0"
                          style="cursor:pointer;font-size:11px;font-weight:800;color:var(--text-muted);text-decoration:underline;">
                      <svg class="icon icon-sm" aria-hidden="true"><use href="#i-target"></use></svg> definir meta
                    </span>
                  </div>`;
-            return `<div class="cat-stat-row" style="flex-wrap:wrap;">
+            return `<div class="cat-stat-row" data-cat="${catId}" role="button" tabindex="0" onclick="openCategoryDetail('${catId}')" onkeydown="if(event.key==='Enter')openCategoryDetail('${catId}')" style="flex-wrap:wrap;">
               <span class="cat-stat-icon" aria-hidden="true">${cat.emoji}</span>
               <div class="cat-stat-info">
                 <div class="cat-stat-name">${sanitize(cat.label)}
@@ -287,8 +288,122 @@ function renderStats() {
     buildDiasQueMaisGastaHtml(),
   ].join('');
 
-  document.getElementById('statsContainer').innerHTML = budgetHtml + chartsHtml + categoriaCardHtml;
+  document.getElementById('statsContainer').innerHTML =
+    buildResumoFrasesHtml(disp, total, paid, sortedCats, salario, metaPct) + budgetHtml + categoriaCardHtml + chartsHtml;
   triggerChartReveal(document.getElementById('statsContainer'));
 }
 
 // ═══════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════
+// RESUMO DO MÊS EM FRASES (primeira coisa do Relatório)
+// ═══════════════════════════════════════════════
+function buildResumoFrasesHtml(disp, total, paid, sortedCats, salario, metaPct) {
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const nomeMes = `${meses[currentMonth]}/${currentYear}`;
+
+  if (!disp.length) {
+    return `<div class="stats-card resumo-card"><h3>Resumo de ${nomeMes}</h3>
+      <div class="resumo-line"><span class="resumo-ico">📭</span><span>Nenhuma despesa lançada em ${nomeMes}. Use o campo de lançamento rápido na aba Despesas — leva 5 segundos.</span></div></div>`;
+  }
+
+  let pm = currentMonth - 1, py = currentYear;
+  if (pm < 0) { pm = 11; py--; }
+  const prev = getMonthTotals(py, pm);
+  const nomePrev = `${meses[pm]}`;
+  const lines = [];
+
+  // 1) total x mês anterior
+  let cmp = '';
+  if (prev.total > 0) {
+    const d = total - prev.total;
+    const pct = Math.round(Math.abs(d) / prev.total * 100);
+    if (pct === 0)  cmp = ` — igual a ${nomePrev}`;
+    else if (d > 0) cmp = ` — <span class="resumo-up">${pct}% a mais</span> que em ${nomePrev}`;
+    else            cmp = ` — <span class="resumo-down">${pct}% a menos</span> que em ${nomePrev}`;
+  }
+  lines.push(['💸', `Você gastou <b>${formatBRL(total)}</b> em ${nomeMes}${cmp}.`]);
+
+  // 2) categoria que mais pesou
+  if (sortedCats.length) {
+    const [topId, topVal] = sortedCats[0];
+    const cat = CATEGORIES.find(c => c.id === topId) || CATEGORIES[CATEGORIES.length - 1];
+    const antes = prev.byCat[topId] || 0;
+    let catCmp = '';
+    if (antes > 0) {
+      const dp = Math.round((topVal - antes) / antes * 100);
+      if (dp >= 5)       catCmp = ` (<span class="resumo-up">subiu ${dp}%</span> em relação a ${nomePrev})`;
+      else if (dp <= -5) catCmp = ` (<span class="resumo-down">caiu ${Math.abs(dp)}%</span> em relação a ${nomePrev})`;
+    }
+    lines.push([cat.emoji, `<b>${sanitize(cat.label)}</b> foi o maior peso: ${formatBRL(topVal)}, ${Math.round(topVal / total * 100)}% do total${catCmp}.`]);
+  }
+
+  // 3) o que falta pagar
+  const pend = total - paid;
+  if (pend > 0.004) {
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    const prox = disp.filter(e => !e.paid).map(e => {
+      const p = e.dateStr.split('/');
+      return { e, due: new Date(p[2], p[1] - 1, p[0]), dd: p[0], mm: p[1] };
+    }).sort((a, b) => a.due - b.due)[0];
+    lines.push(['🗓️', `Faltam <b>${formatBRL(pend)}</b> a pagar${prox ? ` — a próxima é <b>${sanitize(prox.e.label)}</b>, dia ${prox.dd}/${prox.mm}` : ''}.`]);
+  } else {
+    lines.push(['✅', 'Tudo pago neste mês. Nenhuma conta pendente!']);
+  }
+
+  // 4) renda
+  if (salario > 0) {
+    const sobra = salario - total;
+    const meta = salario * metaPct / 100;
+    let txt;
+    if (sobra < 0)           txt = `As despesas passam da sua renda (${formatBRL(salario)}) em <b>${formatBRL(-sobra)}</b>.`;
+    else if (meta > 0 && sobra < meta) txt = `Da renda de ${formatBRL(salario)} sobram <b>${formatBRL(sobra)}</b> — abaixo da meta de guardar ${formatBRL(meta)}.`;
+    else if (meta > 0)       txt = `Da renda de ${formatBRL(salario)} sobram <b>${formatBRL(sobra)}</b> — meta de ${formatBRL(meta)} garantida.`;
+    else                     txt = `Da renda de ${formatBRL(salario)} sobram <b>${formatBRL(sobra)}</b>.`;
+    lines.push(['💰', `${txt} <button type="button" class="resumo-link" onclick="openRendaModal()">editar renda</button>`]);
+  } else {
+    lines.push(['💰', `Informe sua renda para ver quanto sobra. <button type="button" class="resumo-link" onclick="openRendaModal()">Informar renda</button>`]);
+  }
+
+  return `<div class="stats-card resumo-card">
+    <h3>Resumo de ${nomeMes}</h3>
+    ${lines.map(([ico, html]) => `<div class="resumo-line"><span class="resumo-ico" aria-hidden="true">${ico}</span><span>${html}</span></div>`).join('')}
+    <div class="resumo-actions">
+      <button type="button" onclick="shareMonthCard()">Compartilhar resumo</button>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// DETALHE DA CATEGORIA (toque numa categoria do Relatório)
+// ═══════════════════════════════════════════════
+function openCategoryDetail(catId) {
+  const lista = getMonthExpenses(currentYear, currentMonth)
+    .map(e => getDisplayExpense(e, currentYear, currentMonth))
+    .filter(e => (e.categoria || 'outros') === catId)
+    .sort((a, b) => b.valor - a.valor);
+  const cat = CATEGORIES.find(c => c.id === catId) || CATEGORIES[CATEGORIES.length - 1];
+  const total = lista.reduce((s, e) => s + e.valor, 0);
+
+  document.getElementById('catDetailTitle').innerHTML =
+    `${cat.emoji} ${sanitize(cat.label)}<small>${lista.length} despesa${lista.length === 1 ? '' : 's'} · ${sanitize(formatBRL(total))}</small>`;
+  document.getElementById('catDetailBody').innerHTML = lista.length
+    ? lista.map(e => `
+        <button type="button" class="sheet-row" onclick="openExpenseFromSheet('${sanitize(e.id)}')">
+          <span class="n">${sanitize(e.label)}<small>${sanitize(e.dateStr)} · ${e.paid ? 'pago' : 'pendente'}${e.dividido ? ' · sua parte de ' + sanitize(formatBRL(e.valorBruto)) : ''}</small></span>
+          <span class="v ${e.paid ? 'pago' : ''}">${sanitize(formatBRL(e.valor))}</span>
+        </button>`).join('')
+    : '<p class="stats-tip" style="padding:14px 0;">Nenhuma despesa nesta categoria.</p>';
+  document.getElementById('catDetailOverlay').classList.add('open');
+}
+
+function closeCategoryDetail(event) {
+  if (event && event.target && event.target.id !== 'catDetailOverlay') return;
+  document.getElementById('catDetailOverlay').classList.remove('open');
+}
+
+function openExpenseFromSheet(id) {
+  closeCategoryDetail();
+  editExpense(id);
+}

@@ -47,50 +47,62 @@ function setFilter(f, el) {
   renderList();
 }
 
+// O app tem 3 abas na barra: Início, Despesas e Planejar.
+// "Planejar" agrupa Relatório, Histórico e Ferramentas (seletor no topo).
+const PLAN_GROUP = ['stats', 'historico', 'simulacao'];
+const _PANEL_IDS = { inicio: 'tabInicio', despesas: 'tabDespesas', stats: 'tabStats', simulacao: 'tabSimulacao', historico: 'tabHistorico' };
+let _planSub = 'stats';
+let _tabHistory = [];
+
 function switchTab(tab, btn) {
-  // Histórico simples de navegação — alimenta o gesto de "voltar"
-  // (arrastar da borda esquerda pra direita), pra imitar o back-swipe
-  // do iOS/Android em vez de só trocar de aba sem guardar de onde veio.
+  if (tab === 'planejar') tab = _planSub;          // volta pra última sub-seção usada
   if (tab !== currentTab) {
-    _tabHistory.push(currentTab);
+    _tabHistory.push(currentTab);                  // alimenta o gesto de "voltar"
     if (_tabHistory.length > 20) _tabHistory.shift();
   }
   currentTab = tab;
+
+  const barKey = PLAN_GROUP.includes(tab) ? 'planejar' : tab;
   document.querySelectorAll('.tab').forEach(t => {
-    t.classList.remove('active');
-    t.setAttribute('aria-selected', 'false');
+    const on = t.dataset.tab === barKey;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-selected', String(on));
   });
-  btn.classList.add('active');
-  btn.setAttribute('aria-selected', 'true');
-  ['tabInicio','tabDespesas','tabStats','tabSimulacao','tabHistorico'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
-  });
-  const tabMap = { inicio: 'tabInicio', despesas: 'tabDespesas', stats: 'tabStats', simulacao: 'tabSimulacao', historico: 'tabHistorico' };
-  const panel = document.getElementById(tabMap[tab]);
+
+  Object.values(_PANEL_IDS).forEach(id => { document.getElementById(id).style.display = 'none'; });
+  const panel = document.getElementById(_PANEL_IDS[tab]);
   panel.style.display = 'block';
   panel.classList.remove('tab-fade-in');
   void panel.offsetWidth;
   panel.classList.add('tab-fade-in');
-  if (tab === 'inicio')    renderHome();
+
+  const nav = document.getElementById('planejarNav');
+  if (nav) {
+    const inGroup = PLAN_GROUP.includes(tab);
+    nav.style.display = inGroup ? 'flex' : 'none';
+    if (inGroup) {
+      _planSub = tab;
+      nav.querySelectorAll('button').forEach(b => {
+        const on = b.dataset.sub === tab;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+    }
+  }
+
+  if (tab === 'inicio')    { renderHome(); if (typeof refreshQuickChips === 'function') refreshQuickChips(); }
+  if (tab === 'despesas'   && typeof refreshQuickChips === 'function') refreshQuickChips();
   if (tab === 'stats')     renderStats();
   if (tab === 'simulacao') { loadSimInputs(); calcularSimulacao(); }
   if (tab === 'historico') renderHistorico();
 }
 
-// Ordem real dos botões de aba no DOM — usada por goBackTab() pra
-// encontrar o <button> certo e reaproveitar o switchTab() de cima.
-const _TAB_ORDER = ['inicio', 'despesas', 'stats', 'simulacao', 'historico'];
-let _tabHistory = [];
-
 function goBackTab() {
   if (!_tabHistory.length) return false;
   const prevTab = _tabHistory.pop();
-  const idx = _TAB_ORDER.indexOf(prevTab);
-  const btn = document.querySelectorAll('.tab')[idx];
-  if (!btn) return false;
-  const before = _tabHistory; // switchTab vai empurrar currentTab de volta pro histórico
-  switchTab(prevTab, btn);
-  _tabHistory = before; // desfaz esse empurrão: voltar não deve "esquecer pra frente"
+  const before = _tabHistory;      // switchTab empurra currentTab de volta pro histórico
+  switchTab(prevTab);
+  _tabHistory = before;            // voltar não deve "esquecer pra frente"
   return true;
 }
 

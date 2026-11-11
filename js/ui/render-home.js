@@ -197,6 +197,52 @@ function animateScoreCard(scoreData) {
   storeScore(scoreData.finalScore);
 }
 
+// ═══════════════════════════════════════════════
+// PRÓXIMAS CONTAS — o que pagar agora, com botão Pagar
+// ═══════════════════════════════════════════════
+function buildProximasContasHtml(cur) {
+  if (!cur.disp.length) return '';
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const pend = cur.disp.filter(e => !e.paid).map(e => {
+    const p = e.dateStr.split('/');
+    const due = new Date(p[2], p[1] - 1, p[0]);
+    return { e, due, diff: Math.floor((due - hoje) / 86400000), dd: p[0], mm: p[1] };
+  }).sort((a, b) => a.due - b.due);
+
+  const head = (badge) => `
+    <div class="dash-card-head">
+      <span class="dash-card-icon"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-calendar"></use></svg></span>
+      <span class="dash-card-title">Próximas contas</span>
+      ${badge}
+    </div>`;
+
+  if (!pend.length) {
+    return `<div class="dash-card next-card">${head('')}<div class="next-ok">🎉 Tudo pago neste mês. Nada pendente!</div></div>`;
+  }
+
+  const rows = pend.slice(0, 3).map(({ e, diff, dd, mm }) => {
+    let txt, cls = '';
+    if (diff < 0)        { txt = `Vencida há ${-diff} dia${-diff > 1 ? 's' : ''}`; cls = 'late'; }
+    else if (diff === 0) { txt = 'Vence hoje'; cls = 'today'; }
+    else if (diff === 1) { txt = 'Vence amanhã'; }
+    else                 { txt = `Vence dia ${dd}/${mm}`; }
+    return `
+      <div class="next-row">
+        <div class="next-info">
+          <div class="next-name">${sanitize(e.label)}</div>
+          <div class="next-due ${cls}">${txt}${e.dividido ? ' · sua parte' : ''}</div>
+        </div>
+        <span class="next-val">${sanitize(formatBRL(e.valor))}</span>
+        <button type="button" class="next-pay" onclick="togglePay('${sanitize(e.id)}','${sanitize(e.monthKey)}')" aria-label="Marcar ${sanitize(e.label)} como paga">Pagar</button>
+      </div>`;
+  }).join('');
+
+  const mais = pend.length > 3
+    ? `<button type="button" class="next-more" onclick="switchTab('despesas')">Ver as ${pend.length} pendentes →</button>` : '';
+  const badge = `<span class="dash-card-badge">${sanitize(formatBRL(cur.pending))}</span>`;
+  return `<div class="dash-card next-card">${head(badge)}${rows}${mais}</div>`;
+}
+
 function renderHome() {
   const container = document.getElementById('dashContainer');
   if (!container) return;
@@ -286,6 +332,20 @@ function renderHome() {
     resumoTxt = partes.join(' ');
   }
 
+  // ── QUANTO POSSO GASTAR POR DIA (só no mês corrente, com renda informada) ──
+  let livreHtml = '';
+  if (salario > 0 && isRealCurrentMonth) {
+    const diasNoMes = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const diasRest  = Math.max(1, diasNoMes - new Date().getDate() + 1);
+    const livre     = salario - cur.total - valorMeta;
+    livreHtml = livre > 0
+      ? `<div class="hero-free">Livre para gastar: <strong>${formatBRL(livre / diasRest)}</strong> por dia até o dia ${diasNoMes} <span style="opacity:.85">(${formatBRL(livre)} no total${valorMeta > 0 ? ', já separando sua meta' : ''})</span></div>`
+      : `<div class="hero-free warn">As despesas já passam da renda${valorMeta > 0 ? ' (contando a meta)' : ''} em <strong>${formatBRL(Math.abs(livre))}</strong>. Vale segurar os gastos.</div>`;
+  }
+  const rendaChip = salario > 0
+    ? `<button type="button" class="renda-chip" onclick="openRendaModal()" aria-label="Editar renda mensal">Renda ${sanitize(formatBRL(salario))} <svg class="icon icon-sm" aria-hidden="true"><use href="#i-edit"></use></svg></button>`
+    : '';
+
   function monthShortLabel(y, m) {
     const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
     return months[m] + '/' + y;
@@ -315,13 +375,17 @@ function renderHome() {
       <div class="dash-balance ${saldoAtual < 0 ? 'negative' : ''}" id="dashSaldoValue">R$ 0,00</div>
       <div class="dash-hero-bottom">
         ${deltaChip}
-        ${salario === 0 ? '<span class="dash-hint">Informe sua renda em Ferramentas para ver o saldo completo</span>' : ''}
+        ${rendaChip}
       </div>
+      ${livreHtml}
+      ${salario === 0 ? '<button type="button" class="hero-cta" onclick="openRendaModal()">💰 Informar minha renda e ver quanto sobra</button>' : ''}
       <p class="dash-hero-summary">${resumoTxt}</p>
       <button type="button" class="dash-share-btn" onclick="shareMonthCard()">
         <svg class="icon icon-sm" aria-hidden="true"><use href="#i-send"></use></svg> Compartilhar resumo do mês
       </button>
     </div>
+
+    ${buildProximasContasHtml(cur)}
 
     ${scoreCard.html}
 
@@ -335,7 +399,7 @@ function renderHome() {
       <div class="dash-bar-bg"><div class="dash-bar-fill econ-fill" style="width:${salario > 0 ? Math.min(economiaPct, 100) : 0}%"></div></div>
       <div class="dash-card-explain">
         ${salario === 0
-          ? 'Cadastre sua renda em Ferramentas para acompanhar quanto sobra do salário.'
+          ? 'Cadastre sua renda para acompanhar quanto sobra do salário. <button type="button" class="resumo-link" onclick="openRendaModal()">Informar renda</button>'
           : economiaMes > 0
             ? `Você ainda não gastou ${formatBRL(economiaMes)} da sua renda — ${economiaPct}% preservados até agora.`
             : 'Toda a renda informada já foi comprometida com despesas este mês.'}
@@ -355,7 +419,7 @@ function renderHome() {
         </div>
       ` : `
         <hr class="dash-card-divider">
-        <div class="dash-card-explain">Defina uma meta de economia (% do salário) na aba Ferramentas para acompanhar seu progresso aqui.</div>
+        <div class="dash-card-explain">Defina uma meta de economia (% da renda) para acompanhar seu progresso aqui. <button type="button" class="resumo-link" onclick="openRendaModal()">Definir meta</button></div>
       `}
     </div>
 
