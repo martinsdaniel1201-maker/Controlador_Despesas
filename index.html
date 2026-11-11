@@ -34,6 +34,7 @@
 <link rel="stylesheet" href="css/inline-edit.css">
 <link rel="stylesheet" href="css/accessibility.css">
 <link rel="stylesheet" href="css/icons.css">
+<link rel="stylesheet" href="css/v2.css">
 <link rel="stylesheet" href="css/desktop.css">
 </head>
 <body>
@@ -299,13 +300,24 @@
   </nav>
 </header>
 
+<!-- SELETOR DO "PLANEJAR" (Relatório · Histórico · Ferramentas) -->
+<div class="plan-nav" id="planejarNav" role="group" aria-label="Seções de Planejar" style="display:none">
+  <button type="button" data-sub="stats" class="active" aria-pressed="true" onclick="switchTab('stats')">Relatório</button>
+  <button type="button" data-sub="historico" aria-pressed="false" onclick="switchTab('historico')">Histórico</button>
+  <button type="button" data-sub="simulacao" aria-pressed="false" onclick="switchTab('simulacao')">Ferramentas</button>
+</div>
+
 <!-- ABA: INÍCIO (DASHBOARD) -->
 <div id="tabInicio" role="tabpanel">
+  <div class="quick-add" data-qa="home"></div>
   <div class="dash-container" id="dashContainer"></div>
 </div>
 
 <!-- ABA: DESPESAS -->
 <div id="tabDespesas" role="tabpanel" style="display:none">
+
+  <!-- LANÇAMENTO RÁPIDO -->
+  <div class="quick-add" data-qa="list"></div>
 
   <!-- AVISO DE DÍVIDAS — pílula discreta -->
   <div id="debt-alert-card">
@@ -516,14 +528,12 @@
 <!-- BARRA DE NAVEGAÇÃO FIXA (estilo WhatsApp/Instagram no celular; vira sidebar no PC) -->
 <div class="tabs" role="tablist" aria-label="Seções do app">
   <div class="sidebar-brand"><img src="./icone-192.png" alt="" class="sidebar-brand-img"><span>Meu Bolso</span></div>
-  <button class="tab active" onclick="switchTab('inicio', this)" role="tab" aria-selected="true" aria-controls="tabInicio"><span><svg class="icon" aria-hidden="true"><use href="#i-sparkle"></use></svg></span>Início</button>
+  <button class="tab active" data-tab="inicio" onclick="switchTab('inicio', this)" role="tab" aria-selected="true" aria-controls="tabInicio"><span><svg class="icon" aria-hidden="true"><use href="#i-sparkle"></use></svg></span>Início</button>
   <div class="tab-wrapper">
-    <button class="tab" onclick="switchTab('despesas', this)" role="tab" aria-selected="false" aria-controls="tabDespesas"><span><svg class="icon" aria-hidden="true"><use href="#i-list"></use></svg></span>Despesas</button>
+    <button class="tab" data-tab="despesas" onclick="switchTab('despesas', this)" role="tab" aria-selected="false" aria-controls="tabDespesas"><span><svg class="icon" aria-hidden="true"><use href="#i-list"></use></svg></span>Despesas</button>
     <span class="tab-alert-dot" id="tabAlertDot"></span>
   </div>
-  <button class="tab" onclick="switchTab('stats', this)" role="tab" aria-selected="false" aria-controls="tabStats"><span><svg class="icon" aria-hidden="true"><use href="#i-bar-chart"></use></svg></span>Relatório</button>
-  <button class="tab" onclick="switchTab('simulacao', this)" role="tab" aria-selected="false" aria-controls="tabSimulacao"><span><svg class="icon" aria-hidden="true"><use href="#i-sliders"></use></svg></span>Ferramentas</button>
-  <button class="tab" onclick="switchTab('historico', this)" role="tab" aria-selected="false" aria-controls="tabHistorico"><span><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg></span>Histórico</button>
+  <button class="tab" data-tab="planejar" onclick="switchTab('planejar', this)" role="tab" aria-selected="false" aria-controls="tabStats"><span><svg class="icon" aria-hidden="true"><use href="#i-bar-chart"></use></svg></span>Planejar</button>
 </div>
 
 <!-- RODAPÉ FIXO -->
@@ -570,7 +580,7 @@
           <label class="form-label" for="fValor">Valor</label>
           <div class="valor-input-wrap">
             <span class="valor-prefix">R$</span>
-            <input type="text" class="form-input valor-input" id="fValor" placeholder="0,00" inputmode="decimal" enterkeyhint="next" oninput="updateRateioPreview();updateParcelaPreview()">
+            <input type="text" class="form-input valor-input" id="fValor" placeholder="0,00" inputmode="decimal" enterkeyhint="next">
           </div>
         </div>
 
@@ -696,6 +706,34 @@
       <button onclick="cancelInlineEdit()" style="background:var(--confirm-secondary-bg);color:var(--text);">Cancelar</button>
       <button onclick="confirmInlineEdit()" style="background:var(--green-dark);color:#fff;">Salvar</button>
     </div>
+  </div>
+</div>
+
+<!-- RENDA MENSAL (editável de qualquer tela) -->
+<div class="inline-edit-overlay" id="rendaOverlay" onclick="closeRendaModal(event)">
+  <div class="inline-edit-box">
+    <h4 style="display:flex;align-items:center;gap:6px;"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-dollar"></use></svg> Sua renda mensal</h4>
+    <label class="form-label" for="rendaInput">Quanto você recebe por mês (R$)</label>
+    <input type="text" id="rendaInput" inputmode="decimal" placeholder="0,00" autocomplete="off">
+    <label class="form-label" for="rendaMetaInput" style="margin-top:12px;display:block;">Meta de economia (% da renda)</label>
+    <input type="number" id="rendaMetaInput" inputmode="numeric" min="0" max="100" placeholder="Ex: 10">
+    <p class="renda-hint">Pode mudar quando quiser. Fica salva na sua conta e vale em todos os seus aparelhos.</p>
+    <div class="inline-edit-actions">
+      <button onclick="closeRendaModal()" style="background:var(--confirm-secondary-bg);color:var(--text);">Cancelar</button>
+      <button onclick="saveRendaModal()" style="background:var(--green-dark);color:#fff;">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETALHE DE CATEGORIA (Relatório) -->
+<div class="sheet-overlay" id="catDetailOverlay" onclick="closeCategoryDetail(event)">
+  <div class="sheet" role="dialog" aria-label="Despesas da categoria">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="catDetailTitle"></div>
+      <button type="button" class="sheet-close" onclick="closeCategoryDetail()" aria-label="Fechar">✕</button>
+    </div>
+    <div class="sheet-body" id="catDetailBody"></div>
   </div>
 </div>
 
@@ -872,6 +910,8 @@
 <script src="js/features/app-badge.js"></script>
 <script src="js/features/auto-categorize.js"></script>
 <script src="js/features/month-share.js"></script>
+<script src="js/features/renda.js"></script>
+<script src="js/features/quick-add.js"></script>
 <script src="js/ui/render-simulacoes.js"></script>
 <script src="js/ui/onboarding.js"></script>
 <script src="js/data/persistence.js"></script>
