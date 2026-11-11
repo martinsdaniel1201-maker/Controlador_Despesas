@@ -175,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── PÓS-LOGIN ─────────────────────────────────
 async function onLoginSuccess(user) {
   currentUser = user;
+  if (typeof restoreRendaFromCloud === 'function') restoreRendaFromCloud(user);
   hideAuthScreen();
   updateDrawerUser(user);
   applyUserAvatarEverywhere();
