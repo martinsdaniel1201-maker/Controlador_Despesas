@@ -606,26 +606,31 @@
                  placeholder="Ex: pagar no app do banco, boleto dia 10..." autocomplete="off" enterkeyhint="done">
         </div>
 
-        <div class="repeat-card" style="margin-bottom:14px;" id="grupoDespesaCard">
-          <div class="toggle-row" onclick="toggleGrupoDespesa()" role="button" tabindex="0"
-               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleGrupoDespesa();}">
-            <span class="toggle-label" id="labelGrupoDespesa">Despesa do grupo <span id="nomeMeuGrupoLabel"></span></span>
-            <button class="toggle" id="toggleGrupoDespesa" onclick="event.stopPropagation();toggleGrupoDespesa()"
-                    aria-labelledby="labelGrupoDespesa" role="switch" aria-checked="false" tabindex="-1"></button>
+        <div class="repeat-card share-card" style="margin-bottom:14px;">
+          <div class="share-title" id="shareTitle">Quem participa desta despesa?</div>
+          <div class="share-options" role="radiogroup" aria-labelledby="shareTitle">
+            <button type="button" class="share-opt active" data-modo="eu" role="radio" aria-checked="true" onclick="setShareModo('eu')">
+              <span class="share-ico" aria-hidden="true">🙋</span>
+              <span class="share-txt"><b>Só eu</b><small>Fica só no seu app</small></span>
+            </button>
+            <button type="button" class="share-opt" data-modo="dividir" role="radio" aria-checked="false" onclick="setShareModo('dividir')">
+              <span class="share-ico" aria-hidden="true">🤝</span>
+              <span class="share-txt"><b>Dividir a conta</b><small>Cada um paga uma parte</small></span>
+            </button>
+            <button type="button" class="share-opt" data-modo="avisar" id="shareOptAvisar" role="radio" aria-checked="false" onclick="setShareModo('avisar')" style="display:none">
+              <span class="share-ico" aria-hidden="true">👁️</span>
+              <span class="share-txt"><b>Só avisar o grupo</b><small>Eu pago tudo; o grupo só vê e não conta nos totais</small></span>
+            </button>
+            <button type="button" class="share-opt" data-modo="grupo" id="shareOptGrupo" role="radio" aria-checked="false" onclick="setShareModo('grupo')" style="display:none">
+              <span class="share-ico" aria-hidden="true">👥</span>
+              <span class="share-txt"><b>Compartilhar com o grupo</b><small>Todos veem e contam o valor cheio</small></span>
+            </button>
           </div>
-        </div>
-
-        <div class="repeat-card" style="margin-bottom:14px;">
-          <div class="toggle-row" onclick="toggleRateio()" role="button" tabindex="0"
-               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleRateio();}">
-            <span class="toggle-label" id="labelRateio">Dividir a conta com alguém</span>
-            <button class="toggle" id="toggleRateio" onclick="event.stopPropagation();toggleRateio()"
-                    aria-labelledby="labelRateio" role="switch" aria-checked="false" tabindex="-1"></button>
-          </div>
+          <p class="share-hint" id="shareHint" aria-live="polite"></p>
           <div id="rateioOptions" style="display:none">
             <div class="form-group" style="margin-top:12px;">
               <label class="form-label" for="fRateioNome">Dividido com quem?</label>
-              <input type="text" class="form-input" id="fRateioNome" placeholder="Ex: Maria" autocomplete="off" oninput="updateRateioPreview()">
+              <input type="text" class="form-input" id="fRateioNome" placeholder="Ex: nome da pessoa" autocomplete="off" oninput="updateRateioPreview()">
               <div class="chip-row" id="rateioMembros"></div>
             </div>
             <div class="form-group">
