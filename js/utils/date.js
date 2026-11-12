@@ -37,6 +37,12 @@ function getMonthExpenses(y, m) {
 //    o valor cheio fica em getDisplayExpense().valorBruto.
 //  - exp.overrides[monthKey] guarda exceções de UM mês (valor, descrição, dia...)
 //    sem criar outra despesa.
+// Forma canônica do rateio, para comparar sem depender da ordem das chaves (o jsonb do banco reordena)
+function canonRateio(r) {
+  return r ? JSON.stringify({ com: r.com || '', percentual: Number(r.percentual) || 0,
+                              pagoPorMim: r.pagoPorMim !== false, informativo: !!r.informativo }) : 'null';
+}
+
 function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
 
 function souDonoDaDespesa(exp) {
@@ -47,7 +53,7 @@ function souDonoDaDespesa(exp) {
 function getMinhaPercentual(exp, rateio) {
   const r = rateio === undefined ? exp.rateio : rateio;
   if (!r) return 100;
-  const pct = Math.min(99, Math.max(1, Number(r.percentual) || 50));
+  const pct = Math.min(100, Math.max(1, Number(r.percentual) || 50));
   if (souDonoDaDespesa(exp)) return pct;
   // Membro do grupo olhando a despesa de outro: fica com o restante,
   // repartido igualmente entre os demais membros (grupo de 2 = 100 - pct).
@@ -103,6 +109,10 @@ function getDisplayExpense(exp, y, m) {
 
   const pctMinha = getMinhaPercentual(exp, rateio);
   const valorMeu = rateio ? round2(valorBruto * pctMinha / 100) : valorBruto;
+  // "Só avisar o grupo": quem lançou paga tudo; para os outros membros a despesa é
+  // apenas informativa (não entra nos totais deles nem vira pendência/lembrete).
+  const informativo = !!(rateio && rateio.informativo);
+  const soInfo = informativo && !souDonoDaDespesa(exp);
 
   if (parcela && rateio) {
     parcela.valorTotalContaMinha = round2(parcela.valorTotalConta * pctMinha / 100);
@@ -121,11 +131,12 @@ function getDisplayExpense(exp, y, m) {
     descricao, categoria, nota, rateio,
     valorBruto,                 // conta cheia (ou parcela cheia)
     valor: valorMeu,            // MINHA parte — é esta que entra nos totais
-    dividido: !!rateio,
+    dividido: !!rateio && !informativo,
+    informativo, soInfo,
     pctMinha,
     parcela,
     temExcecao: !!getOverride(exp, key),
-    label, extra, paid, dateStr, monthKey: key
+    label, extra, paid: soInfo ? true : paid, dateStr, monthKey: key
   };
 }
 
