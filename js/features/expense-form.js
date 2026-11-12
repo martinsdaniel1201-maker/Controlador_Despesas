@@ -28,6 +28,13 @@ async function saveExpense() {
   if (!data)                { erroNoPasso0('fData',  '⚠️ Informe a data'); return; }
   ['fDesc','fValor','fData'].forEach(id => document.getElementById(id).classList.remove('error'));
 
+  if (shareModo === 'dividir' && !rateio) {
+    if (typeof goToModalStep === 'function') goToModalStep(2);
+    document.getElementById('fRateioNome').focus();
+    showToast('⚠️ Diga com quem você vai dividir a conta');
+    return;
+  }
+
   const tipo = !repeatOn ? 'unico' : repeatType;
   let totalParcelas = null;
   if (tipo === 'parcelado') {
@@ -75,7 +82,7 @@ async function saveExpense() {
       if (valorFinal !== snap.valor)                        changed.valor = valorFinal;
       if (selectedCat !== snap.categoria)                   changed.categoria = selectedCat;
       if (nota !== snap.nota)                               changed.nota = nota;
-      if (JSON.stringify(rateio || null) !== snap.rateio)   changed.rateio = rateio || null;
+      if (canonRateio(rateio) !== snap.rateio)              changed.rateio = rateio || null;
 
       const mesmoAnoMes = data.slice(0, 7) === (snap.data || '').slice(0, 7);
       const diaMudou    = data !== snap.data && mesmoAnoMes;

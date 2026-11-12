@@ -2,7 +2,7 @@
 // LANÇAMENTO RÁPIDO POR TEXTO
 // ═══════════════════════════════════════════════
 // "mercado 85 ontem" · "uber 18,50" · "tv 1200 10x" · "luz 180 dia 15 fixo"
-// "jantar 120 dividido com Maria" · "padaria 12 pago"
+// "jantar 120 dividido com Nome" · "aluguel 1500 só avisar" · "padaria 12 pago"
 // Entende valor, data, parcelas, fixo, divisão e se já foi pago.
 // A categoria vem do histórico (mesma descrição) ou das palavras-chave.
 // Funciona com o ditado do teclado do celular (microfone do iPhone/Android).
@@ -52,6 +52,9 @@ function parseQuickAdd(raw) {
       data.setFullYear(y, mo - 1, d);
     }
   }
+
+  // ── só avisar o grupo (informativo) ──
+  const avisar = !!take(/\b(?:s[oó]\s+avis(?:ar|o)|avisar(?:\s+(?:o\s+)?grupo)?|informativo)\b/i);
 
   // ── divisão ──
   let dividir = false, comNome = null;
@@ -108,7 +111,15 @@ function parseQuickAdd(raw) {
 
   // ── rateio / grupo ──
   let rateio = null, grupoId = null;
-  if (dividir) {
+  if (avisar) {
+    if (window.meuGrupo) {
+      const outro = _qaOutroMembro();
+      rateio = { com: outro?.nome || window.meuGrupo.nome || 'Grupo', percentual: 100, pagoPorMim: true, informativo: true };
+      grupoId = window.meuGrupo.id;
+    } else {
+      avisos.push('Para avisar o grupo, você precisa ter um grupo');
+    }
+  } else if (dividir) {
     const outro = _qaOutroMembro();
     const nome = comNome || outro?.nome || null;
     if (nome) {
@@ -119,7 +130,7 @@ function parseQuickAdd(raw) {
         if (achou || (!comNome && outro)) grupoId = window.meuGrupo.id;
       }
     } else {
-      avisos.push('Diga com quem: "dividido com Maria"');
+      avisos.push('Diga com quem: "dividido com NOME"');
     }
   }
 
@@ -143,7 +154,8 @@ function describeQuickAdd(p) {
   else partes.push(formatBRL(p.valor));
   partes.push(_qaDataLabel(p.dataObj));
   if (p.tipo === 'fixo') partes.push('fixo todo mês');
-  if (p.rateio) partes.push(`dividido com ${sanitize(p.rateio.com)}`);
+  if (p.rateio?.informativo) partes.push('só avisa o grupo');
+  else if (p.rateio) partes.push(`dividido com ${sanitize(p.rateio.com)}`);
   if (p.pago) partes.push('já pago');
   return partes.join(' · ');
 }
@@ -178,35 +190,21 @@ function updateQuickPreview(key) {
   prev.classList.add('ok');
 }
 
-// Atalhos: as descrições que você mais usa, com o último valor
+// Atalhos GENÉRICOS e iguais para todo mundo — não são montados a partir das suas
+// despesas, então nada seu (nome, conta, valor) aparece como sugestão na tela.
+const QA_GENERIC_CHIPS = ['Mercado', 'Combustível', 'Restaurante', 'Farmácia', 'Padaria', 'Cinema'];
+
 function refreshQuickChips() {
-  if (!Array.isArray(expenses) || expenses.length < 3) {
-    document.querySelectorAll('.qa-chips').forEach(c => c.innerHTML = '');
-    return;
-  }
-  const grupos = {};
-  expenses.forEach(e => {
-    const k = normalizeForMatch(e.descricao).trim();
-    if (!k) return;
-    const g = grupos[k] || (grupos[k] = { n: 0, ultimo: e });
-    g.n++;
-    if (e.dataOriginal >= g.ultimo.dataOriginal) g.ultimo = e;
-  });
-  const top = Object.values(grupos)
-    .filter(g => g.n >= 2 && g.ultimo.tipo !== 'parcelado')
-    .sort((a, b) => b.n - a.n).slice(0, 5);
-  const html = top.map(g => {
-    const txt = `${g.ultimo.descricao} ${g.ultimo.valor.toFixed(2).replace('.', ',')}`;
-    return `<button type="button" class="qa-chip" data-txt="${sanitize(txt)}" onclick="useQuickChip(this)">${sanitize(g.ultimo.descricao)}</button>`;
-  }).join('');
-  document.querySelectorAll('.qa-chips').forEach(c => c.innerHTML = html);
+  const html = QA_GENERIC_CHIPS.map(n =>
+    `<button type="button" class="qa-chip" data-txt="${n}" onclick="useQuickChip(this)">${n}</button>`).join('');
+  document.querySelectorAll('.qa-chips').forEach(c => { if (c.dataset.ready !== '1') { c.innerHTML = html; c.dataset.ready = '1'; } });
 }
 
 function useQuickChip(btn) {
   const wrap = btn.closest('.quick-add');
   const input = wrap && wrap.querySelector('.qa-input');
   if (!input) return;
-  input.value = btn.dataset.txt;
+  input.value = btn.dataset.txt + ' ';     // só a descrição; você digita o valor
   input.dispatchEvent(new Event('input'));
   input.focus();
 }
@@ -249,5 +247,6 @@ function initQuickAdd() {
   document.querySelectorAll('.quick-add[data-qa]').forEach(el => {
     el.innerHTML = buildQuickAddHtml(el.dataset.qa);
   });
+  refreshQuickChips();
 }
 initQuickAdd();

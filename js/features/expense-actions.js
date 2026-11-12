@@ -272,9 +272,7 @@ function editExpense(id) {
   if (ov.dia) { const p = exp.dataOriginal.split('-'); dataForm = `${p[0]}-${p[1]}-${String(ov.dia).padStart(2,'0')}`; }
   document.getElementById('fData').value            = dataForm;
   document.getElementById('fNota').value            = d.nota || '';
-  loadRateioIntoForm(d.rateio || null);
-  loadGrupoIdIntoForm(exp.grupoId || null);
-  atualizarSeletorDeGrupoNoFormulario();
+  loadShareIntoForm(d.rateio || null, exp.grupoId || null);
   selectedCat = d.categoria || 'outros';
   _catUserPicked = true;
   repeatOn    = exp.tipo !== 'unico';
@@ -295,7 +293,7 @@ function editExpense(id) {
 
   _editSnapshot = {
     descricao: d.descricao, valor: d.valorBruto, categoria: d.categoria || 'outros',
-    nota: d.nota || '', rateio: JSON.stringify(d.rateio || null),
+    nota: d.nota || '', rateio: canonRateio(d.rateio),
     data: dataForm, grupoId: exp.grupoId || null
   };
 
