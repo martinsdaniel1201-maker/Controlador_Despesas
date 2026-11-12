@@ -158,3 +158,23 @@
   .sheet-overlay { align-items: center; }
   .sheet { border-radius: 22px; }
 }
+
+/* ── Compartilhamento (uma escolha só) ── */
+.share-card { padding: 14px; }
+.share-title { font-size: 14px; font-weight: 900; color: var(--text); margin-bottom: 10px; }
+.share-options { display: flex; flex-direction: column; gap: 8px; }
+.share-opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; cursor: pointer;
+  padding: 12px; border-radius: 14px; border: 2px solid var(--border); background: var(--input-bg);
+  color: var(--text); font-family: 'Nunito', sans-serif; touch-action: manipulation;
+  transition: border-color .18s ease, background .18s ease;
+}
+.share-opt.active { border-color: var(--brand); background: var(--brand-light); }
+.share-ico { flex: none; font-size: 20px; width: 28px; text-align: center; }
+.share-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.share-txt b { font-size: 14px; font-weight: 900; }
+.share-txt small { font-size: 12px; font-weight: 700; color: var(--text-muted); line-height: 1.35; }
+.share-opt.active .share-txt small { color: var(--brand-dark); }
+.share-hint { margin: 10px 2px 0; font-size: 12px; font-weight: 700; color: var(--text-muted); line-height: 1.4; }
+.share-hint:empty { display: none; }
+.expense-amount.info { color: var(--text-muted); font-weight: 800; }
