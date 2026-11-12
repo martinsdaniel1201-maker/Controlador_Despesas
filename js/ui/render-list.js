@@ -91,7 +91,7 @@ function renderList() {
   chip.className   = 'rsc-pending-chip' + (pending === 0 ? ' clear' : '');
 
   // Quando há contas divididas, mostra a conta cheia ao lado da sua parte
-  const totalCheio = disp.reduce((s, e) => s + e.valorBruto, 0);
+  const totalCheio = disp.reduce((s, e) => s + (e.dividido ? e.valorBruto : e.valor), 0);
   const subEl = document.getElementById('rscSub');
   if (subEl) {
     if (disp.some(e => e.dividido) && Math.abs(totalCheio - total) > 0.004) {
@@ -180,11 +180,11 @@ function renderList() {
 function renderItem(e) {
   const cat       = CATEGORIES.find(c => c.id === (e.categoria || 'outros')) || CATEGORIES[9];
   const color     = CAT_COLORS[cat.id] || '#888';
-  const paidClass = e.paid ? ' paid' : '';
+  const paidClass = (e.paid && !e.soInfo) ? ' paid' : '';
   const safeName   = sanitize(e.label);
   const safeDate   = sanitize(e.dateStr);
   const safeExtra  = e.extra ? ' · ' + sanitize(e.extra) : '';
-  const safeAmount = sanitize(formatBRL(e.valor));  // valor = minha parte
+  const safeAmount = sanitize(formatBRL(e.soInfo ? e.valorBruto : e.valor));  // valor = minha parte (informativo: mostra o valor cheio, sem somar)
   const safeId     = sanitize(e.id);
   const safeKey    = sanitize(e.monthKey);
   const dueBadge   = getDueBadge(e.dateStr, e.paid);
@@ -210,9 +210,14 @@ function renderItem(e) {
       : `<span class="conta-chip eu">Última parcela</span>`);
     parcelaHtml = `<div class="parcela-bar" aria-hidden="true"><span style="width:${pctPago}%"></span></div>`;
   }
+  if (e.informativo) {
+    chips.push(e.soInfo
+      ? '<span class="conta-chip neutro">Só informativo · não entra nos seus totais</span>'
+      : '<span class="conta-chip neutro">O grupo vê, mas não conta nos totais deles</span>');
+  }
   const rateioHtml = chips.length ? `<div class="expense-conta">${chips.join('')}</div>${parcelaHtml}` : '';
   const souDono = !e.user_id || e.user_id === currentUser?.id;
-  const podeEditar = souDono || (e.grupoId && window.meuGrupo?.id === e.grupoId && window.meuGrupo?.permite_membros_editar);
+  const podeEditar = !e.soInfo && (souDono || (e.grupoId && window.meuGrupo?.id === e.grupoId && window.meuGrupo?.permite_membros_editar));
   const podeExcluir = souDono;
   const grupoTagHtml = e.grupoId ? `<span class="grupo-badge">GRUPO</span>` : '';
   const brandLogo  = getBrandLogoUrl(e.label);
@@ -246,9 +251,9 @@ function renderItem(e) {
           </div>
         </div>
         <div class="expense-right">
-          <div class="expense-amount" ${podeEditar ? `ondblclick="openInlineEdit(event,'${safeId}')" style="cursor:pointer" title="Duplo toque para editar valor"` : ''}>${safeAmount}</div>
-          ${e.dividido ? '<div class="expense-amount-sub">sua parte</div>' : (e.parcela ? '<div class="expense-amount-sub">parcela</div>' : '')}
-          ${e.paid ? '<div class="paid-tag" aria-label="Pago"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> PAGO</div>' : ''}
+          <div class="expense-amount${e.soInfo ? ' info' : ''}" ${podeEditar ? `ondblclick="openInlineEdit(event,'${safeId}')" style="cursor:pointer" title="Duplo toque para editar valor"` : ''}>${safeAmount}</div>
+          ${e.soInfo ? '<div class="expense-amount-sub">informativo</div>' : (e.dividido ? '<div class="expense-amount-sub">sua parte</div>' : (e.parcela ? '<div class="expense-amount-sub">parcela</div>' : ''))}
+          ${e.paid && !e.soInfo ? '<div class="paid-tag" aria-label="Pago"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-check"></use></svg> PAGO</div>' : ''}
         </div>
         ${podeEditar ? `
         <button class="item-menu-btn"

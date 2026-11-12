@@ -24,9 +24,7 @@ function openModal(reset = false) {
     document.getElementById('fValor').value = '';
     document.getElementById('fData').value  = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05`;
     document.getElementById('fNota').value  = '';
-    loadRateioIntoForm(null);
-    loadGrupoIdIntoForm(null);
-    atualizarSeletorDeGrupoNoFormulario();
+    loadShareIntoForm(null, null);
     const toggle = document.getElementById('toggleRepetir');
     toggle.className = 'toggle';
     toggle.setAttribute('aria-checked', 'false');
@@ -183,57 +181,87 @@ function toggleRepetir() {
   updateParcelaPreview();
 }
 
-// ── GRUPO: marcar despesa como pertencente ao grupo compartilhado ──
-let grupoDespesaOn = false;
+// ── COMPARTILHAMENTO: uma única escolha (substitui os dois botões antigos) ──
+//  eu      → só no seu app
+//  dividir → divide a conta (%). Se a pessoa estiver no seu grupo, ela também vê, com a parte dela
+//  avisar  → você paga tudo; o grupo só vê (informativo) e NÃO conta nos totais deles
+//  grupo   → todos do grupo veem e contam o valor cheio
+let shareModo = 'eu';
+let rateioOn = false;          // true só no modo "dividir"
+let rateioPagoPorMim = true;
 
-function toggleGrupoDespesa() {
-  grupoDespesaOn = !grupoDespesaOn;
-  const t = document.getElementById('toggleGrupoDespesa');
-  t.className = 'toggle' + (grupoDespesaOn ? ' on' : '');
-  t.setAttribute('aria-checked', String(grupoDespesaOn));
+const SHARE_HINTS = {
+  eu:     'Só você vê esta despesa.',
+  avisar: 'O grupo vê esta despesa, mas ela não entra nos totais deles. Você paga e conta o valor cheio.',
+  grupo:  'Todos do grupo veem esta despesa e contam o valor cheio nos totais.'
+};
+
+function setShareModo(m) {
+  if ((m === 'avisar' || m === 'grupo') && !window.meuGrupo) m = 'eu';
+  shareModo = m;
+  rateioOn = (m === 'dividir');
+  document.querySelectorAll('.share-opt').forEach(b => {
+    const on = b.dataset.modo === m;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-checked', String(on));
+  });
+  document.getElementById('rateioOptions').style.display = rateioOn ? 'block' : 'none';
+  const hint = document.getElementById('shareHint');
+  if (hint) {
+    hint.textContent = m === 'dividir'
+      ? (window.meuGrupo
+          ? 'Se a pessoa estiver no seu grupo, ela também vê esta despesa, só com a parte dela nos totais.'
+          : 'Só você vê. A divisão serve para controlar quanto cada um deve.')
+      : SHARE_HINTS[m];
+  }
+  if (rateioOn) { renderRateioMembros(); updateRateioPreview(); }
+}
+
+// "Só avisar" e "Compartilhar" só existem para quem tem um grupo
+function atualizarSeletorDeGrupoNoFormulario() {
+  const temGrupo = !!window.meuGrupo;
+  ['shareOptAvisar', 'shareOptGrupo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = temGrupo ? 'flex' : 'none';
+  });
+  if (!temGrupo && (shareModo === 'avisar' || shareModo === 'grupo')) setShareModo('eu');
+}
+
+function _outrosMembros() {
+  return Object.entries(window.meuGrupoMembrosMap || {}).filter(([id]) => id !== currentUser?.id);
 }
 
 function readGrupoIdFromForm() {
-  return grupoDespesaOn && window.meuGrupo ? window.meuGrupo.id : null;
-}
-
-function loadGrupoIdIntoForm(grupoId) {
-  grupoDespesaOn = !!grupoId;
-  const t = document.getElementById('toggleGrupoDespesa');
-  t.className = 'toggle' + (grupoDespesaOn ? ' on' : '');
-  t.setAttribute('aria-checked', String(grupoDespesaOn));
-}
-
-// Mostra o toggle só pra quem realmente tem um grupo — sem grupo, a
-// opção nem aparece (não faz sentido oferecer o que não existe ainda)
-function atualizarSeletorDeGrupoNoFormulario() {
-  const card = document.getElementById('grupoDespesaCard');
-  const label = document.getElementById('nomeMeuGrupoLabel');
-  if (!card) return;
-  if (window.meuGrupo) {
-    card.style.display = 'block';
-    if (label) label.textContent = `"${window.meuGrupo.nome}"`;
-  } else {
-    card.style.display = 'none';
-    grupoDespesaOn = false;
+  if (!window.meuGrupo) return null;
+  if (shareModo === 'avisar' || shareModo === 'grupo') return window.meuGrupo.id;
+  if (shareModo === 'dividir') {
+    // dividir com alguém do grupo = o grupo também enxerga (sem precisar marcar outra opção)
+    const nome = document.getElementById('fRateioNome').value.trim().toLowerCase();
+    const outros = _outrosMembros();
+    if (!nome) return outros.length === 1 ? window.meuGrupo.id : null;
+    return outros.some(([, n]) => String(n).toLowerCase() === nome) ? window.meuGrupo.id : null;
   }
+  return null;
+}
+
+// Carrega o formulário a partir de uma despesa (rateio + grupo) e escolhe o modo certo
+function loadShareIntoForm(rateio, grupoId) {
+  const dividindo = !!rateio && !rateio.informativo;
+  document.getElementById('fRateioNome').value = dividindo ? (rateio.com || '') : '';
+  document.getElementById('fRateioPct').value  = dividindo ? (rateio.percentual || 50) : 50;
+  setRateioPagoPor(dividindo ? rateio.pagoPorMim !== false : true);
+  atualizarSeletorDeGrupoNoFormulario();
+  let modo = 'eu';
+  if (rateio && rateio.informativo) modo = 'avisar';
+  else if (dividindo)               modo = 'dividir';
+  else if (grupoId)                 modo = 'grupo';
+  setShareModo(modo);
+  updateRateioPreview();
 }
 
 // ── RATEIO: dividir a conta com outra pessoa ──
 // O valor da despesa é o da conta CHEIA. A "sua parte" (%) é o que entra nos
 // totais; a lista mostra a conta inteira e a parte de cada um.
-let rateioOn = false;
-let rateioPagoPorMim = true;
-
-function toggleRateio() {
-  rateioOn = !rateioOn;
-  const t = document.getElementById('toggleRateio');
-  t.className = 'toggle' + (rateioOn ? ' on' : '');
-  t.setAttribute('aria-checked', String(rateioOn));
-  document.getElementById('rateioOptions').style.display = rateioOn ? 'block' : 'none';
-  if (rateioOn) { renderRateioMembros(); updateRateioPreview(); }
-}
-
 function setRateioPct(p) {
   document.getElementById('fRateioPct').value = p;
   updateRateioPreview();
@@ -245,15 +273,16 @@ function setRateioPagoPor(euPago) {
   document.getElementById('segPagoOutro').classList.toggle('active', !rateioPagoPorMim);
 }
 
-// Atalho: membros do grupo viram botões pra preencher o nome
+// Atalho genérico: não mostra nomes nos botões; o nome só entra no campo ao tocar
 function renderRateioMembros() {
   const box = document.getElementById('rateioMembros');
   if (!box) return;
-  const map = window.meuGrupoMembrosMap || {};
-  const outros = Object.entries(map).filter(([id]) => id !== currentUser?.id).map(([, nome]) => nome);
-  box.innerHTML = outros.map(n =>
-    `<button type="button" onclick="document.getElementById('fRateioNome').value=this.textContent;updateRateioPreview()">${sanitize(n)}</button>`
-  ).join('');
+  const outros = _outrosMembros();
+  if (!outros.length) { box.innerHTML = ''; return; }
+  box.innerHTML = outros.map(([, nome], i) => {
+    const rotulo = outros.length === 1 ? 'Pessoa do meu grupo' : `Membro ${i + 1} do grupo`;
+    return `<button type="button" data-nome="${sanitize(nome)}" onclick="document.getElementById('fRateioNome').value=this.dataset.nome;updateRateioPreview()">${rotulo}</button>`;
+  }).join('');
 }
 
 function updateRateioPreview() {
@@ -269,29 +298,20 @@ function updateRateioPreview() {
 }
 
 function readRateioFromForm() {
-  if (!rateioOn) return null;
+  if (shareModo === 'avisar') {
+    const outros = _outrosMembros();
+    return { com: outros.length === 1 ? outros[0][1] : (window.meuGrupo?.nome || 'Grupo'),
+             percentual: 100, pagoPorMim: true, informativo: true };
+  }
+  if (shareModo !== 'dividir') return null;
   let nome = document.getElementById('fRateioNome').value.trim();
-  const pct  = parseInt(document.getElementById('fRateioPct').value) || 50;
+  const pct = parseInt(document.getElementById('fRateioPct').value) || 50;
   if (!nome) {
-    // grupo de duas pessoas: assume o outro membro
-    const outros = Object.entries(window.meuGrupoMembrosMap || {}).filter(([id]) => id !== currentUser?.id);
-    if (outros.length === 1) nome = outros[0][1];
+    const outros = _outrosMembros();
+    if (outros.length === 1) nome = outros[0][1];   // grupo de duas pessoas: assume o outro membro
   }
   if (!nome) return null;
   return { com: nome, percentual: Math.min(99, Math.max(1, pct)), pagoPorMim: rateioPagoPorMim };
-}
-
-function loadRateioIntoForm(rateio) {
-  rateioOn = !!rateio;
-  const t = document.getElementById('toggleRateio');
-  t.className = 'toggle' + (rateioOn ? ' on' : '');
-  t.setAttribute('aria-checked', String(rateioOn));
-  document.getElementById('rateioOptions').style.display = rateioOn ? 'block' : 'none';
-  document.getElementById('fRateioNome').value = rateio?.com || '';
-  document.getElementById('fRateioPct').value  = rateio?.percentual || 50;
-  setRateioPagoPor(rateio ? rateio.pagoPorMim !== false : true);
-  renderRateioMembros();
-  updateRateioPreview();
 }
 
 // ── PARCELADO: o valor digitado é da parcela ou do total da compra? ──

@@ -52,7 +52,7 @@ let _monthTotalsCache = {};
 function invalidateMonthTotalsCache() { _monthTotalsCache = {}; }
 
 function getMonthTotals(y, m) {
-  const cacheKey = y + '-' + m;
+  const cacheKey = (currentUser?.id || '') + '|' + y + '-' + m;   // por usuário: a conta de quem olha muda os valores
   const cached = _monthTotalsCache[cacheKey];
   if (cached) return cached;
 
